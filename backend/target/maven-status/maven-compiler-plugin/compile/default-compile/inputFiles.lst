@@ -1,0 +1,9 @@
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/BmsApplication.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/BikeStatus.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/BikeType.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/DockStatus.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/ReservationStatus.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/Role.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/StationStatus.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/TripStatus.java
+/Users/vtaing/Desktop/StealYoBike/StealYoBike/backend/src/main/java/com/acme/bms/domain/entity/User.java
