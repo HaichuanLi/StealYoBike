@@ -4,7 +4,7 @@
 
 <button
 	type="button"
-	class="fixed top-0 left-0 z-40 h-full w-full bg-gray-100/50"
+	class="fixed top-0 left-0 z-40 h-full w-full bg-emerald-50/50"
 	aria-label="Close Sidebar Overlay"
 	onclick={() => (showSidebar = false)}
 ></button>
