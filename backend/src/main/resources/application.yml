@@ -1,21 +1,21 @@
 spring:
   application:
     name: bms
-  
+
   # H2 Database Configuration
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password: ${H2_PASSWORD:s3cur3P4ssw0rd!}
-  
+
   # JPA/Hibernate Configuration
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-  
+
   # H2 Console (for development)
   h2:
     console:
