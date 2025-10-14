@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: bms
+  
+  # H2 Database Configuration
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  
+  # H2 Console (for development)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# JWT Configuration
+app:
+  jwt:
+    secret: mySecretKey1234567890123456789012345678901234567890
+    expiration-hours: 24
+
+# Server Configuration
+server:
+  port: 8080
+
+# Logging
+logging:
+  level:
+    com.acme.bms: DEBUG
+    org.springframework.security: DEBUG
