@@ -7,7 +7,7 @@ spring:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: password
+    password: ${H2_PASSWORD:s3cur3P4ssw0rd!}
   
   # JPA/Hibernate Configuration
   jpa:
@@ -25,7 +25,7 @@ spring:
 # JWT Configuration
 app:
   jwt:
-    secret: mySecretKey1234567890123456789012345678901234567890
+    secret: MyVeryLongAndSecureJWTSecretKeyThatIsAtLeast64CharactersLongForHS512Algorithm123456789
     expiration-hours: 24
 
 # Server Configuration
