@@ -17,7 +17,6 @@ import com.acme.bms.domain.entity.Status.ReservationStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
 import com.acme.bms.domain.entity.Status.TripStatus;
 
-
 public class BmsCore {
 
     private List<DockingStation> dockStations;
@@ -58,6 +57,8 @@ public class BmsCore {
         }
         //Trying to checkout bike after reservation expired
         if (LocalDateTime.now().isAfter(reservation.getExpiresAt())) {
+            System.out.println("Reservation has expired. Now trying to find another available bike of the same type.");
+
             reservation = reserveBike(reservation.getDockingStation(), user, reservation.getBike().getType());
             if (reservation == null) {
                 System.out.println("No other bike of the same type available.");
@@ -74,6 +75,33 @@ public class BmsCore {
         System.out.println("Trip has been started successfully.");
         return t;
 
+    }
+    public int countAllAvailableBikes(DockingStation station) {
+        int count = 0;
+        for (Dock dock : station.getDocks()) {
+            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE) {
+                count++;
+            }
+        }
+        return count;
+    }
+    public int countAvailableRegularBikes(DockingStation station) {
+        int count = 0;
+        for (Dock dock : station.getDocks()) {
+            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE && dock.getBike().getType() == BikeType.REGULAR) {
+                count++;
+            }
+        }
+        return count;
+    }
+    public int countAvailableElectricBikes(DockingStation station) {
+        int count = 0;
+        for (Dock dock : station.getDocks()) {
+            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE && dock.getBike().getType() == BikeType.ELECTRIC) {
+                count++;
+            }
+        }
+        return count;
     }
 
 }
