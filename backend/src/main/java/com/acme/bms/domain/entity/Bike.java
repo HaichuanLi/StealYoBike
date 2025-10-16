@@ -1,5 +1,7 @@
 package com.acme.bms.domain.entity;
 
+import java.time.LocalDateTime;
+
 import com.acme.bms.domain.entity.Status.BikeStatus;
 
 import jakarta.persistence.Entity;
@@ -41,4 +43,44 @@ public class Bike {
     private Dock dock; // null when undocked or on trip
 
     private java.time.LocalDateTime reservationExpiry;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public BikeType getType() {
+        return type;
+    }
+
+    public void setType(BikeType type) {
+        this.type = type;
+    }
+
+    public BikeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BikeStatus status) {
+        this.status = status;
+    }
+
+    public Dock getDock() {
+        return dock;
+    }
+
+    public void setDock(Dock dock) {
+        this.dock = dock;
+    }
+
+    public LocalDateTime getReservationExpiry() {
+        return reservationExpiry;
+    }
+
+    public void setReservationExpiry(LocalDateTime reservationExpiry) {
+        this.reservationExpiry = reservationExpiry;
+    }
 }

@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BmsApplication<bms>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.acme.bms.BmsApplication",
+            "projectName": "bms",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

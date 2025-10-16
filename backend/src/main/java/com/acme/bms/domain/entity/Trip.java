@@ -55,4 +55,84 @@ public class Trip {
     private TripStatus status;
 
     private int priceCents;
+
+    public Trip(Bike bike, User rider, DockingStation startStation, LocalDateTime startTime, TripStatus status) {
+        this.bike = bike;
+        this.rider = rider;
+        this.startStation = startStation;
+        this.startTime = startTime;
+        this.status = status;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getRider() {
+        return rider;
+    }
+
+    public void setRider(User rider) {
+        this.rider = rider;
+    }
+
+    public Bike getBike() {
+        return bike;
+    }
+
+    public void setBike(Bike bike) {
+        this.bike = bike;
+    }
+
+    public DockingStation getStartStation() {
+        return startStation;
+    }
+
+    public void setStartStation(DockingStation startStation) {
+        this.startStation = startStation;
+    }
+
+    public DockingStation getEndStation() {
+        return endStation;
+    }
+
+    public void setEndStation(DockingStation endStation) {
+        this.endStation = endStation;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public TripStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(TripStatus status) {
+        this.status = status;
+    }
+
+    public int getPriceCents() {
+        return priceCents;
+    }
+
+    public void setPriceCents(int priceCents) {
+        this.priceCents = priceCents;
+    }
 }

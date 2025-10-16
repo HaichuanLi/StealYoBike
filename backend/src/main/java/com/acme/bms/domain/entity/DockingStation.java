@@ -45,4 +45,76 @@ public class DockingStation {
 
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dock> docks;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getStreetAddress() {
+        return streetAddress;
+    }
+
+    public void setStreetAddress(String streetAddress) {
+        this.streetAddress = streetAddress;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
+    }
+
+    public StationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(StationStatus status) {
+        this.status = status;
+    }
+
+    public int getExpiresAfterMinutes() {
+        return expiresAfterMinutes;
+    }
+
+    public void setExpiresAfterMinutes(int expiresAfterMinutes) {
+        this.expiresAfterMinutes = expiresAfterMinutes;
+    }
+
+    public List<Dock> getDocks() {
+        return docks;
+    }
+
+    public void setDocks(List<Dock> docks) {
+        this.docks = docks;
+    }
 }
