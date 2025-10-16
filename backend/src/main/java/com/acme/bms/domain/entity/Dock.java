@@ -43,4 +43,44 @@ public class Dock {
 
     @OneToOne(mappedBy = "dock", cascade = CascadeType.ALL)
     private Bike bike;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public DockingStation getStation() {
+        return station;
+    }
+
+    public void setStation(DockingStation station) {
+        this.station = station;
+    }
+
+    public DockStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(DockStatus status) {
+        this.status = status;
+    }
+
+    public int getSlotIndex() {
+        return slotIndex;
+    }
+
+    public void setSlotIndex(int slotIndex) {
+        this.slotIndex = slotIndex;
+    }
+
+    public Bike getBike() {
+        return bike;
+    }
+
+    public void setBike(Bike bike) {
+        this.bike = bike;
+    }
 }
