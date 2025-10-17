@@ -2,7 +2,11 @@ package com.acme.bms.domain.entity;
 
 import java.time.LocalDateTime;
 
-import com.acme.bms.domain.entity.Status.BikeStatus;
+import com.acme.bms.domain.entity.Status.BikeState.AvailableState;
+import com.acme.bms.domain.entity.Status.BikeState.BikeState;
+import com.acme.bms.domain.entity.Status.BikeState.MaintenanceState;
+import com.acme.bms.domain.entity.Status.BikeState.OnTripState;
+import com.acme.bms.domain.entity.Status.BikeState.ReservedState;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,13 +34,12 @@ public class Bike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Enumerated(EnumType.STRING)
     private BikeType type;
 
-    @Enumerated(EnumType.STRING)
-    private BikeStatus status;
+    BikeState state;
 
     @ManyToOne
     @JoinColumn(name = "dock_id")
@@ -44,11 +47,45 @@ public class Bike {
 
     private java.time.LocalDateTime reservationExpiry;
 
-    public Long getId() {
+    public void changeState(BikeState state) {
+        this.state = state;
+        System.out.println("Bike " + id + " changed to " + state.getClass().getSimpleName());
+    }
+
+    public boolean reserveBike() {
+        return state.reserveBike();
+    }
+
+    public boolean checkoutBike() {
+        return state.checkoutBike();
+    }
+
+    public boolean returnBike() {
+        return state.returnBike();
+    }
+
+    public void markAsAvailable() {
+        System.out.println("Bike " + id + " is now available for use.");
+    }
+
+    public void markAsInUse() {
+        System.out.println("Bike " + id + " is now on a trip.");
+    }
+
+    public void markAsReserved() {
+        System.out.println("Bike " + id + " is reserved for a user.");
+    }
+
+    public void markAsUnderMaintenance() {
+        System.out.println("Bike " + id + " is under maintenance.");
+    }
+
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -60,12 +97,20 @@ public class Bike {
         this.type = type;
     }
 
-    public BikeStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(BikeStatus status) {
-        this.status = status;
+    public String getState() {
+        if (state instanceof AvailableState){
+            return "AVAILABLE";
+        }
+        else if (state instanceof ReservedState){
+            return "RESERVED";
+        }
+        else if (state instanceof OnTripState){
+            return "ON_TRIP";
+        }
+        else if (state instanceof MaintenanceState){
+            return "MAINTENANCE";
+        }
+        return null;
     }
 
     public Dock getDock() {
