@@ -82,5 +82,8 @@ public class Dock {
 
     public void setBike(Bike bike) {
         this.bike = bike;
+        if(bike == null){
+            this.status=DockStatus.EMPTY;
+        }
     }
 }
