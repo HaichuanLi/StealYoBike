@@ -79,6 +79,29 @@ public class BmsCore {
         return t;
 
     }
+
+    public boolean returnBike(Trip trip, DockingStation station) {
+        if (trip.getStatus() != TripStatus.STARTED) {
+            System.out.println("Trip is not active.");
+            return false;
+        }
+
+        for (Dock dock : station.getDocks()) {
+            if (dock.getStatus() == DockStatus.EMPTY) {
+                if (trip.getBike().returnBike()){
+                    trip.setEndTime(LocalDateTime.now());
+                    trip.setEndStation(station);
+                    trip.setStatus(TripStatus.COMPLETED);
+                    dock.setBike(trip.getBike());
+                    trip.getBike().setDock(dock);
+                    System.out.println("Bike returned successfully.");
+                    return true;
+                }
+            }
+        }
+        System.out.println("Bike was successfully returned.");
+        return true;
+    }
     public int countAllAvailableBikes(DockingStation station) {
         int count = 0;
         for (Dock dock : station.getDocks()) {
