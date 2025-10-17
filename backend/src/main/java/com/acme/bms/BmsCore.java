@@ -11,11 +11,11 @@ import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.entity.Reservation;
 import com.acme.bms.domain.entity.Trip;
-import com.acme.bms.domain.entity.Status.BikeStatus;
 import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.ReservationStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
 import com.acme.bms.domain.entity.Status.TripStatus;
+import com.acme.bms.domain.entity.Status.BikeState.BikeState;
 
 public class BmsCore {
 
@@ -35,18 +35,20 @@ public class BmsCore {
             }
         }
         for (Dock dock : dockStation.getDocks()) {
-            if (dock.getBike().getType() == type && dock.getBike().getStatus() == BikeStatus.AVAILABLE) {
-                dock.getBike().setStatus(BikeStatus.RESERVED);
-                Reservation r = new Reservation(dock.getBike(), LocalDateTime.now(), LocalDateTime.now().plusMinutes(5), IDPinGenerator.generateID(), user, ReservationStatus.ACTIVE);
-                reservations.add(r);
-                return r;
+            if (dock.getBike().getType() == type) {
+                if (dock.getBike().reserveBike()){
+                    Reservation r = new Reservation(dock.getBike(), LocalDateTime.now(), LocalDateTime.now().plusMinutes(5), IDPinGenerator.generateID(), user, ReservationStatus.ACTIVE);
+                    reservations.add(r);
+                    return r;
+                }
+                
             }
         }
-
+        System.out.println("No available bike of the requested type.");
         return null;
     }
 
-    public Trip checkOutBike(User user, Reservation reservation, int pin) {
+    public Trip checkoutBike(User user, Reservation reservation, int pin) {
         if (reservation.getRider().getId().equals(user.getId()) || reservation.getStatus() != ReservationStatus.ACTIVE) {
             return null;
         }
@@ -61,16 +63,17 @@ public class BmsCore {
 
             reservation = reserveBike(reservation.getDockingStation(), user, reservation.getBike().getType());
             if (reservation == null) {
-                System.out.println("No other bike of the same type available.");
+                System.out.println("No other bike of the same type available at this docking station.");
                 return null;
             }
         }
         reservation.setStatus(ReservationStatus.FULFILLED);
         Bike bike = reservation.getBike();
         Trip t = new Trip(bike, user, reservation.getBike().getDock().getStation(), LocalDateTime.now(), TripStatus.STARTED);
-        bike.setStatus(BikeStatus.ON_TRIP);
-        bike.getDock().setBike(null);
-        bike.setDock(null);
+        if (!bike.checkoutBike()){
+            System.out.println("Failed to checkout the bike.");
+            return null;
+        }
 
         System.out.println("Trip has been started successfully.");
         return t;
@@ -79,7 +82,7 @@ public class BmsCore {
     public int countAllAvailableBikes(DockingStation station) {
         int count = 0;
         for (Dock dock : station.getDocks()) {
-            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE) {
+            if (dock.getBike() != null && dock.getBike().getState().equals("AVAILABLE")) {
                 count++;
             }
         }
@@ -88,7 +91,7 @@ public class BmsCore {
     public int countAvailableRegularBikes(DockingStation station) {
         int count = 0;
         for (Dock dock : station.getDocks()) {
-            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE && dock.getBike().getType() == BikeType.REGULAR) {
+            if (dock.getBike() != null && dock.getBike().getState().equals("AVAILABLE") && dock.getBike().getType() == BikeType.REGULAR) {
                 count++;
             }
         }
@@ -97,7 +100,7 @@ public class BmsCore {
     public int countAvailableElectricBikes(DockingStation station) {
         int count = 0;
         for (Dock dock : station.getDocks()) {
-            if (dock.getBike() != null && dock.getBike().getStatus() == BikeStatus.AVAILABLE && dock.getBike().getType() == BikeType.ELECTRIC) {
+            if (dock.getBike() != null && dock.getBike().getState().equals("AVAILABLE") && dock.getBike().getType() == BikeType.ELECTRIC) {
                 count++;
             }
         }
