@@ -51,7 +51,7 @@ public class Reservation {
         }
         this.status = ReservationStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
-        this.expiresAt = createdAt.plusMinutes(15);
+        this.expiresAt = createdAt.plusMinutes(5);
         bike.setReservationExpiry(createdAt);
     }
 
