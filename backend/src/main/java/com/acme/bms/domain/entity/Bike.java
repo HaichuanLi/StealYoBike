@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity;
 
-import com.acme.bms.domain.entity.Status.BikeStatus;
+import com.acme.bms.domain.entity.Status.BikeStrategy.BikeState;
+import com.acme.bms.domain.entity.Status.BikeStrategy.AvailableState;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,7 +23,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Bike {
 
     @Id
@@ -33,8 +32,7 @@ public class Bike {
     @Enumerated(EnumType.STRING)
     private BikeType type;
 
-    @Enumerated(EnumType.STRING)
-    private BikeStatus status;
+    private BikeState state = new AvailableState(this);
 
     @ManyToOne
     @JoinColumn(name = "dock_id")
