@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity.Status.BikeStrategy;
 
 import com.acme.bms.domain.entity.Bike;
+import com.acme.bms.domain.entity.Dock;
 
 public class MaintenanceState extends BikeState {
 
@@ -21,8 +22,9 @@ public class MaintenanceState extends BikeState {
     }
 
     @Override
-    public boolean returnBike() {
+    public boolean returnBike(Dock dock) {
         bike.setState(new AvailableState(bike));
+        bike.setDock(dock);
         System.out.println("Bike maintenance completed and is now available.");
         return true;
     }

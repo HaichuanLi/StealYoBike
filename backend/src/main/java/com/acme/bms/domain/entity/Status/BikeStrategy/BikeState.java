@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity.Status.BikeStrategy;
 
 import com.acme.bms.domain.entity.Bike;
+import com.acme.bms.domain.entity.Dock;
 
 public abstract class BikeState {
     Bike bike;
@@ -13,7 +14,7 @@ public abstract class BikeState {
 
     public abstract boolean checkoutBike();
 
-    public abstract boolean returnBike();
+    public abstract boolean returnBike(Dock dock);
 
     public abstract String toString();
 }

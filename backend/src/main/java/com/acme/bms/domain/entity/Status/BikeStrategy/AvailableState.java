@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity.Status.BikeStrategy;
 
 import com.acme.bms.domain.entity.Bike;
+import com.acme.bms.domain.entity.Dock;
 
 public class AvailableState extends BikeState {
 
@@ -22,7 +23,7 @@ public class AvailableState extends BikeState {
     }
 
     @Override
-    public boolean returnBike() {
+    public boolean returnBike(Dock dock) {
         System.out.println("Bike is already available.");
         return false;
     }

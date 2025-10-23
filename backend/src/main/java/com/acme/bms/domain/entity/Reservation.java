@@ -13,19 +13,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "reservations")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Reservation {
 
     @Id
@@ -47,4 +41,18 @@ public class Reservation {
 
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
+
+    public Reservation(User rider, Bike bike) {
+        this.rider = rider;
+        this.bike = bike;
+        this.pin = String.format("%04d", (int) (Math.random() * 10000));
+        if (!bike.getState().reserveBike()) {
+            throw new IllegalStateException("Bike cannot be reserved.");
+        }
+        this.status = ReservationStatus.ACTIVE;
+        this.createdAt = LocalDateTime.now();
+        this.expiresAt = createdAt.plusMinutes(15);
+        bike.setReservationExpiry(createdAt);
+    }
+
 }
