@@ -2,6 +2,7 @@ package com.acme.bms.domain.entity;
 
 import java.time.LocalDateTime;
 
+import com.acme.bms.IDPinGenerator;
 import com.acme.bms.domain.entity.Status.BikeState.AvailableState;
 import com.acme.bms.domain.entity.Status.BikeState.BikeState;
 import com.acme.bms.domain.entity.Status.BikeState.MaintenanceState;
@@ -46,6 +47,12 @@ public class Bike {
     private Dock dock; // null when undocked or on trip
 
     private java.time.LocalDateTime reservationExpiry;
+
+    public Bike(BikeType type) {
+        this.id = IDPinGenerator.generateID();
+        this.type = type;
+        this.state = new AvailableState(this);
+    }
 
     public void changeState(BikeState state) {
         this.state = state;
