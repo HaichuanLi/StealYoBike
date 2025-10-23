@@ -1,7 +1,9 @@
 package com.acme.bms.domain.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
 
 import jakarta.persistence.CascadeType;
@@ -18,6 +20,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "docking_stations")
@@ -44,7 +47,29 @@ public class DockingStation {
     private int expiresAfterMinutes;
 
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Dock> docks;
+    private ArrayList<Dock> docks;
+
+    public DockingStation(Long id, String name, String streetAddress, double latitude, double longitude, int capacity,
+            ArrayList<Dock> docks) {
+        this.id = id;
+        this.name = name;
+        this.streetAddress = streetAddress;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.capacity = capacity;
+        this.docks = docks;
+        this.expiresAfterMinutes=5;
+        this.status=StationStatus.ACTIVE;
+    }
+    public int getNumberOfAvailableBikes() {
+        int count = 0;
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getState().equals("AVAILABLE")) {
+                count++;
+            }
+        }
+        return count;
+    }
 
     public Long getId() {
         return id;
@@ -114,7 +139,35 @@ public class DockingStation {
         return docks;
     }
 
-    public void setDocks(List<Dock> docks) {
-        this.docks = docks;
+    public void setDocks(ArrayList<Dock> docks) {
+        this.docks =  docks;
+    }
+
+    public Bike findAvailableBike() {
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getState().equals("AVAILABLE")) {
+                return dock.getBike();
+            }
+        }
+        return null;
+    }
+    public Dock findEmptyDock() {
+        for (Dock dock : docks) {
+            if (dock.getStatus() == DockStatus.EMPTY) {
+                return dock;
+            }
+        }
+        return null;
+    }
+    public String ToString(){
+        String s = "";
+        for (Dock dock : docks) {
+            s += "Dock ID: " + dock.getId() + ", Status: " + dock.getStatus();
+            if(dock.getBike() != null){
+                s += ", Bike ID: " + dock.getBike().getId() + ", Bike State: " + dock.getBike().getState();
+            }
+            s += "\n";
+        }
+        return s;
     }
 }

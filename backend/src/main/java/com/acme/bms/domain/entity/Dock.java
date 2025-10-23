@@ -1,5 +1,7 @@
 package com.acme.bms.domain.entity;
 
+import com.acme.bms.IDPinGenerator;
+import com.acme.bms.domain.entity.Status.BikeState.BikeState;
 import com.acme.bms.domain.entity.Status.DockStatus;
 
 import jakarta.persistence.CascadeType;
@@ -30,7 +32,7 @@ public class Dock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @ManyToOne
     @JoinColumn(name = "station_id")
@@ -44,11 +46,21 @@ public class Dock {
     @OneToOne(mappedBy = "dock", cascade = CascadeType.ALL)
     private Bike bike;
 
-    public Long getId() {
+    
+    public Dock(DockStatus status) {
+        this.id = IDPinGenerator.generateID();
+        this.status =status;
+        
+
+    }
+    private String getBikeState(){
+        return bike.getState();
+    }
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -81,9 +93,13 @@ public class Dock {
     }
 
     public void setBike(Bike bike) {
-        this.bike = bike;
         if(bike == null){
             this.status=DockStatus.EMPTY;
         }
+        this.bike = bike;
+        this.status = DockStatus.OCCUPIED;
+    }
+    public boolean hasBike(){
+        return this.bike!=null || this.status!=DockStatus.EMPTY;
     }
 }
