@@ -2,7 +2,7 @@ package com.acme.bms.domain.entity;
 
 import java.util.List;
 
-import com.acme.bms.domain.entity.Status.DockingStationStatus;
+import com.acme.bms.domain.entity.Status.StationStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -39,7 +39,7 @@ public class DockingStation {
     private int capacity;
 
     @Enumerated(EnumType.STRING)
-    private DockingStationStatus status;
+    private StationStatus status;
 
     private int expiresAfterMinutes;
 

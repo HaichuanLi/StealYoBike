@@ -5,7 +5,7 @@ import com.acme.bms.api.operator.ChangeStationStateResponse;
 import com.acme.bms.application.events.ChangeStationStatusEvent;
 import com.acme.bms.domain.entity.*;
 import com.acme.bms.domain.entity.Status.DockStatus;
-import com.acme.bms.domain.entity.Status.DockingStationStatus;
+import com.acme.bms.domain.entity.Status.StationStatus;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class UC6Test {
         // Mock station with 2 docks
         DockingStation station = new DockingStation();
         station.setId(10L);
-        station.setStatus(DockingStationStatus.FULL); // current operational state
+        station.setStatus(StationStatus.ACTIVE); // current operational state
         System.out.println("Initial station status: " + station.getStatus());
 
         Bike bike = mock(Bike.class);
@@ -63,7 +63,7 @@ class UC6Test {
         when(stationRepo.save(station)).thenReturn(station);
         System.out.println("Station has " + docks.size() + " docks before change.");
 
-        // Execute use case
+        // Execute usecase
         ChangeStationStateRequest request = new ChangeStationStateRequest(1L, 10L);
         System.out.println("Executing UC6: marking station OUT_OF_SERVICE...");
         ChangeStationStateResponse response = sut.execute(request);
@@ -75,8 +75,8 @@ class UC6Test {
         System.out.println("Verifying internal state updates...");
 
         assertThat(response.stationId()).isEqualTo(10L);
-        assertThat(response.status()).isEqualTo(DockingStationStatus.OUT_OF_SERVICE);
-        assertThat(station.getStatus()).isEqualTo(DockingStationStatus.OUT_OF_SERVICE);
+        assertThat(response.status()).isEqualTo(StationStatus.OUT_OF_SERVICE);
+        assertThat(station.getStatus()).isEqualTo(StationStatus.OUT_OF_SERVICE);
 
         // Docks should now be OUT_OF_SERVICE
         assertThat(dock1.getStatus()).isEqualTo(DockStatus.OUT_OF_SERVICE);

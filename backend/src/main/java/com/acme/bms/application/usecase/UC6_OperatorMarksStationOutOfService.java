@@ -12,7 +12,7 @@ import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.entity.Role;
 import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.entity.Status.DockStatus;
-import com.acme.bms.domain.entity.Status.DockingStationStatus;
+import com.acme.bms.domain.entity.Status.StationStatus;
 import com.acme.bms.domain.entity.Status.BikeStrategy.MaintenanceState;
 
 import jakarta.transaction.Transactional;
@@ -37,12 +37,12 @@ public class UC6_OperatorMarksStationOutOfService {
         DockingStation station = stationRepository.findById(request.stationId())
                 .orElseThrow(() -> new IllegalArgumentException("Docking station not found"));
 
-        if (station.getStatus() == DockingStationStatus.OUT_OF_SERVICE) {
+        if (station.getStatus() == StationStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Station is already out-of-service");
         }
 
         // Treat any other state (EMPTY, FULL, OCCUPIED) as operational
-        station.setStatus(DockingStationStatus.OUT_OF_SERVICE);
+        station.setStatus(StationStatus.OUT_OF_SERVICE);
         station.getDocks().forEach(dock -> {
             dock.setStatus(DockStatus.OUT_OF_SERVICE);
             if (dock.getBike() != null) {
