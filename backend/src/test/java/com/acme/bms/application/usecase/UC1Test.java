@@ -22,7 +22,7 @@ class UC1Test {
 
     @Test
     void execute_registersUser_encodesPassword_andPublishesEvent() {
-        // --- Mocks
+        //Mocks
         UserRepository userRepo = mock(UserRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
@@ -30,7 +30,7 @@ class UC1Test {
         UC1_RegisterUserUseCase sut =
                 new UC1_RegisterUserUseCase(userRepo, passwordEncoder, eventPublisher);
 
-        // --- Arrange
+        //Arrange
         RegisterRequest req = new RegisterRequest(
                 "Jane Doe",
                 "456 Oak St",
@@ -51,28 +51,28 @@ class UC1Test {
             return u;
         });
 
-        // --- Act
+        //Act
         RegisterResponse resp = sut.execute(req);
 
-        // --- Assert response
+        //Assert response
         assertThat(resp).isNotNull();
         assertThat(resp.id()).isEqualTo(1L);
         assertThat(resp.email()).isEqualTo("jane@example.com");
         assertThat(resp.username()).isEqualTo("janedoe");
         assertThat(resp.role()).isEqualTo(Role.RIDER.name());
 
-        // --- Verify password was encoded and saved user contains hash
+        //Verify password was encoded and saved user contains hash
         ArgumentCaptor<User> cap = ArgumentCaptor.forClass(User.class);
         verify(userRepo).save(cap.capture());
         User saved = cap.getValue();
         assertThat(saved.getPasswordHash()).isEqualTo("hashed123");
         assertThat(saved.getRole()).isEqualTo(Role.RIDER);
 
-        // --- Verify event published
+        //Verify event published
         verify(eventPublisher).publishEvent(isA(UserRegisteredEvent.class));
         verifyNoMoreInteractions(eventPublisher);
 
-        // --- Confirmation output
+        //Confirmation output
         System.out.println(" User registered successfully:");
         System.out.println("   ID: " + resp.id());
         System.out.println("   Email: " + resp.email());

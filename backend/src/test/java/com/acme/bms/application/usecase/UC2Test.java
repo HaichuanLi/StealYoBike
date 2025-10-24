@@ -22,7 +22,7 @@ class UC2Test {
 
     @Test
     void execute_logsInUser_generatesJwt_andPublishesEvent() {
-        // --- Mocks
+        //Mocks
         UserRepository userRepo = mock(UserRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);

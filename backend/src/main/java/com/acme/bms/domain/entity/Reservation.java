@@ -2,15 +2,7 @@ package com.acme.bms.domain.entity;
 
 import com.acme.bms.domain.entity.Status.ReservationStatus;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.Instant;
@@ -37,12 +29,16 @@ public class Reservation {
     private ReservationStatus status;
 
     private String pin;
-
     private Instant createdAt;
     private Instant expiresAt;
 
+    @Transient // not persisted
     private Thread timer;
 
+    // ✅ Required by JPA
+    protected Reservation() {}
+
+    // Custom constructor for app logic
     public Reservation(User rider, Bike bike) {
         this.rider = rider;
         this.bike = bike;
@@ -64,6 +60,7 @@ public class Reservation {
         }
     }
 
+    // inner timer class
     class ReservationTimer extends Thread {
         private final Reservation reservation;
 
@@ -86,5 +83,4 @@ public class Reservation {
             }
         }
     }
-
 }

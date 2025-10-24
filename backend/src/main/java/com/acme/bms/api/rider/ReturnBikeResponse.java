@@ -1,12 +1,13 @@
 package com.acme.bms.api.rider;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public record ReturnBikeResponse(
         Long tripId,
         Long bikeId,
         Long endStationId,
-        Instant endTime,
+        LocalDateTime endTime,
         int priceCents,
-        String status 
+        String status
 ) {}
+

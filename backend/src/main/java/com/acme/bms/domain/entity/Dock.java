@@ -2,17 +2,7 @@ package com.acme.bms.domain.entity;
 
 import com.acme.bms.domain.entity.Status.DockStatus;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,4 +33,12 @@ public class Dock {
 
     @OneToOne(mappedBy = "dock", cascade = CascadeType.ALL)
     private Bike bike;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "supported_type", nullable = true)
+    private BikeType supportedType;
+
+    public boolean accepts(BikeType type) {
+        return supportedType == null || supportedType == type;
+    }
 }
