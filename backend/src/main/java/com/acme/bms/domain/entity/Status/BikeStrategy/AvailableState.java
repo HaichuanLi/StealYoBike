@@ -24,7 +24,7 @@ public class AvailableState extends BikeState {
 
     @Override
     public boolean returnBike(Dock dock) {
-        System.out.println("Bike is already available.");
+        System.out.println("Bike successfully return");
         return false;
     }
 
