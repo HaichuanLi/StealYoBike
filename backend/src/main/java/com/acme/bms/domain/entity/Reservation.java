@@ -35,7 +35,7 @@ public class Reservation {
     @Transient // not persisted
     private Thread timer;
 
-    // ✅ Required by JPA
+    // Required by JPA
     protected Reservation() {}
 
     // Custom constructor for app logic
@@ -43,7 +43,8 @@ public class Reservation {
         this.rider = rider;
         this.bike = bike;
         this.pin = String.format("%04d", (int) (Math.random() * 10000));
-        if (!bike.getState().reserveBike()) {
+
+        if (!bike.reserveBike()) {
             throw new IllegalStateException("Bike cannot be reserved.");
         }
         this.status = ReservationStatus.ACTIVE;
@@ -51,6 +52,7 @@ public class Reservation {
         this.timer = new ReservationTimer(this);
         this.timer.start();
     }
+
 
     public void cancelReservation() {
         if (this.status == ReservationStatus.ACTIVE) {
