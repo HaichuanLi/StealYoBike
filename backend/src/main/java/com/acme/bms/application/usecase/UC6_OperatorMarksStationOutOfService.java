@@ -1,4 +1,5 @@
 package com.acme.bms.application.usecase;
+
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -40,20 +41,18 @@ public class UC6_OperatorMarksStationOutOfService {
             throw new IllegalStateException("Station is already out-of-service");
         }
 
-        station.setStatus(DockingStationStatus.OUT_OF_SERVICE); // set station to out of service
+        // Treat any other state (EMPTY, FULL, OCCUPIED) as operational
+        station.setStatus(DockingStationStatus.OUT_OF_SERVICE);
         station.getDocks().forEach(dock -> {
-            dock.setStatus(DockStatus.OUT_OF_SERVICE); // set all docks of the station to out of service
+            dock.setStatus(DockStatus.OUT_OF_SERVICE);
             if (dock.getBike() != null) {
-                dock.getBike().setState(new MaintenanceState(dock.getBike())); // set all bikes associated to the docks to maintenance
-            }}); 
+                dock.getBike().setState(new MaintenanceState(dock.getBike()));
+            }
+        });
 
         DockingStation savedStation = stationRepository.save(station);
-
         events.publishEvent(new ChangeStationStatusEvent(savedStation.getId(), savedStation.getStatus()));
-        
-        return new ChangeStationStateResponse(
-                savedStation.getId(),
-                savedStation.getStatus()
-        );
+
+        return new ChangeStationStateResponse(savedStation.getId(), savedStation.getStatus());
     }
 }
