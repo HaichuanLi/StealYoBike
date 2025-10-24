@@ -5,14 +5,14 @@ import org.springframework.stereotype.Service;
 import com.acme.bms.api.operator.ChangeStationStateResponse;
 import com.acme.bms.api.operator.ChangeStationStateRequest;
 import com.acme.bms.application.events.ChangeStationStatusEvent;
-import com.acme.bms.domain.entity.Station;
+import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.entity.Role;
 import com.acme.bms.domain.entity.User;
-import com.acme.bms.domain.entity.Status.BikeStatus;
 import com.acme.bms.domain.entity.Status.DockStatus;
-import com.acme.bms.domain.entity.Status.StationStatus;
+import com.acme.bms.domain.entity.Status.DockingStationStatus;
+import com.acme.bms.domain.entity.Status.BikeStrategy.MaintenanceState;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,21 +33,21 @@ public class UC6_OperatorMarksStationOutOfService {
         if (operator.getRole() != Role.OPERATOR)
             throw new IllegalArgumentException("User is not authorized to perform this action");
 
-        Station station = stationRepository.findById(request.stationId())
+        DockingStation station = stationRepository.findById(request.stationId())
                 .orElseThrow(() -> new IllegalArgumentException("Docking station not found"));
 
-        if (station.getStatus() == StationStatus.OUT_OF_SERVICE) {
+        if (station.getStatus() == DockingStationStatus.OUT_OF_SERVICE) {
             throw new IllegalStateException("Station is already out-of-service");
         }
 
-        station.setStatus(StationStatus.OUT_OF_SERVICE); // set station to out of service
+        station.setStatus(DockingStationStatus.OUT_OF_SERVICE); // set station to out of service
         station.getDocks().forEach(dock -> {
             dock.setStatus(DockStatus.OUT_OF_SERVICE); // set all docks of the station to out of service
             if (dock.getBike() != null) {
-                dock.getBike().setStatus(BikeStatus.MAINTENANCE); // set all bikes associated to the docks to maintenance
+                dock.getBike().setState(new MaintenanceState(dock.getBike())); // set all bikes associated to the docks to maintenance
             }}); 
 
-        Station savedStation = stationRepository.save(station);
+        DockingStation savedStation = stationRepository.save(station);
 
         events.publishEvent(new ChangeStationStatusEvent(savedStation.getId(), savedStation.getStatus()));
         

@@ -2,7 +2,7 @@ package com.acme.bms.domain.entity;
 
 import java.util.List;
 
-import com.acme.bms.domain.entity.Status.StationStatus;
+import com.acme.bms.domain.entity.Status.DockingStationStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Station {
+public class DockingStation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +39,7 @@ public class Station {
     private int capacity;
 
     @Enumerated(EnumType.STRING)
-    private StationStatus status;
+    private DockingStationStatus status;
 
     private int expiresAfterMinutes;
 

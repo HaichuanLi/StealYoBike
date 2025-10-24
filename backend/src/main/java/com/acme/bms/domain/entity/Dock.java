@@ -34,7 +34,7 @@ public class Dock {
 
     @ManyToOne
     @JoinColumn(name = "station_id")
-    private Station station;
+    private DockingStation station;
 
     @Enumerated(EnumType.STRING)
     private DockStatus status;
