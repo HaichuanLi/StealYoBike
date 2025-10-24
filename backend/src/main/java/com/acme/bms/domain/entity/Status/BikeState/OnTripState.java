@@ -1,4 +1,4 @@
-package com.acme.bms.domain.entity.Status.BikeStrategy;
+package com.acme.bms.domain.entity.Status.BikeState;
 
 import com.acme.bms.domain.entity.Bike;
 import com.acme.bms.domain.entity.Dock;

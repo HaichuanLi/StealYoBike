@@ -1,7 +1,7 @@
 package com.acme.bms.domain.entity;
 
-import com.acme.bms.domain.entity.Status.BikeStrategy.BikeState;
-import com.acme.bms.domain.entity.Status.BikeStrategy.AvailableState;
+import com.acme.bms.domain.entity.Status.BikeState.BikeState;
+import com.acme.bms.domain.entity.Status.BikeState.AvailableState;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

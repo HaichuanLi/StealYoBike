@@ -13,7 +13,7 @@ import com.acme.bms.domain.entity.Role;
 import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
-import com.acme.bms.domain.entity.Status.BikeStrategy.MaintenanceState;
+import com.acme.bms.domain.entity.Status.BikeState.MaintenanceState;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
