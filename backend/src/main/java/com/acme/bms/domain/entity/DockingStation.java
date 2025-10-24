@@ -2,6 +2,7 @@ package com.acme.bms.domain.entity;
 
 import java.util.List;
 
+import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
 
 import jakarta.persistence.CascadeType;
@@ -51,6 +52,25 @@ public class DockingStation {
             if (dock.getBike() != null && dock.getBike().getType().equals(type) &&
                     dock.getBike().getState().toString().equals("Available")) {
                 return dock.getBike();
+            }
+        }
+        return null;
+    }
+
+    public int getNumberOfAvailableBikes(BikeType bikeType) {
+        int count = 0;
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getState().toString().equals("Available") && dock.getBike().getType().equals(bikeType)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+     public Dock findEmptyDock() {
+        for (Dock dock : docks) {
+            if (dock.getStatus() == DockStatus.EMPTY) {
+                return dock;
             }
         }
         return null;
