@@ -1,9 +1,5 @@
-package com.acme.bms.api.operator;
+package com.acme.bms.api.rider;
 
-import com.acme.bms.api.rider.ReserveBikeRequest;
-import com.acme.bms.api.rider.ReserveBikeResponse;
-import com.acme.bms.api.rider.ReturnBikeRequest;
-import com.acme.bms.api.rider.ReturnBikeResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
