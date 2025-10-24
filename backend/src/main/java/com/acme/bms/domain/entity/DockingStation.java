@@ -47,20 +47,18 @@ public class DockingStation {
     private int expiresAfterMinutes;
 
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ArrayList<Dock> docks;
+    private List<Dock> docks;
 
-    public DockingStation(Long id, String name, String streetAddress, double latitude, double longitude, int capacity,
-            ArrayList<Dock> docks) {
-        this.id = id;
-        this.name = name;
-        this.streetAddress = streetAddress;
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.capacity = capacity;
-        this.docks = docks;
-        this.expiresAfterMinutes=5;
-        this.status=StationStatus.ACTIVE;
+    public Bike getFirstAvailableBike(BikeType type) {
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getType().equals(type) &&
+                    dock.getBike().getState().toString().equals("Available")) {
+                return dock.getBike();
+            }
+        }
+        return null;
     }
+
     public int getNumberOfAvailableBikes() {
         int count = 0;
         for (Dock dock : docks) {
@@ -69,78 +67,6 @@ public class DockingStation {
             }
         }
         return count;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStreetAddress() {
-        return streetAddress;
-    }
-
-    public void setStreetAddress(String streetAddress) {
-        this.streetAddress = streetAddress;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public void setCapacity(int capacity) {
-        this.capacity = capacity;
-    }
-
-    public StationStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(StationStatus status) {
-        this.status = status;
-    }
-
-    public int getExpiresAfterMinutes() {
-        return expiresAfterMinutes;
-    }
-
-    public void setExpiresAfterMinutes(int expiresAfterMinutes) {
-        this.expiresAfterMinutes = expiresAfterMinutes;
-    }
-
-    public List<Dock> getDocks() {
-        return docks;
-    }
-
-    public void setDocks(ArrayList<Dock> docks) {
-        this.docks =  docks;
     }
 
     public Bike findAvailableBike() {

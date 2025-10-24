@@ -20,11 +20,16 @@ import lombok.Setter;
         @UniqueConstraint(name = "uk_users_email", columnNames = "email"),
         @UniqueConstraint(name = "uk_users_username", columnNames = "username")
 })
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 120)
     private String fullName;
@@ -44,6 +49,7 @@ public class User {
     @Column(length = 255)
     private String paymentToken;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role = Role.RIDER;
