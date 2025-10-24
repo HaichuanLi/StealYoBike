@@ -42,11 +42,11 @@ public class Trip {
 
     @ManyToOne
     @JoinColumn(name = "start_station_id")
-    private DockingStation startStation;
+    private Station startStation;
 
     @ManyToOne
     @JoinColumn(name = "end_station_id")
-    private DockingStation endStation;
+    private Station endStation;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;

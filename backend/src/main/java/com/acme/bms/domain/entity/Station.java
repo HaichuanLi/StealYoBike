@@ -26,7 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DockingStation {
+public class Station {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
