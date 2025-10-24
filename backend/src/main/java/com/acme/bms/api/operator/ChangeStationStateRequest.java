@@ -5,5 +5,7 @@ import com.acme.bms.domain.entity.Status.StationStatus;
 import jakarta.validation.constraints.NotNull;
 
 public record ChangeStationStateRequest(
-        @NotNull StationStatus state
+    @NotNull Long operatorId,
+    @NotNull Long bikeId,
+    @NotNull StationStatus state
 ) {}
