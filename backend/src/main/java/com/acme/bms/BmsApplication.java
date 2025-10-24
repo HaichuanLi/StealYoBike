@@ -11,6 +11,8 @@ import com.acme.bms.domain.entity.BikeType;
 import com.acme.bms.domain.entity.Dock;
 import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.entity.Operator;
+import com.acme.bms.domain.entity.Reservation;
+import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.entity.Status.BikeState.AvailableState;
 import com.acme.bms.domain.entity.Status.DockStatus;
 
@@ -18,7 +20,7 @@ import com.acme.bms.domain.entity.Status.DockStatus;
 public class BmsApplication {
     public static void main(String[] args) {
         testMoveBikes();
-        
+        testMarkStationOutOfService();
         SpringApplication.run(BmsApplication.class, args);
     
     
@@ -37,8 +39,25 @@ public class BmsApplication {
             bike.changeState(new AvailableState(bike));
             dock.setBike(bike);
             bike.setDock(dock);
+            bike.getId();
         }
         Operator operator = new Operator();
         operator.rebalanceBikes(ds, ds2);   
+    }
+    public static void testMarkStationOutOfService(){
+        BmsCore bms = new BmsCore();
+        DockingStation ds = new DockingStation((long) 123123.0, "Main Station", "123 Main St", 12,1,10,new ArrayList<>());
+        for (int i = 0; i < 10; i++) {
+            ds.getDocks().add(new com.acme.bms.domain.entity.Dock(DockStatus.EMPTY));
+        }
+        for(Dock dock : ds.getDocks()){
+            com.acme.bms.domain.entity.Bike bike = new com.acme.bms.domain.entity.Bike(BikeType.ELECTRIC);
+            bike.changeState(new AvailableState(bike));
+            dock.setBike(bike);
+            bike.setDock(dock);
+        }
+        User user = new User();
+        Reservation r =  bms.reserveBike(ds, user, BikeType.ELECTRIC);
+        bms.checkoutBike(user, r, r.getPin());
     }
 }

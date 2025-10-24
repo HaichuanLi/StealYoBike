@@ -1,5 +1,7 @@
 package com.acme.bms.domain.entity;
 
+import com.acme.bms.domain.entity.Status.DockStatus;
+
 public class Operator extends User {
 
     public Operator() {
@@ -25,6 +27,12 @@ public class Operator extends User {
                 return false;
             }
 
+        }
+        return true;
+    }
+    public boolean markStationOutOfService(DockingStation station) {
+        for (Dock dock : station.getDocks()) {
+            dock.setStatus(DockStatus.OUT_OF_SERVICE);
         }
         return true;
     }
