@@ -24,6 +24,16 @@ public class ReservedState extends BikeState {
 
     @Override
     public boolean returnBike(Dock dock) {
+        if (dock.getBike().equals(bike)) {
+            bike.setState(new AvailableState(bike));
+            if (bike.getReservationExpiry().isAfter(java.time.Instant.now())) {
+                System.out.println("Bike reservation expired. Bike is now available.");
+            } else {
+                System.out.println("Bike reservation cancelled and is now available.");
+            }
+            bike.setReservationExpiry(null);
+            return true;
+        }
         System.out.println("Bike is reserved and cannot be returned.");
         return false;
     }

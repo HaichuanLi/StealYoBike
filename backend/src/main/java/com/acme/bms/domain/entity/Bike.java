@@ -38,5 +38,5 @@ public class Bike {
     @JoinColumn(name = "dock_id")
     private Dock dock; // null when undocked or on trip
 
-    private java.time.LocalDateTime reservationExpiry;
+    private java.time.Instant reservationExpiry;
 }

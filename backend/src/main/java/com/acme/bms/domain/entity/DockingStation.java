@@ -45,4 +45,14 @@ public class DockingStation {
 
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dock> docks;
+
+    public Bike getFirstAvailableBike(BikeType type) {
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getType().equals(type) &&
+                    dock.getBike().getState().toString().equals("Available")) {
+                return dock.getBike();
+            }
+        }
+        return null;
+    }
 }

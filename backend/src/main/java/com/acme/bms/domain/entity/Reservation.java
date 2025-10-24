@@ -1,7 +1,5 @@
 package com.acme.bms.domain.entity;
 
-import java.time.LocalDateTime;
-
 import com.acme.bms.domain.entity.Status.ReservationStatus;
 
 import jakarta.persistence.Entity;
@@ -15,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import java.time.Instant;
 
 @Entity
 @Table(name = "reservations")
@@ -39,8 +38,10 @@ public class Reservation {
 
     private String pin;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime expiresAt;
+    private Instant createdAt;
+    private Instant expiresAt;
+
+    private Thread timer;
 
     public Reservation(User rider, Bike bike) {
         this.rider = rider;
@@ -50,9 +51,40 @@ public class Reservation {
             throw new IllegalStateException("Bike cannot be reserved.");
         }
         this.status = ReservationStatus.ACTIVE;
-        this.createdAt = LocalDateTime.now();
-        this.expiresAt = createdAt.plusMinutes(5);
-        bike.setReservationExpiry(createdAt);
+        this.createdAt = Instant.now();
+        this.timer = new ReservationTimer(this);
+        this.timer.start();
+    }
+
+    public void cancelReservation() {
+        if (this.status == ReservationStatus.ACTIVE) {
+            this.status = ReservationStatus.CANCELLED;
+            this.bike.getState().returnBike(this.bike.getDock());
+            this.timer.interrupt();
+        }
+    }
+
+    class ReservationTimer extends Thread {
+        private final Reservation reservation;
+
+        public ReservationTimer(Reservation reservation) {
+            this.reservation = reservation;
+        }
+
+        @Override
+        public void run() {
+            reservation.expiresAt = reservation.createdAt.plus(java.time.Duration.ofMinutes(5));
+            reservation.bike.setReservationExpiry(reservation.expiresAt);
+            try {
+                Thread.sleep(5 * 60 * 1000); // 5 minutes
+                if (reservation.getStatus() == ReservationStatus.ACTIVE) {
+                    reservation.setStatus(ReservationStatus.EXPIRED);
+                    reservation.bike.getState().returnBike(reservation.bike.getDock());
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
 }
