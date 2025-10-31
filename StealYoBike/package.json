@@ -42,5 +42,8 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^3.2.3",
 		"vitest-browser-svelte": "^0.1.0"
+	},
+	"dependencies": {
+		"axios": "^1.13.1"
 	}
 }
