@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { userApi, type AuthResponse } from '$lib/api';
+	import { authApi } from '$lib/api/index';
 	import BadgeLink from '$lib/components/BadgeLink/BadgeLink.svelte';
 	import type { AxiosError } from 'axios';
 
@@ -11,19 +11,17 @@
 		event.preventDefault();
 		const form = event.target as HTMLFormElement;
 		const formData = new FormData(form);
-		const username = formData.get('username') as string;
+		const usernameOrEmail = formData.get('usernameOrEmail') as string;
 		const password = formData.get('password') as string;
 
 		isLoading = true;
 		errorMessage = '';
 
 		try {
-			const response = await userApi.login({ username, password });
-			const data: AuthResponse = response.data;
+			const response = await authApi.login({ usernameOrEmail, password });
 
-			// Store token if using JWT
-			if (data.token) {
-				localStorage.setItem('authToken', data.token);
+			if (response.data.token) {
+				localStorage.setItem('authToken', response.data.token);
 			}
 
 			// Redirect on success
@@ -32,7 +30,7 @@
 			const axiosError = error as AxiosError<{ message: string }>;
 
 			if (axiosError.response) {
-				errorMessage = axiosError.response.data.message || 'Invalid username or password';
+				errorMessage = axiosError.response.data.message || 'Invalid usernameOrEmail or password';
 			} else {
 				errorMessage = 'Network error. Please try again.';
 			}
@@ -56,13 +54,14 @@
 		{/if}
 
 		<div class="mb-4">
-			<label class="mb-2 block font-bold text-gray-700" for="username">Username</label>
+			<label class="mb-2 block font-bold text-gray-700" for="usernameOrEmail">usernameOrEmail</label
+			>
 			<input
 				class="w-full rounded border border-gray-300 px-3 py-2 focus:border-teal-300 focus:outline-none"
-				id="username"
-				name="username"
+				id="usernameOrEmail"
+				name="usernameOrEmail"
 				type="text"
-				placeholder="Enter your username"
+				placeholder="Enter your username or email"
 				required
 			/>
 		</div>

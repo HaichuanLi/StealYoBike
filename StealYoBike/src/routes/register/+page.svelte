@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { userApi } from '$lib/api';
+	import { authApi } from '$lib/api/index';
 	import BadgeLink from '$lib/components/BadgeLink/BadgeLink.svelte';
 
 	let errorMessage = '';
@@ -22,7 +22,7 @@
 		errorMessage = '';
 
 		try {
-			await userApi.register({ fullName, address, email, username, password, paymentToken });
+			await authApi.register({ fullName, address, email, username, password, paymentToken });
 			// Redirect on success
 			goto('/login');
 		} catch (error) {
