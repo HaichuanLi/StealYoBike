@@ -1,31 +1,66 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { stationApi } from '$lib/api/station.api';
+	import type { StationSummary } from '$lib/api/types/station.types';
+	import type { AxiosResponse } from 'axios';
+	import type { Icon, LayerGroup, Map, Marker } from 'leaflet';
 	import { onDestroy, onMount } from 'svelte';
 
-	const props = $props<{ locations?: [number, number][] }>();
+	interface Props {
+		locations?: [number, number][];
+	}
 
-	let locations: [number, number][] = props.locations ?? [
-		[45.4972159, -73.6103642],
-		[45.49621504158091, -73.57718419193809]
-	];
+	let { locations: initialLocations = [] }: Props = $props();
 
-	let map: any;
-	let mapElement: HTMLDivElement;
-	let L: any;
-	let markerLayers: any;
-	let icon: any;
-	let mapInitialized = false;
+	let locations = $state<[number, number][]>(initialLocations);
+	let mapElement = $state<HTMLDivElement>();
+
+	let map: Map | undefined = $state();
+	let markerLayers: LayerGroup | undefined;
+	let icon: Icon | undefined;
+	let mapInitialized = $state(false);
+	let leafletLoaded = false;
+
+	$effect(() => {
+		if (initialLocations && initialLocations.length > 0) {
+			locations = initialLocations;
+		}
+	});
+
+	$effect(() => {
+		if (mapInitialized && locations) {
+			updateMarkers();
+
+			// Fit map to show all markers
+			if (locations.length > 0 && map) {
+				const L = window.L;
+				const bounds = L.latLngBounds(locations);
+				map.fitBounds(bounds, { padding: [50, 50] });
+			}
+		}
+	});
+
+	async function waitForLeaflet(): Promise<typeof window.L> {
+		// Wait for Leaflet to be available (max 5 seconds)
+		let attempts = 0;
+		while (!window.L && attempts < 50) {
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			attempts++;
+		}
+
+		if (!window.L) {
+			throw new Error('Leaflet failed to load');
+		}
+
+		return window.L;
+	}
 
 	async function initializeMap() {
 		if (!browser || !mapElement || mapInitialized) return;
 
 		try {
-			if (!window.L) {
-				console.log('Waiting for Leaflet to load...');
-				return;
-			}
-
-			L = window.L;
+			const L = await waitForLeaflet();
+			leafletLoaded = true;
 
 			// Create the map centered on the first location or a default
 			const centerLocation = locations[0] || [45.4972159, -73.6103642];
@@ -64,12 +99,13 @@
 		}
 	}
 
-	function createMarker(loc: [number, number]) {
-		if (!L || !icon) return null;
+	function createMarker(loc: [number, number]): Marker | null {
+		if (!leafletLoaded || !icon) return null;
 
+		const L = window.L;
 		const [lat, lng] = loc;
 		const marker = L.marker([lat, lng], { icon: icon }).bindPopup(
-			`<strong>Location:</strong><br/>Latitude: ${lat}<br/>Longitude: ${lng}`
+			`<strong>Location:</strong><br/>Latitude: ${lat.toFixed(6)}<br/>Longitude: ${lng.toFixed(6)}`
 		);
 		return marker;
 	}
@@ -77,11 +113,13 @@
 	function updateMarkers() {
 		if (!map || !markerLayers || !mapInitialized) return;
 
+		// Clear existing markers
 		markerLayers.clearLayers();
 
+		// Add new markers
 		locations.forEach((loc) => {
 			const marker = createMarker(loc);
-			if (marker) {
+			if (marker && markerLayers) {
 				markerLayers.addLayer(marker);
 			}
 		});
@@ -89,21 +127,36 @@
 
 	function resizeMap() {
 		if (map && mapInitialized) {
-			setTimeout(() => {
-				map.invalidateSize();
-			}, 100);
+			requestAnimationFrame(() => {
+				map?.invalidateSize();
+			});
 		}
 	}
 
-	$effect(() => {
-		updateMarkers();
-	});
+	async function loadStations() {
+		try {
+			const response: AxiosResponse<any> = await stationApi.getAllStations();
+			const payload = response.data;
+			let stationArray: StationSummary[] = [];
+			stationArray = (payload as any).stations;
 
-	onMount(() => {
-		if (browser) {
-			if (window.L) {
-				initializeMap();
+			if (stationArray.length > 0) {
+				locations = stationArray.map((station) => [station.latitude, station.longitude]);
+			} else {
+				locations = [];
 			}
+		} catch (error) {
+			console.error('Failed to load stations:', error);
+		}
+	}
+
+	onMount(async () => {
+		if (browser) {
+			// Load stations data
+			await loadStations();
+
+			// Initialize map after data is loaded
+			await initializeMap();
 		}
 	});
 
@@ -112,6 +165,7 @@
 			try {
 				markerLayers?.clearLayers();
 				map.remove();
+				map = undefined;
 				mapInitialized = false;
 			} catch (error) {
 				console.error('Error cleaning up map:', error);
@@ -133,11 +187,16 @@
 		src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
 		integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
 		crossorigin=""
-		onload={initializeMap}
 	></script>
 </svelte:head>
 
 <div class="map-container">
+	{#if !mapInitialized}
+		<div class="loading-overlay">
+			<div class="loading-spinner"></div>
+			<p>Loading map...</p>
+		</div>
+	{/if}
 	<div class="map" bind:this={mapElement}></div>
 </div>
 
@@ -153,6 +212,45 @@
 		height: 100%;
 		border-radius: 0.5rem;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.loading-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.95);
+		z-index: 1000;
+		border-radius: 0.5rem;
+	}
+
+	.loading-spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid #f3f3f3;
+		border-top: 4px solid #3498db;
+		border-radius: 50%;
+		animation: spin 0.15s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	.loading-overlay p {
+		margin-top: 1rem;
+		color: #666;
+		font-size: 14px;
 	}
 
 	/* Custom popup styles */
