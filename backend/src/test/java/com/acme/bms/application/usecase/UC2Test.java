@@ -1,7 +1,6 @@
 package com.acme.bms.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Optional;
@@ -22,7 +21,7 @@ class UC2Test {
 
     @Test
     void execute_logsInUser_generatesJwt_andPublishesEvent() {
-        //Mocks
+        // Mocks
         UserRepository userRepo = mock(UserRepository.class);
         PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);

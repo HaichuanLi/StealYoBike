@@ -1,21 +1,24 @@
 spring:
   application:
     name: bms
-  
+
   # H2 Database Configuration
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:file:./data/bms_db;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password: ${H2_PASSWORD:s3cur3P4ssw0rd!}
-  
+
   # JPA/Hibernate Configuration
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-  
+    properties:
+      hibernate:
+        format_sql: true
+
   # H2 Console (for development)
   h2:
     console:
@@ -37,3 +40,5 @@ logging:
   level:
     com.acme.bms: DEBUG
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

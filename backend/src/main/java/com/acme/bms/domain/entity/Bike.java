@@ -5,6 +5,7 @@ import com.acme.bms.domain.entity.Status.BikeState.AvailableState;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import java.time.Instant;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Bike {
 
     @Id
@@ -36,9 +38,12 @@ public class Bike {
 
     private Instant reservationExpiry;
 
-    @PostLoad @PostPersist @PostUpdate
+    @PostLoad
+    @PostPersist
+    @PostUpdate
     private void ensureState() {
-        if (state == null) state = new AvailableState(this);
+        if (state == null)
+            state = new AvailableState(this);
     }
 
     public boolean reserveBike() {
@@ -56,4 +61,3 @@ public class Bike {
         return state.returnBike(dock);
     }
 }
-
