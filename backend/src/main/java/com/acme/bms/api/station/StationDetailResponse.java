@@ -41,7 +41,7 @@ public record StationDetailResponse(
                                                 dock.getBike() != null ? new BikeView(
                                                                 dock.getBike().getId(),
                                                                 dock.getBike().getType().name(),
-                                                                dock.getStatus().name(),
+                                                                dock.getBike().getState().toString(),
                                                                 dock.getBike().getReservationExpiry() != null
                                                                                 ? dock.getBike().getReservationExpiry()
                                                                                                 .toString()
