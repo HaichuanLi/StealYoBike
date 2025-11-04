@@ -29,6 +29,12 @@ public class AvailableState extends BikeState {
     }
 
     @Override
+    public boolean sendToMaintenance() {
+    bike.setState(new MaintenanceState(bike));
+    return true;
+    }
+
+    @Override
     public String toString() {
         return "Available";
     }

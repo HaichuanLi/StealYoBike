@@ -60,4 +60,10 @@ public class Bike {
         ensureState();
         return state.returnBike(dock);
     }
+
+    public boolean sendToMaintenance() {
+        ensureState();
+        return state.sendToMaintenance();
+    }
+
 }

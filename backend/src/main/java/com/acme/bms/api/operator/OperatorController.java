@@ -2,6 +2,7 @@ package com.acme.bms.api.operator;
 
 import com.acme.bms.application.usecase.UC5_RebalanceBikesUseCase;
 import com.acme.bms.application.usecase.UC6_OperatorMarksStationOutOfService;
+import com.acme.bms.application.usecase.UC7_OperatorSendBikeToMaintenance;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ public class OperatorController {
 
     private final UC5_RebalanceBikesUseCase uc5;
     private final UC6_OperatorMarksStationOutOfService uc6;
+    private final UC7_OperatorSendBikeToMaintenance uc7;
 
     @PostMapping("/rebalance")
     public ResponseEntity<RebalanceResponse> rebalance(@Valid @RequestBody RebalanceRequest request) {
@@ -25,4 +27,9 @@ public class OperatorController {
     public ResponseEntity<ChangeStationStateResponse> markOutOfService(@Valid @RequestBody ChangeStationStateRequest request) {
         return ResponseEntity.ok(uc6.execute(request));
     }
+
+    @PostMapping("/bikes/maintenance")
+    public ResponseEntity<OperatorSendBikeToMaintenanceResponse> sendBikeToMaintenance(@Valid @RequestBody OperatorSendBikeToMaintenanceRequest request) {
+    return ResponseEntity.ok(uc7.execute(request));
+}
 }
