@@ -4,15 +4,10 @@
 	import type { StationSummary } from '$lib/api/types/station.types';
 	import type { AxiosResponse } from 'axios';
 	import type { Icon, LayerGroup, Map, Marker } from 'leaflet';
-	import { onDestroy, onMount } from 'svelte';
+	import { mount, onDestroy, onMount } from 'svelte';
+	import StationPopup from '../StationPopup/StationPopup.svelte';
 
-	interface Props {
-		locations?: [number, number][];
-	}
-
-	let { locations: initialLocations = [] }: Props = $props();
-
-	let locations = $state<[number, number][]>(initialLocations);
+	let stationSummaries = $state<StationSummary[]>([]);
 	let mapElement = $state<HTMLDivElement>();
 
 	let map: Map | undefined = $state();
@@ -22,19 +17,13 @@
 	let leafletLoaded = false;
 
 	$effect(() => {
-		if (initialLocations && initialLocations.length > 0) {
-			locations = initialLocations;
-		}
-	});
-
-	$effect(() => {
-		if (mapInitialized && locations) {
+		if (mapInitialized && stationSummaries) {
 			updateMarkers();
 
 			// Fit map to show all markers
-			if (locations.length > 0 && map) {
+			if (stationSummaries.length > 0 && map) {
 				const L = window.L;
-				const bounds = L.latLngBounds(locations);
+				const bounds = L.latLngBounds(stationSummaries.map((loc) => [loc.latitude, loc.longitude]));
 				map.fitBounds(bounds, { padding: [50, 50] });
 			}
 		}
@@ -63,7 +52,10 @@
 			leafletLoaded = true;
 
 			// Create the map centered on the first location or a default
-			const centerLocation = locations[0] || [45.4972159, -73.6103642];
+			const centerLocation: [number, number] =
+				stationSummaries && stationSummaries.length > 0
+					? [stationSummaries[0].latitude, stationSummaries[0].longitude]
+					: [45.4972159, -73.6103642];
 			map = L.map(mapElement, { preferCanvas: true }).setView(centerLocation, 13);
 
 			// Add tile layer
@@ -90,8 +82,8 @@
 			updateMarkers();
 
 			// Fit map to show all markers
-			if (locations.length > 0) {
-				const bounds = L.latLngBounds(locations);
+			if (stationSummaries.length > 0) {
+				const bounds = L.latLngBounds(stationSummaries.map((loc) => [loc.latitude, loc.longitude]));
 				map.fitBounds(bounds, { padding: [50, 50] });
 			}
 		} catch (error) {
@@ -115,11 +107,19 @@
 
 		// Clear existing markers
 		markerLayers.clearLayers();
-
 		// Add new markers
-		locations.forEach((loc) => {
-			const marker = createMarker(loc);
+		stationSummaries.forEach((loc) => {
+			const marker = createMarker([loc.latitude, loc.longitude]);
 			if (marker && markerLayers) {
+				const popupContainer = document.createElement('div');
+				popupContainer.className = '';
+				mount(StationPopup, {
+					target: popupContainer,
+					props: {
+						station: loc
+					}
+				});
+				marker.bindPopup(popupContainer);
 				markerLayers.addLayer(marker);
 			}
 		});
@@ -141,9 +141,9 @@
 			stationArray = (payload as any).stations;
 
 			if (stationArray.length > 0) {
-				locations = stationArray.map((station) => [station.latitude, station.longitude]);
+				stationSummaries = stationArray;
 			} else {
-				locations = [];
+				stationSummaries = [];
 			}
 		} catch (error) {
 			console.error('Failed to load stations:', error);
