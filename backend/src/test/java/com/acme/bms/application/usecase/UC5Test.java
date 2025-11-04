@@ -3,7 +3,6 @@ package com.acme.bms.application.usecase;
 import com.acme.bms.api.operator.RebalanceRequest;
 import com.acme.bms.api.operator.RebalanceResponse;
 import com.acme.bms.domain.entity.*;
-import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
 

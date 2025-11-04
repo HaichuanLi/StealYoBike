@@ -26,5 +26,7 @@ export interface StationSummary {
 	latitude: number;
 	longitude: number;
 	streetAddress: string;
+	availableBikes: number;
+	availableDocks: number;
 	capacity: number;
 }
