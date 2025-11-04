@@ -10,12 +10,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-// UC4-related (optional; include if you created these)
-
-
 @RestControllerAdvice
 public class ApiErrors {
 
+    // ---------- Validation ----------
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> validation(MethodArgumentNotValidException ex) {
         var errors = ex.getBindingResult().getFieldErrors().stream()
@@ -27,12 +25,7 @@ public class ApiErrors {
                 Map.of("errors", errors));
     }
 
-    @ExceptionHandler({ EmailAlreadyUsedException.class, UsernameAlreadyUsedException.class })
-    public ResponseEntity<Map<String, Object>> conflict(RuntimeException ex) {
-        return problem(409, "Conflict", ex.getMessage(),
-                "https://api.bms/errors/conflict", Map.of());
-    }
-
+    //Auth/Id
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, Object>> unauthorized(InvalidCredentialsException ex) {
         return problem(401, "Unauthorized", ex.getMessage(),
@@ -45,6 +38,26 @@ public class ApiErrors {
                 "https://api.bms/errors/unauthorized", Map.of());
     }
 
+    @ExceptionHandler(OperatorNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> operatorNotFound(OperatorNotFoundException ex) {
+        return problem(404, "Not found", ex.getMessage(),
+                "https://api.bms/errors/not-found", Map.of());
+    }
+
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<Map<String, Object>> forbidden(ForbiddenOperationException ex) {
+        return problem(403, "Forbidden", ex.getMessage(),
+                "https://api.bms/errors/forbidden", Map.of());
+    }
+
+    //Registration conflicts
+    @ExceptionHandler({ EmailAlreadyUsedException.class, UsernameAlreadyUsedException.class })
+    public ResponseEntity<Map<String, Object>> conflict(RuntimeException ex) {
+        return problem(409, "Conflict", ex.getMessage(),
+                "https://api.bms/errors/conflict", Map.of());
+    }
+
+    //Station / Trip / Docks
     @ExceptionHandler(StationNotFoundException.class)
     public ResponseEntity<Map<String, Object>> stationNotFound(StationNotFoundException ex) {
         return problem(404, "Not found", ex.getMessage(),
@@ -55,6 +68,12 @@ public class ApiErrors {
     public ResponseEntity<Map<String, Object>> tripNotFound(TripNotFoundException ex) {
         return problem(404, "Not found", ex.getMessage(),
                 "https://api.bms/errors/not-found", Map.of());
+    }
+
+    @ExceptionHandler(StationAlreadyOutOfServiceException.class)
+    public ResponseEntity<Map<String, Object>> alreadyOos(StationAlreadyOutOfServiceException ex) {
+        return problem(409, "Conflict", ex.getMessage(),
+                "https://api.bms/errors/conflict", Map.of());
     }
 
     @ExceptionHandler(NoAvailableBikesException.class)
@@ -81,27 +100,25 @@ public class ApiErrors {
                 "https://api.bms/errors/conflict", Map.of());
     }
 
+    //UC7
+    @ExceptionHandler(BikeNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> bikeNotFound(BikeNotFoundException ex) {
+        return problem(404, "Not found", ex.getMessage(),
+                "https://api.bms/errors/not-found", Map.of());
+    }
+
+    @ExceptionHandler(BikeMaintenanceStateException.class)
+    public ResponseEntity<Map<String, Object>> bikeStateInvalid(BikeMaintenanceStateException ex) {
+        return problem(422, "Unprocessable Entity", ex.getMessage(),
+                "https://api.bms/errors/unprocessable", Map.of());
+    }
+
+    //Catch-all
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> fallback(Exception ex) {
-        // Avoid leaking stack traces to clients; log server-side instead
         return problem(500, "Internal Server Error",
                 "Something went wrong. If the issue persists, contact support.",
                 "https://api.bms/errors/internal", Map.of());
-    }
-
-    @ExceptionHandler(OperatorNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> operatorNotFound(OperatorNotFoundException ex) {
-        return problem(404, "Not found", ex.getMessage(), "https://api.bms/errors/not-found", Map.of());
-    }
-
-    @ExceptionHandler(ForbiddenOperationException.class)
-    public ResponseEntity<Map<String, Object>> forbidden(ForbiddenOperationException ex) {
-        return problem(403, "Forbidden", ex.getMessage(), "https://api.bms/errors/forbidden", Map.of());
-    }
-
-    @ExceptionHandler(StationAlreadyOutOfServiceException.class)
-    public ResponseEntity<Map<String, Object>> alreadyOos(StationAlreadyOutOfServiceException ex) {
-        return problem(409, "Conflict", ex.getMessage(), "https://api.bms/errors/conflict", Map.of());
     }
 
     //Helper
