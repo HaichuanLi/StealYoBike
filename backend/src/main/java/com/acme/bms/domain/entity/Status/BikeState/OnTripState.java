@@ -52,6 +52,12 @@ public class OnTripState extends BikeState {
         return true;
     }
 
+    @Override
+    public boolean sendToMaintenance() {
+    System.out.println("Cannot send bike to maintenance while on trip");
+    return false;
+    }
+
 
     @Override
     public String toString() {

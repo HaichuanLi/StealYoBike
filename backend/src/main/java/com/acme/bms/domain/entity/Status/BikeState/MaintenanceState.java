@@ -30,6 +30,13 @@ public class MaintenanceState extends BikeState {
     }
 
     @Override
+    public boolean sendToMaintenance() {
+    System.out.println("Bike is already in maintenance.");
+    return false; 
+    }   
+
+
+    @Override
     public String toString() {
         return "Maintenance";
     }
