@@ -25,7 +25,9 @@
 			}
 
 			// Redirect on success
-			goto('/dashboard');
+			if (response.data.role == 'OPERATOR') {
+				goto('/OP-dashboard');
+			} else goto('/dashboard');
 		} catch (error) {
 			const axiosError = error as AxiosError<{ message: string }>;
 

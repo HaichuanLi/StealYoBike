@@ -8,13 +8,13 @@ export interface StationDetailResponse {
 	capacity: number;
 	expiresAfterMinutes: number;
 	docks: {
-		id: number;
+		dockId: number;
 		status: 'EMPTY' | 'OCCUPIED' | 'OUT_OF_SERVICE';
 		bike: {
-			id: number;
+			bikeId: number;
 			type: 'REGULAR' | 'ELECTRIC';
 			status: 'Available' | 'Maintenance' | 'On Trip' | 'Reserved';
-			reservationExpirationTime: string | null;
+			reservationExpiration: string | null;
 		} | null;
 	}[];
 }
