@@ -3,7 +3,7 @@
 	let showSidebar = $state(false);
 </script>
 
-<button class="absolute top-5 left-5" onclick={() => (showSidebar = true)} aria-label="Toggle Menu">
+<button class="absolute left-5 top-5" onclick={() => (showSidebar = true)} aria-label="Toggle Menu">
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
 		class="h-16 w-16 stroke-[1.5] transition-all duration-300 hover:stroke-2 active:stroke-1"
