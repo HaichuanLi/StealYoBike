@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.acme.bms.api.auth.RegisterRequest;
 import com.acme.bms.api.auth.RegisterResponse;
 import com.acme.bms.application.events.UserRegisteredEvent;
+import com.acme.bms.application.exception.EmailAlreadyUsedException;
+import com.acme.bms.application.exception.UsernameAlreadyUsedException;
 import com.acme.bms.domain.entity.Role;
 import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.repo.UserRepository;
@@ -24,8 +26,8 @@ public class UC1_RegisterUserUseCase {
 
     @Transactional
     public RegisterResponse execute(RegisterRequest req) {
-        if (users.existsByEmail(req.email())) throw new IllegalArgumentException("Email already in use");
-        if (users.existsByUsername(req.username())) throw new IllegalArgumentException("Username already in use");
+        if (users.existsByEmail(req.email())) throw new EmailAlreadyUsedException();
+        if (users.existsByUsername(req.username())) throw new UsernameAlreadyUsedException();
 
         User saved = users.save(User.builder()
                 .fullName(req.fullName())
