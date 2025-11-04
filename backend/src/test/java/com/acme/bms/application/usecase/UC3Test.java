@@ -1,56 +1,131 @@
 package com.acme.bms.application.usecase;
 
-import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 
 import com.acme.bms.api.rider.ReserveBikeRequest;
 import com.acme.bms.api.rider.ReserveBikeResponse;
 import com.acme.bms.application.events.BikeReservedEvent;
-import com.acme.bms.domain.entity.*;
-import com.acme.bms.domain.repo.*;
+import com.acme.bms.application.exception.NoAvailableBikesException;
+import com.acme.bms.domain.entity.Bike;
+import com.acme.bms.domain.entity.BikeType;
+import com.acme.bms.domain.entity.DockingStation;
+import com.acme.bms.domain.entity.Reservation;
+import com.acme.bms.domain.entity.User;
+import com.acme.bms.domain.repo.ReservationRepository;
+import com.acme.bms.domain.repo.StationRepository;
+import com.acme.bms.domain.repo.UserRepository;
 
 class UC3Test {
 
     @Test
     void execute_createsReservation_andPublishesEvent() {
+        System.out.println("\n=== UC3: Happy path — reserve bike ===");
+        System.out.println("[Before] Setting up mocks...");
+
+        // Mocks
         ReservationRepository reservationRepo = mock(ReservationRepository.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
         StationRepository stationRepo = mock(StationRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
 
         UC3_ReserveCheckoutUseCase sut =
-                new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo);
+                new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo, userRepo);
 
-        User user = new User(); user.setId(1L);
-        when(userRepo.findById(1L)).thenReturn(Optional.of(user));
+        String currentUsername = "victor";
+        ReserveBikeRequest req = new ReserveBikeRequest(100L, BikeType.ELECTRIC);
 
+        // Mock user
+        User rider = new User();
+        rider.setId(1L);
+        when(userRepo.findByUsername(currentUsername)).thenReturn(Optional.of(rider));
+
+        // Mock station + bike
         DockingStation station = mock(DockingStation.class);
         when(stationRepo.findById(100L)).thenReturn(Optional.of(station));
         when(station.getId()).thenReturn(100L);
-        Bike bike = new Bike(); bike.setId(42L);
+
+        Bike bike = new Bike();
+        bike.setId(42L);
         when(station.getFirstAvailableBike(BikeType.ELECTRIC)).thenReturn(bike);
 
+        // Mock save reservation
         when(reservationRepo.save(any(Reservation.class))).thenAnswer(inv -> {
             Reservation r = inv.getArgument(0);
             r.setId(999L);
             r.setPin("1234");
-            r.setExpiresAt(java.time.Instant.now().plus(15, java.time.temporal.ChronoUnit.MINUTES));
+            r.setExpiresAt(Instant.now().plus(15, ChronoUnit.MINUTES));
             return r;
         });
 
-        ReserveBikeResponse resp = sut.execute(new ReserveBikeRequest(100L, BikeType.ELECTRIC));
+        System.out.println("[Action] Executing UC3 for user '" + currentUsername + "'");
+        ReserveBikeResponse resp = sut.execute(req, currentUsername);
 
+        System.out.println("[After] Verifying results...");
         assertThat(resp.reservationId()).isEqualTo(999L);
         assertThat(resp.bikeId()).isEqualTo(42L);
         assertThat(resp.stationId()).isEqualTo(100L);
         assertThat(resp.pin()).isEqualTo("1234");
+        assertThat(resp.expiresAt()).isNotNull();
 
-        verify(reservationRepo).save(any(Reservation.class));
+        // Capture reservation to check content
+        ArgumentCaptor<Reservation> cap = ArgumentCaptor.forClass(Reservation.class);
+        verify(reservationRepo).save(cap.capture());
+        Reservation saved = cap.getValue();
+        assertThat(saved.getBike().getId()).isEqualTo(42L);
+        assertThat(saved.getRider().getId()).isEqualTo(1L); // ✅ fixed (was getUser)
+
         verify(publisher).publishEvent(isA(BikeReservedEvent.class));
+
+        System.out.println("[Success] Reserved successfully: reservationId=" + resp.reservationId()
+                + ", bikeId=" + resp.bikeId()
+                + ", stationId=" + resp.stationId()
+                + ", pin=" + resp.pin());
+    }
+
+    @Test
+    void execute_throwsWhenNoAvailableBikes() {
+        System.out.println("\n=== UC3: Error path — no available bikes ===");
+        System.out.println("[Before] Setting up mocks...");
+
+        ReservationRepository reservationRepo = mock(ReservationRepository.class);
+        ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+        StationRepository stationRepo = mock(StationRepository.class);
+        UserRepository userRepo = mock(UserRepository.class);
+
+        UC3_ReserveCheckoutUseCase sut =
+                new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo, userRepo);
+
+        String currentUsername = "victor";
+        ReserveBikeRequest req = new ReserveBikeRequest(200L, BikeType.REGULAR); // ✅ changed from MECHANICAL
+
+        User rider = new User();
+        rider.setId(10L);
+        when(userRepo.findByUsername(currentUsername)).thenReturn(Optional.of(rider));
+
+        DockingStation station = mock(DockingStation.class);
+        when(stationRepo.findById(200L)).thenReturn(Optional.of(station));
+        when(station.getFirstAvailableBike(BikeType.REGULAR)).thenReturn(null);
+
+        System.out.println("[Action] Executing UC3 expecting NoAvailableBikesException...");
+        NoAvailableBikesException ex = assertThrows(
+                NoAvailableBikesException.class,
+                () -> sut.execute(req, currentUsername));
+
+        System.out.println("[After] Exception caught successfully:");
+        System.out.println("   Message: " + ex.getMessage());
+
+        verifyNoInteractions(reservationRepo);
+        verify(publisher, never()).publishEvent(any());
     }
 }

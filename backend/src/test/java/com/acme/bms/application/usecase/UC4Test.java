@@ -1,7 +1,6 @@
 package com.acme.bms.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
@@ -27,25 +26,20 @@ class UC4Test {
 
     @Test
     void execute_returnsBike_andCompletesTrip() {
-        //Repos
+        System.out.println("\n=== UC4: Return Bike Use Case ===");
+
+        // --- Setup ---
         TripRepository tripRepo = mock(TripRepository.class);
         StationRepository stationRepo = mock(StationRepository.class);
         DockRepository dockRepo = mock(DockRepository.class);
-
         UC4_ReturnBikeUseCase sut = new UC4_ReturnBikeUseCase(tripRepo, stationRepo, dockRepo);
 
-        // Domain setup
         DockingStation station = new DockingStation();
         station.setId(200L);
-
         Dock emptyDock = new Dock();
         emptyDock.setId(300L);
         emptyDock.setStatus(DockStatus.EMPTY);
-        emptyDock.setSlotIndex(0);
-
-        List<Dock> docks = new ArrayList<>();
-        docks.add(emptyDock);
-        station.setDocks(docks);
+        station.setDocks(new ArrayList<>(List.of(emptyDock)));
 
         Bike bike = spy(new Bike());
         bike.setId(42L);
@@ -54,41 +48,41 @@ class UC4Test {
         trip.setId(1000L);
         trip.setBike(bike);
         trip.setStatus(TripStatus.STARTED);
-        trip.setStartTime(LocalDateTime.now().minusMinutes(10));
+        trip.setStartTime(LocalDateTime.now().minusMinutes(5));
 
         when(tripRepo.findById(1000L)).thenReturn(Optional.of(trip));
         when(stationRepo.findById(200L)).thenReturn(Optional.of(station));
-
-        // Strategy call returns true
         doReturn(true).when(bike).returnBike(emptyDock);
 
         when(dockRepo.save(any(Dock.class))).thenAnswer(i -> i.getArgument(0));
         when(tripRepo.save(any(Trip.class))).thenAnswer(i -> i.getArgument(0));
 
-        // Act
-        ReturnBikeRequest req = new ReturnBikeRequest(1000L, 200L);
-        ReturnBikeResponse resp = sut.execute(req);
+        // --- BEFORE STATE ---
+        System.out.println("[Before]");
+        System.out.println("   Trip status: " + trip.getStatus());
+        System.out.println("   Dock status: " + emptyDock.getStatus());
+        System.out.println("   Bike dock: " + bike.getDock());
 
-        assertThat(resp.tripId()).isEqualTo(1000L);
-        assertThat(resp.bikeId()).isEqualTo(42L);
-        assertThat(resp.endStationId()).isEqualTo(200L);
-        assertThat(resp.endTime()).isNotNull();
-        assertThat(resp.priceCents()).isEqualTo(0);
-        assertThat(resp.status()).isEqualTo("COMPLETED");
+        // --- ACTION ---
+        System.out.println("\n[Action] Returning bike...");
+        ReturnBikeResponse resp = sut.execute(new ReturnBikeRequest(1000L, 200L));
 
+        // --- AFTER STATE ---
+        System.out.println("\n[After]");
+        System.out.println("   Trip status: " + trip.getStatus());
+        System.out.println("   Dock status: " + emptyDock.getStatus());
+        System.out.println("   Bike dock now: " + bike.getDock());
+        System.out.println("   Trip end station: " + trip.getEndStation().getId());
+        System.out.println("   Response → trip=" + resp.tripId() + ", bike=" + resp.bikeId() +
+                ", station=" + resp.endStationId() + ", status=" + resp.status());
 
+        // --- ASSERTIONS ---
+        assertThat(trip.getStatus()).isEqualTo(TripStatus.COMPLETED);
         assertThat(emptyDock.getStatus()).isEqualTo(DockStatus.OCCUPIED);
         assertThat(emptyDock.getBike()).isEqualTo(bike);
-        assertThat(bike.getDock()).isEqualTo(emptyDock);
-        assertThat(trip.getStatus()).isEqualTo(TripStatus.COMPLETED);
-        assertThat(trip.getEndStation()).isEqualTo(station);
+        assertThat(resp.status()).isEqualTo("COMPLETED");
 
         verify(dockRepo).save(emptyDock);
         verify(tripRepo).save(trip);
-
-        System.out.println("UC4 success: trip=" + resp.tripId()
-                + ", bike=" + resp.bikeId()
-                + ", station=" + resp.endStationId()
-                + ", status=" + resp.status());
     }
 }

@@ -7,6 +7,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.acme.bms.api.rider.ReturnBikeRequest;
 import com.acme.bms.api.rider.ReturnBikeResponse;
+import com.acme.bms.application.exception.BikeReturnFailedException;
+import com.acme.bms.application.exception.NoEmptyDockAvailableException;
+import com.acme.bms.application.exception.StationNotFoundException;
+import com.acme.bms.application.exception.TripNotActiveException;
+import com.acme.bms.application.exception.TripNotFoundException;
 import com.acme.bms.domain.entity.Bike;
 import com.acme.bms.domain.entity.Dock;
 import com.acme.bms.domain.entity.DockingStation;
@@ -29,53 +34,46 @@ public class UC4_ReturnBikeUseCase {
 
     @Transactional
     public ReturnBikeResponse execute(ReturnBikeRequest req) {
-        //Trip must be active
+        // 1) Trip must exist and be active
         Trip trip = tripRepo.findById(req.tripId())
-                .orElseThrow(() -> new IllegalArgumentException("Trip not found"));
+                .orElseThrow(() -> new TripNotFoundException(req.tripId()));
+
         if (trip.getStatus() != TripStatus.STARTED) {
-            throw new IllegalStateException("Trip is not active or already completed.");
+            throw new TripNotActiveException(req.tripId());
         }
 
-        //Target station
+        // 2) Target station must exist
         DockingStation station = stationRepo.findById(req.stationId())
-                .orElseThrow(() -> new IllegalArgumentException("Docking station not found."));
+                .orElseThrow(() -> new StationNotFoundException(req.stationId()));
 
-        //Find an empty dock
+        // 3) Find an empty dock
         Dock emptyDock = station.getDocks().stream()
                 .filter(d -> d.getStatus() == DockStatus.EMPTY)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No empty dock available at this station."));
+                .orElseThrow(() -> new NoEmptyDockAvailableException(req.stationId()));
 
-        //Return via strategy
+        // 4) Return via strategy
         Bike bike = trip.getBike();
         boolean returned = bike.returnBike(emptyDock);
         if (!returned) {
-            throw new IllegalStateException("Bike could not be returned.");
+            throw new BikeReturnFailedException(bike.getId(), emptyDock.getId());
         }
 
-        if (emptyDock.getBike() == null) {
-            emptyDock.setBike(bike);
-        }
-        if (emptyDock.getStatus() != DockStatus.OCCUPIED) {
-            emptyDock.setStatus(DockStatus.OCCUPIED);
-        }
-        if (bike.getDock() != emptyDock) {
-            bike.setDock(emptyDock);
-        }
+        // 5) Update dock/bike state if strategy didn’t already
+        if (emptyDock.getBike() == null) emptyDock.setBike(bike);
+        if (emptyDock.getStatus() != DockStatus.OCCUPIED) emptyDock.setStatus(DockStatus.OCCUPIED);
+        if (bike.getDock() != emptyDock) bike.setDock(emptyDock);
 
-        //Close trip
+        // 6) Close trip
         trip.setEndStation(station);
         trip.setEndTime(LocalDateTime.now());
         trip.setStatus(TripStatus.COMPLETED);
 
-        //Persist
+        // 7) Persist
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
 
-        System.out.println("Bike returned (trip " + trip.getId() + ") at station " + station.getId()
-                + ", dock " + emptyDock.getId());
-
-        // Return payload (you already defined this DTO)
+        // 8) Response (priceCents placeholder = 0)
         return new ReturnBikeResponse(
                 trip.getId(),
                 bike.getId(),
