@@ -7,6 +7,8 @@
 	import { mount, onDestroy, onMount } from 'svelte';
 	import StationPopup from '../StationPopup/StationPopup.svelte';
 
+	let { selectedStation = $bindable<StationSummary | null>(null) } = $props();
+
 	let stationSummaries = $state<StationSummary[]>([]);
 	let mapElement = $state<HTMLDivElement>();
 
@@ -120,6 +122,12 @@
 					}
 				});
 				marker.bindPopup(popupContainer);
+				marker.on('popupopen', () => {
+					selectedStation = loc;
+				});
+				marker.on('popupclose', () => {
+					selectedStation = null;
+				});
 				markerLayers.addLayer(marker);
 			}
 		});
@@ -190,30 +198,17 @@
 	></script>
 </svelte:head>
 
-<div class="map-container">
+<div class="relative z-10 size-full">
 	{#if !mapInitialized}
 		<div class="loading-overlay">
 			<div class="loading-spinner"></div>
 			<p>Loading map...</p>
 		</div>
 	{/if}
-	<div class="map" bind:this={mapElement}></div>
+	<div class="map size-full rounded-xl" bind:this={mapElement}></div>
 </div>
 
 <style>
-	.map-container {
-		width: 100%;
-		height: 500px;
-		position: relative;
-	}
-
-	.map {
-		width: 100%;
-		height: 100%;
-		border-radius: 0.5rem;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
 	.loading-overlay {
 		position: absolute;
 		top: 0;
@@ -225,7 +220,6 @@
 		align-items: center;
 		justify-content: center;
 		background: rgba(255, 255, 255, 0.95);
-		z-index: 1000;
 		border-radius: 0.5rem;
 	}
 

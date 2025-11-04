@@ -4,13 +4,13 @@
 
 <button
 	type="button"
-	class="fixed top-0 left-0 z-40 h-full w-full bg-emerald-50/50"
+	class="z-1000 fixed left-0 top-0 h-full w-full bg-emerald-50/50"
 	aria-label="Close Sidebar Overlay"
 	onclick={() => (showSidebar = false)}
 ></button>
-<div class="fixed top-0 left-0 z-50 h-full w-80 bg-emerald-100">
+<div class="z-1000 fixed left-0 top-0 h-full w-80 bg-emerald-100">
 	<button
-		class="absolute top-5 right-5"
+		class="absolute right-5 top-5"
 		onclick={() => (showSidebar = false)}
 		aria-label="Close Menu"
 	>
