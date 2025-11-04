@@ -24,3 +24,11 @@ export interface RegisterResponse {
 	username: string;
 	role: string;
 }
+
+export interface UserInfoResponse {
+    id: number;
+    email: string;
+    username: string;
+    fullName: string;
+    role: string;
+}

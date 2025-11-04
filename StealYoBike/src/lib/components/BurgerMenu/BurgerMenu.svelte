@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/Sidebar/Sidebar.svelte';
+	import { SideBar } from '$lib/index';
 	let showSidebar = $state(false);
 </script>
 
@@ -16,5 +16,5 @@
 	</svg>
 </button>
 {#if showSidebar}
-	<Sidebar bind:showSidebar />
+	<SideBar bind:showSidebar />
 {/if}

@@ -68,10 +68,6 @@ api.interceptors.response.use(
 			console.warn('[API] Received 401 Unauthorized, clearing auth and redirecting to login');
 			// Clear auth token
 			localStorage.removeItem('authToken');
-			// Only redirect if not already on login page
-			if (!window.location.pathname.includes('/login')) {
-				window.location.href = '/login';
-			}
 		} else if (response?.status === 403) {
 			console.error('[API] Received 403 Forbidden - check permissions or authentication');
 		}

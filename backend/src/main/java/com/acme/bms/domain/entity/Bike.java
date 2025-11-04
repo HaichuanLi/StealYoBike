@@ -35,6 +35,7 @@ public class Bike {
     // If true, bike was forced into maintenance due to operator action (e.g.
     // station out-of-service)
     @Builder.Default
+    @Column(name = "maintenance_forced", nullable = false, columnDefinition = "boolean default false")
     private boolean maintenanceForced = false;
 
     @Transient
