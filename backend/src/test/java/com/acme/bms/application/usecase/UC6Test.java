@@ -29,8 +29,7 @@ class UC6Test {
         StationRepository stationRepo = mock(StationRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-        UC6_OperatorMarksStationOutOfService sut =
-                new UC6_OperatorMarksStationOutOfService(stationRepo, userRepo, publisher);
+        UC6_OperatorMarksStationOutOfService sut = new UC6_OperatorMarksStationOutOfService(stationRepo, publisher);
 
         // Mock operator
         User operator = new User();
@@ -69,7 +68,7 @@ class UC6Test {
         System.out.println("  Dock 2 (ID " + dock2.getId() + "): " + dock2.getStatus());
 
         // Execute use case
-        ChangeStationStateRequest request = new ChangeStationStateRequest(1L, 10L);
+        ChangeStationStateRequest request = new ChangeStationStateRequest(10L);
         ChangeStationStateResponse response = sut.execute(request);
 
         // Log the after-state

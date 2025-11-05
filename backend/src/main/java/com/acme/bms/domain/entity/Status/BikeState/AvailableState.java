@@ -12,6 +12,7 @@ public class AvailableState extends BikeState {
     @Override
     public boolean reserveBike() {
         bike.setState(new ReservedState(bike));
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.RESERVED);
         System.out.println("Bike reserved successfully.");
         return true;
     }
@@ -30,8 +31,11 @@ public class AvailableState extends BikeState {
 
     @Override
     public boolean sendToMaintenance() {
-    bike.setState(new MaintenanceState(bike));
-    return true;
+        bike.setState(new MaintenanceState(bike));
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.MAINTENANCE);
+        // mark that this bike was forced into maintenance by operator action
+        bike.setMaintenanceForced(true);
+        return true;
     }
 
     @Override

@@ -2,4 +2,12 @@
 	let { status } = $props();
 </script>
 
-<rect x="22" y="15" width="16" height="30" fill="#4CAF50" rx="2" ry="2" />
+<rect
+	x="22"
+	y="15"
+	width="16"
+	height="30"
+	fill={status === 'Available' ? '#4CAF50' : '#fdba74'}
+	rx="2"
+	ry="2"
+/>

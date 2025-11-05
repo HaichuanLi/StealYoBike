@@ -25,16 +25,18 @@ public class MaintenanceState extends BikeState {
     public boolean returnBike(Dock dock) {
         bike.setState(new AvailableState(bike));
         bike.setDock(dock);
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.AVAILABLE);
+        // clear forced flag when maintenance is finished
+        bike.setMaintenanceForced(false);
         System.out.println("Bike maintenance completed and is now available.");
         return true;
     }
 
     @Override
     public boolean sendToMaintenance() {
-    System.out.println("Bike is already in maintenance.");
-    return false; 
-    }   
-
+        System.out.println("Bike is already in maintenance.");
+        return false;
+    }
 
     @Override
     public String toString() {

@@ -5,13 +5,17 @@ import com.acme.bms.application.usecase.UC6_OperatorMarksStationOutOfService;
 import com.acme.bms.application.usecase.UC7_OperatorSendBikeToMaintenance;
 
 import com.acme.bms.application.usecase.UC8_RestoreInitialStateUseCase;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @RestController
 @RequestMapping("/api/operator")
+@PreAuthorize("hasRole('OPERATOR')")
 @RequiredArgsConstructor
 public class OperatorController {
 
@@ -26,14 +30,18 @@ public class OperatorController {
     }
 
     @PostMapping("/stations/out-of-service")
-    public ResponseEntity<ChangeStationStateResponse> markOutOfService(@Valid @RequestBody ChangeStationStateRequest request) {
+    public ResponseEntity<ChangeStationStateResponse> markOutOfService(
+            @Valid @RequestBody ChangeStationStateRequest request) {
+
         return ResponseEntity.ok(uc6.execute(request));
     }
 
     @PostMapping("/bikes/maintenance")
-    public ResponseEntity<OperatorSendBikeToMaintenanceResponse> sendBikeToMaintenance(@Valid @RequestBody OperatorSendBikeToMaintenanceRequest request) {
-    return ResponseEntity.ok(uc7.execute(request));
-}
+    public ResponseEntity<OperatorSendBikeToMaintenanceResponse> sendBikeToMaintenance(
+            @Valid @RequestBody OperatorSendBikeToMaintenanceRequest request) {
+        return ResponseEntity.ok(uc7.execute(request));
+    }
+
     @PostMapping("/restore-initial-state")
     public ResponseEntity<RestoreInitialStateResponse> restoreInitialState(
             @Valid @RequestBody RestoreInitialStateRequest request) {

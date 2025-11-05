@@ -15,7 +15,7 @@
 		<Map bind:selectedStation />
 	</div>
 	<div>
-		<div class="size-full overflow-hidden rounded-xl bg-lime-50">
+		<div class="size-full rounded-xl bg-lime-50">
 			{#if selectedStation}
 				<StationDetails selectedStation={selectedStation.stationId} />
 			{:else}

@@ -18,6 +18,7 @@ public class ReservedState extends BikeState {
     @Override
     public boolean checkoutBike() {
         bike.setState(new OnTripState(bike));
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.ON_TRIP);
         System.out.println("Bike checked out successfully.");
         return true;
     }
@@ -26,7 +27,8 @@ public class ReservedState extends BikeState {
     public boolean returnBike(Dock dock) {
         if (dock.getBike().equals(bike)) {
             bike.setState(new AvailableState(bike));
-            if (bike.getReservationExpiry().isAfter(java.time.Instant.now())) {
+            bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.AVAILABLE);
+            if (bike.getReservationExpiry() != null && bike.getReservationExpiry().isAfter(java.time.Instant.now())) {
                 System.out.println("Bike reservation expired. Bike is now available.");
             } else {
                 System.out.println("Bike reservation cancelled and is now available.");
@@ -40,10 +42,9 @@ public class ReservedState extends BikeState {
 
     @Override
     public boolean sendToMaintenance() {
-    System.out.println("Cannot send bike to maintenance while reserved");
-    return false;
+        System.out.println("Cannot send bike to maintenance while reserved");
+        return false;
     }
-
 
     @Override
     public String toString() {

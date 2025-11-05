@@ -5,5 +5,6 @@ import com.acme.bms.domain.entity.Status.StationStatus;
 import jakarta.validation.constraints.NotNull;
 
 public record ChangeStationStateResponse(
-        @NotNull Long stationId, 
-        @NotNull StationStatus status){}
+                @NotNull Long stationId,
+                @NotNull StationStatus status) {
+}
