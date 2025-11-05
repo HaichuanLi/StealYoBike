@@ -1,5 +1,5 @@
 <script lang="ts">
-	type Variant = 'teal' | 'green';
+	type Variant = 'teal' | 'green' | 'red';
 
 	let { onclick = null, variant = 'teal', text, disable = false } = $props();
 
@@ -15,10 +15,16 @@
 			bg: 'bg-green-400',
 			text: 'text-gray-600',
 			shadow: 'shadow-green-500'
+		},
+		red: {
+			border: 'border-red-600',
+			bg: 'bg-red-400',
+			text: 'text-gray-600',
+			shadow: 'shadow-red-500'
 		}
 	};
 
-	let colors = variants[variant as Variant] || variants.teal;
+	let colors = $derived(variants[variant as Variant] || variants.teal);
 </script>
 
 <button class="relative" {onclick} type="button">

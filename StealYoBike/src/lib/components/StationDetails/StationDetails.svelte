@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { stationApi } from '$lib/api';
+	import { operatorApi } from '$lib/api/operator.api';
 	import type { StationDetailResponse } from '$lib/api/types';
 	import Bike from '../Bike/Bike.svelte';
+	import Button from '../Button/Button.svelte';
 	import Dock from '../Dock/Dock.svelte';
 	let { selectedStation }: { selectedStation: number } = $props();
 
@@ -19,11 +21,18 @@
 </script>
 
 {#if station}
-	<div class="size-full">
-		<div class="h-[15%] w-full content-center bg-lime-300 text-center">
+	<div class="flex size-full flex-col gap-4 rounded-xl">
+		<div class="h-[15%] w-full content-center rounded-t-xl bg-lime-300 text-center">
 			<span class="text-4xl font-bold">{station.name}</span>
 		</div>
-		<div class="my-4 flex flex-wrap justify-center">
+		<div class="content-center place-self-center">
+			<Button
+				text={station.status}
+				variant={station.status === 'ACTIVE' ? 'green' : 'red'}
+				onclick={async () => await operatorApi.toggleStationStatus(station?.stationId!)}
+			/>
+		</div>
+		<div class="flex flex-wrap justify-center">
 			{#each station.docks as dock, i}
 				<div
 					onmouseenter={() => (hovered = i)}

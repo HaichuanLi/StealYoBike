@@ -48,16 +48,16 @@ public class OnTripState extends BikeState {
         dock.setStatus(DockStatus.OCCUPIED);
         bike.setDock(dock);
         bike.setState(new AvailableState(bike));
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.AVAILABLE);
         System.out.println("Bike returned successfully and is now available.");
         return true;
     }
 
     @Override
     public boolean sendToMaintenance() {
-    System.out.println("Cannot send bike to maintenance while on trip");
-    return false;
+        System.out.println("Cannot send bike to maintenance while on trip");
+        return false;
     }
-
 
     @Override
     public String toString() {

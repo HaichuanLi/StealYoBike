@@ -3,7 +3,8 @@ import type { AxiosResponse } from 'axios';
 import { api } from './index';
 
 export const stationApi = {
-	getStationDetails: (stationId: number): Promise<AxiosResponse<StationDetailResponse>> =>
-		api.get(`/station/${stationId}`),
-	getAllStations: (): Promise<AxiosResponse<StationSummary[]>> => api.get('/station/list')
+	getStationDetails: async (stationId: number): Promise<AxiosResponse<StationDetailResponse>> =>
+		await api.get(`/station/${stationId}`),
+	getAllStations: async (): Promise<AxiosResponse<StationSummary[]>> =>
+		await api.get('/station/list')
 };
