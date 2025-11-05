@@ -33,7 +33,8 @@ public class DataInitConfig {
 
         @PostConstruct
         public void initData() {
-                log.info("Initializing database with preset data...");
+                // Keep startup message at debug to reduce console noise in normal runs
+                log.debug("Initializing database with preset data...");
 
                 List<DockingStation> stations = new ArrayList<>();
 
@@ -95,7 +96,8 @@ public class DataInitConfig {
                 // Save all stations
                 stationRepository.saveAll(stations);
 
-                log.info("Database initialization complete. Created {} stations with a total of {} docks",
+                // Detailed completion summary moved to debug
+                log.debug("Database initialization complete. Created {} stations with a total of {} docks",
                                 stations.size(),
                                 stations.stream().mapToInt(DockingStation::getCapacity).sum());
 
@@ -104,7 +106,9 @@ public class DataInitConfig {
                         long bikesCount = station.getDocks().stream()
                                         .filter(dock -> dock.getBike() != null)
                                         .count();
-                        log.info("Station '{}': {} bikes in {} docks ({}% occupancy)",
+                        // Per-station detailed info is noisy; use trace so it can be enabled when
+                        // needed
+                        log.trace("Station '{}': {} bikes in {} docks ({}% occupancy)",
                                         station.getName(),
                                         bikesCount,
                                         station.getCapacity(),
@@ -124,10 +128,10 @@ public class DataInitConfig {
                 if (!userRepository.existsByEmail(operator.getEmail())
                                 && !userRepository.existsByUsername(operator.getUsername())) {
                         userRepository.save(operator);
-                        log.info("Created default operator user with username '{}'",
-                                        operator.getUsername());
+                        // Operator creation is not critical info for normal runs; keep as debug
+                        log.debug("Created default operator user with username '{}'", operator.getUsername());
                 } else {
-                        log.info("Default operator user already exists (email or username), skipping creation");
+                        log.debug("Default operator user already exists (email or username), skipping creation");
                 }
 
         }

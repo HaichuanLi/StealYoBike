@@ -228,13 +228,10 @@
 
 	onMount(async () => {
 		if (browser) {
-			// Load stations data
 			await loadStations();
 
-			// Initialize map after data is loaded
 			await initializeMap();
 
-			// subscribe to server-sent events for station updates
 			try {
 				eventSource = new EventSource(`${API_BASE}/station/stream`);
 				eventSource.addEventListener('stations-snapshot', (e: MessageEvent) => {
@@ -242,7 +239,6 @@
 						const payload = JSON.parse(e.data);
 						if (payload && Array.isArray(payload.stations)) {
 							stationSummaries = payload.stations;
-							// publish snapshot so details view (and others) can react
 							stationsSnapshot.set(payload.stations);
 						}
 					} catch (err) {
@@ -270,7 +266,6 @@
 			}
 		}
 
-		// close SSE connection
 		if (eventSource) {
 			eventSource.close();
 			eventSource = undefined;
@@ -278,7 +273,7 @@
 	});
 </script>
 
-<svelte:window on:resize={resizeMap} />
+<svelte:window onresize={resizeMap} />
 
 <svelte:head>
 	<link

@@ -3,6 +3,7 @@ package com.acme.bms.api.station;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +24,7 @@ public class StationController {
     private final StationRepository stationRepository;
     private final com.acme.bms.api.station.StationSseService stationSseService;
 
+    @Transactional(readOnly = true)
     @GetMapping("/{stationId}")
     public ResponseEntity<StationDetailResponse> getStationDetail(@PathVariable Long stationId) {
         Optional<DockingStation> station = stationRepository.findById(stationId);
@@ -34,7 +36,7 @@ public class StationController {
 
     @GetMapping("/list")
     public ResponseEntity<StationListResponse> getStationList() {
-        return ResponseEntity.ok(StationListResponse.fromEntities(stationRepository.findAll()));
+        return ResponseEntity.ok(StationListResponse.fromProjections(stationRepository.findAllStationSummaries()));
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
