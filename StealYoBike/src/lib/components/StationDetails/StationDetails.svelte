@@ -4,21 +4,22 @@
 	import type { StationDetailResponse } from '$lib/api/types';
 	import { stationsSnapshot } from '$lib/stores/stations';
 	import { onDestroy } from 'svelte';
-	import Bike from '../Bike/Bike.svelte';
 	import Button from '../Button/Button.svelte';
-	import Dock from '../Dock/Dock.svelte';
+	import StationDockList from './StationDockList.svelte';
 	let { selectedStation }: { selectedStation: number } = $props();
 
 	let station = $state<StationDetailResponse | null>(null);
-	let hovered = $state<number | null>(null);
 	// Remember the last stationId we fetched to avoid duplicate network calls
 	let lastFetchedStationId = $state<number | null>(null);
+	let selectedDock = $state<StationDetailResponse['docks'][number] | null>(null);
 
 	$effect(() => {
 		// If no station selected, clear state
 		if (!selectedStation) {
 			station = null;
 			lastFetchedStationId = null;
+			// clear any selected dock when there is no station
+			selectedDock = null;
 			return;
 		}
 
@@ -30,7 +31,17 @@
 		(async () => {
 			try {
 				const stationDetails = await stationApi.getStationDetails(selectedStation);
-				if (stationDetails) station = stationDetails.data;
+				if (stationDetails) {
+					station = stationDetails.data;
+					// If a dock was previously selected, try to re-resolve it from the
+					// fresh station data so the UI reflects latest dock/bike status.
+					if (selectedDock) {
+						const updated = stationDetails.data.docks.find(
+							(d) => d.dockId === selectedDock?.dockId
+						);
+						selectedDock = updated ?? null;
+					}
+				}
 			} catch (err) {
 				console.error('Failed to load station details', err);
 				// keep previous station data if fetch fails
@@ -49,7 +60,16 @@
 				(async () => {
 					try {
 						const stationDetails = await stationApi.getStationDetails(selectedStation);
-						if (stationDetails) station = stationDetails.data;
+						if (stationDetails) {
+							station = stationDetails.data;
+							// Keep selectedDock in sync with updated station details
+							if (selectedDock) {
+								const updated = stationDetails.data.docks.find(
+									(d) => d.dockId === selectedDock?.dockId
+								);
+								selectedDock = updated ?? null;
+							}
+						}
 					} catch (err) {
 						console.error('Failed to refresh station details from snapshot', err);
 					}
@@ -77,36 +97,6 @@
 				onclick={async () => await operatorApi.toggleStationStatus(station?.stationId!)}
 			/>
 		</div>
-		<div class="flex flex-wrap justify-center">
-			{#each station.docks as dock, i}
-				<div
-					onmouseenter={() => (hovered = i)}
-					onmouseleave={() => (hovered = null)}
-					role="button"
-					tabindex="0"
-					class="relative"
-				>
-					<Dock status={dock.status}>
-						{#if dock.bike}
-							<Bike status={dock.bike.status} />
-						{/if}
-					</Dock>
-
-					{#if hovered === i}
-						<div
-							role="tooltip"
-							class="absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white shadow-lg"
-						>
-							{#if dock.bike?.status}
-								{dock.bike.status}
-							{:else}
-								{dock.status}
-							{/if}
-							<div class="tooltip-arrow" data-popper-arrow></div>
-						</div>
-					{/if}
-				</div>
-			{/each}
-		</div>
+		<StationDockList {station} bind:selectedDock />
 	</div>
 {/if}
