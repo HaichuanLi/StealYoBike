@@ -16,6 +16,9 @@ import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import com.acme.bms.application.events.StationsChangedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,12 @@ public class UC5_RebalanceBikesUseCase {
 
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
+    private ApplicationEventPublisher events;
+
+    @Autowired(required = false)
+    public void setEvents(ApplicationEventPublisher events) {
+        this.events = events;
+    }
 
     @Transactional
     public RebalanceResponse execute(RebalanceRequest req) {
@@ -37,12 +46,14 @@ public class UC5_RebalanceBikesUseCase {
         for (int i = 0; i < target; i++) {
             Bike bike = from.getFirstAvailableBike(req.bikeType());
             if (bike == null) {
-                if (moved == 0) throw new NoAvailableBikesException(req.fromStationId(), req.bikeType().name());
+                if (moved == 0)
+                    throw new NoAvailableBikesException(req.fromStationId(), req.bikeType().name());
                 break; // stop if none left; partial success is fine
             }
             Dock targetDock = to.findEmptyDock();
             if (targetDock == null) {
-                if (moved == 0) throw new NoEmptyDockAvailableException(req.toStationId());
+                if (moved == 0)
+                    throw new NoEmptyDockAvailableException(req.toStationId());
                 break; // stop if none left; partial success is fine
             }
             Dock sourceDock = bike.getDock();
@@ -61,6 +72,11 @@ public class UC5_RebalanceBikesUseCase {
             dockRepo.save(sourceDock);
             dockRepo.save(targetDock);
             moved++;
+        }
+
+        // notify listeners to broadcast updated snapshot
+        if (events != null) {
+            events.publishEvent(new StationsChangedEvent());
         }
 
         return new RebalanceResponse(moved, req.fromStationId(), req.toStationId());

@@ -85,7 +85,8 @@ class UC6Test {
         assertThat(dock1.getStatus()).isEqualTo(DockStatus.OUT_OF_SERVICE);
         assertThat(dock2.getStatus()).isEqualTo(DockStatus.OUT_OF_SERVICE);
 
-        verify(bike).setState(isA(com.acme.bms.domain.entity.Status.BikeState.MaintenanceState.class));
+        // UC6 now uses Bike.sendToMaintenance() to encapsulate the transition.
+        verify(bike).sendToMaintenance();
         verify(stationRepo).save(station);
         verify(publisher).publishEvent(isA(ChangeStationStatusEvent.class));
 
