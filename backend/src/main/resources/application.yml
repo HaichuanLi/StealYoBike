@@ -8,13 +8,29 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ${H2_PASSWORD:s3cur3P4ssw0rd!}
+    # HikariCP settings (development-friendly defaults)
+    hikari:
+      # raise this temporarily if the app legitimately needs more concurrent DB connections
+      maximum-pool-size: 20
+      # how long to wait for a connection before timing out (ms)
+      connection-timeout: 60000
+      # detect connection leaks that take longer than this threshold (ms)
+      leak-detection-threshold: 2000
+      minimum-idle: 2
+      idle-timeout: 300000
 
   # JPA/Hibernate Configuration
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    # Do not keep the JPA EntityManager open for the entire HTTP request (prevents
+    # long-lived requests such as SSE from holding a JDBC connection open).
+    # See: https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#howto.data-access.configure-open-in-view
+    open-in-view: false
+    # Turn off Hibernate SQL logging by default to keep logs clean.
+    # Set to true temporarily if you need to debug SQL statements.
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -38,7 +54,19 @@ server:
 # Logging
 logging:
   level:
-    com.acme.bms: DEBUG
-    org.springframework.security: DEBUG
+    # Keep application messages visible but quiet down framework startup noise
+    root: WARN
+    # keep app-level informative logs (like DataInitConfig messages)
+    com.acme.bms: INFO
+    # Quiet Spring framework and related packages
+    org.springframework: WARN
+    org.springframework.boot: WARN
+    org.springframework.data: WARN
+    org.springframework.security: WARN
+    org.apache.catalina: WARN
+    org.h2: WARN
+    org.hibernate: WARN
+    # Hikari leak detection will still log WARNs
+    com.zaxxer.hikari: WARN
     #org.hibernate.SQL: DEBUG
     #org.hibernate.type.descriptor.sql.BasicBinder: TRACE

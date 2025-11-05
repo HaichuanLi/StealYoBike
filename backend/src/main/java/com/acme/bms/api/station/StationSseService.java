@@ -7,6 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.acme.bms.domain.repo.StationRepository;
@@ -25,6 +26,7 @@ public class StationSseService {
     private final ObjectMapper mapper = new ObjectMapper();
     private volatile String lastPayloadJson = null;
 
+    @Transactional(readOnly = true)
     public SseEmitter subscribe() {
         // default timeout: 30 minutes
         SseEmitter emitter = new SseEmitter(Duration.ofMinutes(30).toMillis());
@@ -36,7 +38,8 @@ public class StationSseService {
 
         // send an initial snapshot immediately
         try {
-            StationListResponse payload = StationListResponse.fromEntities(stationRepository.findAll());
+            StationListResponse payload = StationListResponse
+                    .fromProjections(stationRepository.findAllStationSummaries());
             String json = null;
             try {
                 json = mapper.writeValueAsString(payload);
@@ -58,8 +61,9 @@ public class StationSseService {
         return emitter;
     }
 
+    @Transactional(readOnly = true)
     public void broadcastStations() {
-        StationListResponse payload = StationListResponse.fromEntities(stationRepository.findAll());
+        StationListResponse payload = StationListResponse.fromProjections(stationRepository.findAllStationSummaries());
 
         String payloadJson = null;
         try {

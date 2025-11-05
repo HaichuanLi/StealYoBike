@@ -70,7 +70,7 @@
 	async function onNavigate(href: string) {
 		if (href === '/logout') {
 			try {
-				await authApi.logout();
+				authApi.logout();
 			} catch (err) {
 				console.error('Logout failed:', err);
 			} finally {

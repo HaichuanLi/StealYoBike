@@ -29,4 +29,18 @@ public record StationListResponse(
                                 (int) station.getDocks().stream().filter(dock -> dock.getBike() == null).count(),
                                 station.getCapacity())).toList());
         }
+
+        public static StationListResponse fromProjections(
+                        List<StationSummaryDto> projections) {
+                return new StationListResponse(projections.stream().map(p -> new StationSummary(
+                                p.stationId,
+                                p.name,
+                                p.status == null ? null : p.status.name(),
+                                p.latitude,
+                                p.longitude,
+                                p.streetAddress,
+                                p.availableBikes.intValue(),
+                                p.availableDocks.intValue(),
+                                p.capacity)).toList());
+        }
 }

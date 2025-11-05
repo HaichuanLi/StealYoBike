@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SideBar } from '$lib/index';
+	import SideBar from '$lib/components/Sidebar/Sidebar.svelte';
 	let showSidebar = $state(false);
 </script>
 

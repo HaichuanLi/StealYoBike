@@ -9,10 +9,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.hibernate.LazyInitializationException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class ApiErrors {
+    private static final Logger logger = LoggerFactory.getLogger(ApiErrors.class);
 
     // ---------- Validation ----------
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -114,9 +118,17 @@ public class ApiErrors {
                 "https://api.bms/errors/unprocessable", Map.of());
     }
 
-    // Catch-all
+    @ExceptionHandler(LazyInitializationException.class)
+    public ResponseEntity<Map<String, Object>> lazyInitialization(LazyInitializationException ex) {
+        logger.error("LazyInitializationException: {}", ex.toString());
+        return problem(500, "Data access error",
+                "Attempted to access lazily-loaded data outside a Hibernate session. Consider using DTOs, fetch joins, or ensuring the data is loaded within a transaction.",
+                "https://api.bms/errors/lazy-initialization", Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> fallback(Exception ex) {
+        logger.error("Unhandled exception: {}", ex.toString());
         return problem(500, "Internal Server Error",
                 "Something went wrong. If the issue persists, contact support.",
                 "https://api.bms/errors/internal", Map.of());
