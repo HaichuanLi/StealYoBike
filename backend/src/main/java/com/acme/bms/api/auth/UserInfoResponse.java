@@ -5,5 +5,6 @@ public record UserInfoResponse(
         String email,
         String username,
         String fullName,
-        String role
+        String role,
+        String paymentToken
 ) {}

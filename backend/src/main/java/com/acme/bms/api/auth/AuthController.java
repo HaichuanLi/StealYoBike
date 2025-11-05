@@ -5,8 +5,10 @@ import java.net.URI;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +20,9 @@ import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Optional;
 import com.acme.bms.domain.repo.UserRepository;
+import com.acme.bms.domain.entity.User;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +47,56 @@ public class AuthController {
         return ResponseEntity.ok(loginUC.execute(request));
     }
 
+    @PutMapping("/me/payment-token")
+    public ResponseEntity<UserInfoResponse> updatePaymentToken(
+        @AuthenticationPrincipal String userId,
+        @Valid @RequestBody UpdatePaymentTokenRequest request) {
+    try {
+        log.info("Updating payment token for user: {}", userId);
+
+        if (userId == null) {
+            log.warn("No authenticated user found");
+            return ResponseEntity.status(401).build();
+        }
+
+        Long userIdLong;
+        try {
+            userIdLong = Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            log.error("Invalid user ID format: {}", userId);
+            return ResponseEntity.status(400).build();
+        }
+
+        Optional<User> userOpt = userRepository.findById(userIdLong);
+
+        if (userOpt.isEmpty()) {
+            log.error("User not found with ID: {}", userIdLong);
+            return ResponseEntity.status(404).build();
+        }
+
+        User user = userOpt.get();
+        user.setPaymentToken(request.paymentToken());
+        userRepository.save(user);
+
+        log.info("Updated payment token for user: {}", user.getUsername());
+
+        UserInfoResponse response = new UserInfoResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getRole().toString(),
+                user.getPaymentToken()
+        );
+
+        return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+        log.error("Error updating payment token", e);
+        return ResponseEntity.status(500).build();
+        }
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> me(Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
@@ -61,7 +115,8 @@ public class AuthController {
                                     dbUser.getEmail(),
                                     dbUser.getUsername(),
                                     dbUser.getFullName(),
-                                    dbUser.getRole().name())));
+                                    dbUser.getRole().name(),
+                                    dbUser.getPaymentToken())));
         } catch (NumberFormatException ex) {
             return ResponseEntity.of(
                     userRepository.findByUsername(principalName)
@@ -70,7 +125,8 @@ public class AuthController {
                                     dbUser.getEmail(),
                                     dbUser.getUsername(),
                                     dbUser.getFullName(),
-                                    dbUser.getRole().name())));
+                                    dbUser.getRole().name(),
+                                    dbUser.getPaymentToken())));
         }
     }
 }
