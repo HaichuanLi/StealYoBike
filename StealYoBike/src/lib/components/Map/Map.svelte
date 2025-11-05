@@ -2,18 +2,25 @@
 	import { browser } from '$app/environment';
 	import { stationApi } from '$lib/api/station.api';
 	import type { StationSummary } from '$lib/api/types/station.types';
+	import { stationsSnapshot } from '$lib/stores/stations';
 	import type { AxiosResponse } from 'axios';
-	import type { Icon, LayerGroup, Map, Marker } from 'leaflet';
+	import type { Icon, LayerGroup, Map as LeafletMap, Marker } from 'leaflet';
 	import { mount, onDestroy, onMount } from 'svelte';
 	import StationPopup from '../StationPopup/StationPopup.svelte';
+
+	let eventSource: EventSource | undefined;
+
+	const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080/api';
 
 	let { selectedStation = $bindable<StationSummary | null>(null) } = $props();
 
 	let stationSummaries = $state<StationSummary[]>([]);
-	let mapElement = $state<HTMLDivElement>();
+	let mapElement = $state<HTMLDivElement | undefined>(undefined);
 
-	let map: Map | undefined = $state();
+	let map: LeafletMap | undefined = $state<LeafletMap | undefined>(undefined);
 	let markerLayers: LayerGroup | undefined;
+	let markersById = $state<Map<number, Marker>>(new Map());
+	let markersWithHandlers = $state<Set<number>>(new Set());
 	let icon: Icon | undefined;
 	let mapInitialized = $state(false);
 	let leafletLoaded = false;
@@ -107,30 +114,88 @@
 	function updateMarkers() {
 		if (!map || !markerLayers || !mapInitialized) return;
 
-		// Clear existing markers
-		markerLayers.clearLayers();
-		// Add new markers
+		const seen = new Set<number>();
+
+		// Update or create markers for current stations
 		stationSummaries.forEach((loc) => {
-			const marker = createMarker([loc.latitude, loc.longitude]);
-			if (marker && markerLayers) {
-				const popupContainer = document.createElement('div');
-				popupContainer.className = '';
-				mount(StationPopup, {
-					target: popupContainer,
-					props: {
-						station: loc
+			const id = loc.stationId;
+			seen.add(id);
+			const existing = markersById.get(id as number);
+
+			if (existing) {
+				// Update position if API available
+				if ((existing as any).setLatLng) {
+					try {
+						(existing as any).setLatLng([loc.latitude, loc.longitude]);
+					} catch (err) {
+						// ignore
 					}
-				});
-				marker.bindPopup(popupContainer);
-				marker.on('popupopen', () => {
-					selectedStation = loc;
-				});
-				marker.on('popupclose', () => {
-					selectedStation = null;
-				});
-				markerLayers.addLayer(marker);
+				}
+
+				// Replace popup content to reflect updated station data
+				try {
+					const popupContainer = document.createElement('div');
+					popupContainer.className = '';
+					mount(StationPopup, {
+						target: popupContainer,
+						props: { station: loc }
+					});
+					existing.bindPopup(popupContainer);
+				} catch (err) {
+					// ignore popup update failures
+				}
+
+				// Ensure handlers are attached only once
+				if (!markersWithHandlers.has(id)) {
+					existing.on('popupopen', () => {
+						if (!selectedStation || selectedStation.stationId !== loc.stationId) {
+							selectedStation = loc;
+						}
+					});
+					existing.on('popupclose', () => {
+						selectedStation = null;
+					});
+					markersWithHandlers.add(id);
+				}
+			} else {
+				const marker = createMarker([loc.latitude, loc.longitude]);
+				if (marker && markerLayers) {
+					const popupContainer = document.createElement('div');
+					popupContainer.className = '';
+					mount(StationPopup, {
+						target: popupContainer,
+						props: {
+							station: loc
+						}
+					});
+					marker.bindPopup(popupContainer);
+					marker.on('popupopen', () => {
+						if (!selectedStation || selectedStation.stationId !== loc.stationId) {
+							selectedStation = loc;
+						}
+					});
+					marker.on('popupclose', () => {
+						selectedStation = null;
+					});
+					markerLayers.addLayer(marker);
+					markersById.set(id, marker);
+					markersWithHandlers.add(id);
+				}
 			}
 		});
+
+		// Remove markers that are no longer present
+		for (const [id, marker] of markersById) {
+			if (!seen.has(id)) {
+				try {
+					markerLayers.removeLayer(marker);
+				} catch (err) {
+					// ignore
+				}
+				markersById.delete(id);
+				markersWithHandlers.delete(id);
+			}
+		}
 	}
 
 	function resizeMap() {
@@ -150,8 +215,11 @@
 
 			if (stationArray.length > 0) {
 				stationSummaries = stationArray;
+				// publish initial snapshot for other components
+				stationsSnapshot.set(stationArray);
 			} else {
 				stationSummaries = [];
+				stationsSnapshot.set([]);
 			}
 		} catch (error) {
 			console.error('Failed to load stations:', error);
@@ -165,6 +233,28 @@
 
 			// Initialize map after data is loaded
 			await initializeMap();
+
+			// subscribe to server-sent events for station updates
+			try {
+				eventSource = new EventSource(`${API_BASE}/station/stream`);
+				eventSource.addEventListener('stations-snapshot', (e: MessageEvent) => {
+					try {
+						const payload = JSON.parse(e.data);
+						if (payload && Array.isArray(payload.stations)) {
+							stationSummaries = payload.stations;
+							// publish snapshot so details view (and others) can react
+							stationsSnapshot.set(payload.stations);
+						}
+					} catch (err) {
+						console.error('Failed to parse SSE payload', err);
+					}
+				});
+				eventSource.addEventListener('error', (ev) => {
+					console.warn('SSE connection error', ev);
+				});
+			} catch (err) {
+				console.error('Failed to open SSE connection', err);
+			}
 		}
 	});
 
@@ -178,6 +268,12 @@
 			} catch (error) {
 				console.error('Error cleaning up map:', error);
 			}
+		}
+
+		// close SSE connection
+		if (eventSource) {
+			eventSource.close();
+			eventSource = undefined;
 		}
 	});
 </script>

@@ -2,6 +2,8 @@
 	import { stationApi } from '$lib/api';
 	import { operatorApi } from '$lib/api/operator.api';
 	import type { StationDetailResponse } from '$lib/api/types';
+	import { stationsSnapshot } from '$lib/stores/stations';
+	import { onDestroy } from 'svelte';
 	import Bike from '../Bike/Bike.svelte';
 	import Button from '../Button/Button.svelte';
 	import Dock from '../Dock/Dock.svelte';
@@ -9,14 +11,57 @@
 
 	let station = $state<StationDetailResponse | null>(null);
 	let hovered = $state<number | null>(null);
+	// Remember the last stationId we fetched to avoid duplicate network calls
+	let lastFetchedStationId = $state<number | null>(null);
 
 	$effect(() => {
-		if (!selectedStation) return;
+		// If no station selected, clear state
+		if (!selectedStation) {
+			station = null;
+			lastFetchedStationId = null;
+			return;
+		}
+
+		// Avoid refetch if the selected station id hasn't changed
+		if (lastFetchedStationId === selectedStation) return;
+
+		lastFetchedStationId = selectedStation;
 
 		(async () => {
-			const stationDetails = await stationApi.getStationDetails(selectedStation);
-			if (stationDetails) station = stationDetails.data;
+			try {
+				const stationDetails = await stationApi.getStationDetails(selectedStation);
+				if (stationDetails) station = stationDetails.data;
+			} catch (err) {
+				console.error('Failed to load station details', err);
+				// keep previous station data if fetch fails
+			}
 		})();
+	});
+
+	// Subscribe to station snapshot updates (published by Map.svelte). When a snapshot
+	// arrives and there is an already-selected station, force a refresh of the
+	// station details so the detail view stays in sync with SSE updates.
+	const unsubscribe = stationsSnapshot.subscribe((snap) => {
+		try {
+			if (!selectedStation) return;
+			// If we were already showing this station, refresh its details
+			if (lastFetchedStationId === selectedStation) {
+				(async () => {
+					try {
+						const stationDetails = await stationApi.getStationDetails(selectedStation);
+						if (stationDetails) station = stationDetails.data;
+					} catch (err) {
+						console.error('Failed to refresh station details from snapshot', err);
+					}
+				})();
+			}
+		} catch (err) {
+			// ignore
+		}
+	});
+
+	onDestroy(() => {
+		unsubscribe();
 	});
 </script>
 

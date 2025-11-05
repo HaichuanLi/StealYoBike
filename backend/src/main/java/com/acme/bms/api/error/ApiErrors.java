@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.acme.bms.application.exception.*;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,7 +26,7 @@ public class ApiErrors {
                 Map.of("errors", errors));
     }
 
-    //Auth/Id
+    // Auth/Id
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<Map<String, Object>> unauthorized(InvalidCredentialsException ex) {
         return problem(401, "Unauthorized", ex.getMessage(),
@@ -50,14 +51,14 @@ public class ApiErrors {
                 "https://api.bms/errors/forbidden", Map.of());
     }
 
-    //Registration conflicts
+    // Registration conflicts
     @ExceptionHandler({ EmailAlreadyUsedException.class, UsernameAlreadyUsedException.class })
     public ResponseEntity<Map<String, Object>> conflict(RuntimeException ex) {
         return problem(409, "Conflict", ex.getMessage(),
                 "https://api.bms/errors/conflict", Map.of());
     }
 
-    //Station / Trip / Docks
+    // Station / Trip / Docks
     @ExceptionHandler(StationNotFoundException.class)
     public ResponseEntity<Map<String, Object>> stationNotFound(StationNotFoundException ex) {
         return problem(404, "Not found", ex.getMessage(),
@@ -100,7 +101,7 @@ public class ApiErrors {
                 "https://api.bms/errors/conflict", Map.of());
     }
 
-    //UC7
+    // UC7
     @ExceptionHandler(BikeNotFoundException.class)
     public ResponseEntity<Map<String, Object>> bikeNotFound(BikeNotFoundException ex) {
         return problem(404, "Not found", ex.getMessage(),
@@ -113,7 +114,7 @@ public class ApiErrors {
                 "https://api.bms/errors/unprocessable", Map.of());
     }
 
-    //Catch-all
+    // Catch-all
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> fallback(Exception ex) {
         return problem(500, "Internal Server Error",
@@ -121,7 +122,7 @@ public class ApiErrors {
                 "https://api.bms/errors/internal", Map.of());
     }
 
-    //Helper
+    // Helper
     private ResponseEntity<Map<String, Object>> problem(
             int status, String title, String detail, String type, Map<String, Object> extra) {
 
@@ -132,6 +133,6 @@ public class ApiErrors {
         body.put("detail", detail);
         body.put("traceId", UUID.randomUUID().toString());
         extra.forEach(body::put);
-        return ResponseEntity.status(status).body(body);
+        return ResponseEntity.status(status).contentType(MediaType.APPLICATION_JSON).body(body);
     }
 }

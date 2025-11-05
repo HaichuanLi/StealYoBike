@@ -23,6 +23,9 @@ import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.TripRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
+import com.acme.bms.application.events.StationsChangedEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,12 @@ public class UC4_ReturnBikeUseCase {
     private final TripRepository tripRepo;
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
+    private ApplicationEventPublisher events;
+
+    @Autowired(required = false)
+    public void setEvents(ApplicationEventPublisher events) {
+        this.events = events;
+    }
 
     @Transactional
     public ReturnBikeResponse execute(ReturnBikeRequest req) {
@@ -60,9 +69,12 @@ public class UC4_ReturnBikeUseCase {
         }
 
         // 5) Update dock/bike state if strategy didn’t already
-        if (emptyDock.getBike() == null) emptyDock.setBike(bike);
-        if (emptyDock.getStatus() != DockStatus.OCCUPIED) emptyDock.setStatus(DockStatus.OCCUPIED);
-        if (bike.getDock() != emptyDock) bike.setDock(emptyDock);
+        if (emptyDock.getBike() == null)
+            emptyDock.setBike(bike);
+        if (emptyDock.getStatus() != DockStatus.OCCUPIED)
+            emptyDock.setStatus(DockStatus.OCCUPIED);
+        if (bike.getDock() != emptyDock)
+            bike.setDock(emptyDock);
 
         // 6) Close trip
         trip.setEndStation(station);
@@ -73,6 +85,12 @@ public class UC4_ReturnBikeUseCase {
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
 
+        // publish a stations-changed event so SSE listeners can be updated (if
+        // publisher present)
+        if (events != null) {
+            events.publishEvent(new StationsChangedEvent());
+        }
+
         // 8) Response (priceCents placeholder = 0)
         return new ReturnBikeResponse(
                 trip.getId(),
@@ -80,7 +98,6 @@ public class UC4_ReturnBikeUseCase {
                 station.getId(),
                 trip.getEndTime(),
                 0,
-                trip.getStatus().name()
-        );
+                trip.getStatus().name());
     }
 }
