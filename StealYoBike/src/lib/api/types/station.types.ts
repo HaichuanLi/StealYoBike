@@ -7,16 +7,20 @@ export interface StationDetailResponse {
 	streetAddress: string;
 	capacity: number;
 	expiresAfterMinutes: number;
-	docks: {
-		dockId: number;
-		status: 'EMPTY' | 'OCCUPIED' | 'OUT_OF_SERVICE';
-		bike: {
-			bikeId: number;
-			type: 'REGULAR' | 'ELECTRIC';
-			status: 'Available' | 'Maintenance' | 'On Trip' | 'Reserved';
-			reservationExpiration: string | null;
-		} | null;
-	}[];
+	docks: Dock[];
+}
+
+export interface Dock {
+	dockId: number;
+	status: 'EMPTY' | 'OCCUPIED' | 'OUT_OF_SERVICE';
+	bike: Bike | null;
+}
+
+export interface Bike {
+	bikeId: number;
+	type: 'REGULAR' | 'ELECTRIC';
+	status: 'Available' | 'Maintenance' | 'On Trip' | 'Reserved';
+	reservationExpiration: string | null;
 }
 
 export interface StationSummary {
