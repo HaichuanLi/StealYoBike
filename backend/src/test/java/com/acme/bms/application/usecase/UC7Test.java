@@ -1,6 +1,5 @@
 package com.acme.bms.application.usecase;
 
-
 import com.acme.bms.api.operator.OperatorSendBikeToMaintenanceRequest;
 import com.acme.bms.api.operator.OperatorSendBikeToMaintenanceResponse;
 import com.acme.bms.application.events.OperatorSendBikeToMaintenanceEvent;
@@ -12,6 +11,7 @@ import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.repo.BikeRepository;
 import com.acme.bms.domain.repo.UserRepository;
 import org.junit.jupiter.api.Test;
+
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
@@ -30,8 +30,7 @@ class UC7Test {
         BikeRepository bikeRepo = mock(BikeRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-        UC7_OperatorSendBikeToMaintenance sut =
-                new UC7_OperatorSendBikeToMaintenance(bikeRepo, userRepo, publisher);
+        UC7_OperatorSendBikeToMaintenance sut = new UC7_OperatorSendBikeToMaintenance(bikeRepo, userRepo, publisher);
 
         // Mock operator
         User operator = new User();
@@ -51,9 +50,10 @@ class UC7Test {
         System.out.println("Before execution:");
         System.out.println("  Bike ID: " + bike.getId() + " | State: " + bike.getState());
 
-        // Execute use case
-        OperatorSendBikeToMaintenanceRequest request = new OperatorSendBikeToMaintenanceRequest(1L, 100L, null);
-        OperatorSendBikeToMaintenanceResponse response = sut.execute(request);
+        // Execute use case directly with operatorId (controller is responsible for
+        // extracting principal)
+        OperatorSendBikeToMaintenanceRequest request = new OperatorSendBikeToMaintenanceRequest(100L, null);
+        OperatorSendBikeToMaintenanceResponse response = sut.execute(1L, request);
 
         // Log after execution
         System.out.println("\nAfter execution:");

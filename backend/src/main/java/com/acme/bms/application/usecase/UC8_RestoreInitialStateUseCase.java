@@ -31,15 +31,15 @@ public class UC8_RestoreInitialStateUseCase {
     private final ApplicationEventPublisher events;
 
     @Transactional
-    public RestoreInitialStateResponse execute(RestoreInitialStateRequest req) {
-        // valid op
-        User operator = users.findById(req.operatorId())
+    public RestoreInitialStateResponse execute(Long operatorId, RestoreInitialStateRequest req) {
+        // valid op - operatorId provided by controller from Authentication
+        User operator = users.findById(operatorId)
                 .orElseThrow(OperatorNotFoundException::new);
         if (operator.getRole() != Role.OPERATOR) {
             throw new ForbiddenOperationException("Only operators can restore the system.");
         }
 
-        //Normalize system state
+        // Normalize system state
         int stationCount = 0;
         int dockCount = 0;
         int bikeCount = 0;
@@ -64,23 +64,21 @@ public class UC8_RestoreInitialStateUseCase {
             stations.save(station); // persist normalization for this station
         }
 
-        //Publish event (for map/dashboard listeners)
+        // Publish event (for map/dashboard listeners)
         Instant now = Instant.now();
         events.publishEvent(new SystemRestoredEvent(
                 operator.getId(),
                 stationCount,
                 dockCount,
                 bikeCount,
-                now
-        ));
+                now));
 
-        //Return a short summary for the frontend
+        // Return a short summary for the frontend
         return new RestoreInitialStateResponse(
                 stationCount,
                 dockCount,
                 bikeCount,
                 "System restored successfully.",
-                now
-        );
+                now);
     }
 }

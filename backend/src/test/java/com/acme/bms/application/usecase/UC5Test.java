@@ -5,6 +5,9 @@ import com.acme.bms.api.operator.RebalanceResponse;
 import com.acme.bms.domain.entity.*;
 import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
+import com.acme.bms.domain.repo.UserRepository;
+import com.acme.bms.domain.entity.User;
+import com.acme.bms.domain.entity.Role;
 
 import org.junit.jupiter.api.Test;
 import java.util.Optional;
@@ -19,7 +22,13 @@ class UC5Test {
 
         StationRepository stations = mock(StationRepository.class);
         DockRepository docks = mock(DockRepository.class);
-        UC5_RebalanceBikesUseCase sut = new UC5_RebalanceBikesUseCase(stations, docks);
+        UserRepository userRepo = mock(UserRepository.class);
+        UC5_RebalanceBikesUseCase sut = new UC5_RebalanceBikesUseCase(stations, docks, userRepo);
+
+        User operator = new User();
+        operator.setId(1L);
+        operator.setRole(Role.OPERATOR);
+        when(userRepo.findById(1L)).thenReturn(java.util.Optional.of(operator));
 
         DockingStation from = mock(DockingStation.class);
         DockingStation to = mock(DockingStation.class);
@@ -44,7 +53,7 @@ class UC5Test {
 
         System.out.println("\n[Action] Rebalancing 2 bikes from Station 1 → Station 2...");
         RebalanceRequest req = new RebalanceRequest(1L, 2L, BikeType.ELECTRIC, 2);
-        RebalanceResponse resp = sut.execute(req);
+        RebalanceResponse resp = sut.execute(1L, req);
 
         System.out.println("\n[After]");
         System.out.println("   Bikes moved: " + resp.moved());
@@ -68,7 +77,13 @@ class UC5Test {
 
         StationRepository stations = mock(StationRepository.class);
         DockRepository docks = mock(DockRepository.class);
-        UC5_RebalanceBikesUseCase sut = new UC5_RebalanceBikesUseCase(stations, docks);
+        UserRepository userRepo = mock(UserRepository.class);
+        UC5_RebalanceBikesUseCase sut = new UC5_RebalanceBikesUseCase(stations, docks, userRepo);
+
+        User operator = new User();
+        operator.setId(1L);
+        operator.setRole(Role.OPERATOR);
+        when(userRepo.findById(1L)).thenReturn(java.util.Optional.of(operator));
 
         DockingStation from = mock(DockingStation.class);
         DockingStation to = mock(DockingStation.class);
@@ -92,7 +107,7 @@ class UC5Test {
 
         System.out.println("\n[Action] Attempting to move 2 bikes...");
         RebalanceRequest req = new RebalanceRequest(1L, 2L, BikeType.REGULAR, 2);
-        RebalanceResponse resp = sut.execute(req);
+        RebalanceResponse resp = sut.execute(1L, req);
 
         System.out.println("\n[After]");
         System.out.println("   Bikes successfully moved: " + resp.moved());

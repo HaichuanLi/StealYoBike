@@ -34,8 +34,8 @@ class UC8Test {
         UserRepository userRepository = mock(UserRepository.class);
         StationRepository stationRepository = mock(StationRepository.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-        UC8_RestoreInitialStateUseCase useCase =
-                new UC8_RestoreInitialStateUseCase(userRepository, stationRepository, eventPublisher);
+        UC8_RestoreInitialStateUseCase useCase = new UC8_RestoreInitialStateUseCase(userRepository, stationRepository,
+                eventPublisher);
 
         // --- Operator setup ---
         User operatorUser = new User();
@@ -44,20 +44,29 @@ class UC8Test {
         when(userRepository.findById(99L)).thenReturn(java.util.Optional.of(operatorUser));
 
         // --- Domain setup: two stations, two docks each ---
-        DockingStation stationA = new DockingStation(); stationA.setId(1L);
-        DockingStation stationB = new DockingStation(); stationB.setId(2L);
+        DockingStation stationA = new DockingStation();
+        stationA.setId(1L);
+        DockingStation stationB = new DockingStation();
+        stationB.setId(2L);
 
-        Dock dockA1 = new Dock(); dockA1.setId(11L);
-        Dock dockA2 = new Dock(); dockA2.setId(12L);
-        Dock dockB1 = new Dock(); dockB1.setId(21L);
-        Dock dockB2 = new Dock(); dockB2.setId(22L);
+        Dock dockA1 = new Dock();
+        dockA1.setId(11L);
+        Dock dockA2 = new Dock();
+        dockA2.setId(12L);
+        Dock dockB1 = new Dock();
+        dockB1.setId(21L);
+        Dock dockB2 = new Dock();
+        dockB2.setId(22L);
 
-        Bike bikeA = new Bike(); bikeA.setId(1001L);
-        Bike bikeB = new Bike(); bikeB.setId(1002L);
+        Bike bikeA = new Bike();
+        bikeA.setId(1001L);
+        Bike bikeB = new Bike();
+        bikeB.setId(1002L);
 
         // Station A: Dock A1 has bikeA; Dock A2 is empty
         dockA1.setBike(bikeA); // bikeA.dock is not set on purpose (will be fixed by UC8)
-        // Station B: Dock B1 has bikeB but with a bad back reference (bikeB.getDock() != dockB1)
+        // Station B: Dock B1 has bikeB but with a bad back reference (bikeB.getDock()
+        // != dockB1)
         dockB1.setBike(bikeB); // bikeB.dock remains null to simulate inconsistent state
         // Dock B2 empty
 
@@ -67,7 +76,7 @@ class UC8Test {
         when(stationRepository.findAll()).thenReturn(List.of(stationA, stationB));
         when(stationRepository.save(any(DockingStation.class))).thenAnswer(i -> i.getArgument(0));
 
-        //Before
+        // Before
         System.out.println("[Before Restore]");
         System.out.println("  Total stations before restore: 2");
         System.out.println("  Station A: 2 docks (first has bike, second empty)");
@@ -77,13 +86,13 @@ class UC8Test {
         System.out.println("  Dock B1 status: " + dockB1.getStatus() + " | bikeB current dock: " + bikeB.getDock());
         System.out.println("  Dock B2 status: " + dockB2.getStatus());
 
-        //action
+        // action
         System.out.println("\n[Action]");
         System.out.println("Executing UC8: restoring system to initial state for operator ID=99...");
-        RestoreInitialStateRequest request = new RestoreInitialStateRequest(99L);
-        RestoreInitialStateResponse response = useCase.execute(request);
+        RestoreInitialStateRequest request = new RestoreInitialStateRequest();
+        RestoreInitialStateResponse response = useCase.execute(99L, request);
 
-        //after
+        // after
         System.out.println("\n[After Restore]");
         System.out.println("  Stations restored: " + response.stations());
         System.out.println("  Docks restored:    " + response.docks());
@@ -96,12 +105,12 @@ class UC8Test {
         System.out.println("  Dock B2 status: " + dockB2.getStatus());
         System.out.println("[Result] All docks and bikes restored to consistent initial configuration.");
 
-        //Counts
+        // Counts
         assertThat(response.stations()).isEqualTo(2);
         assertThat(response.docks()).isEqualTo(4);
         assertThat(response.bikes()).isEqualTo(2);
 
-        //Status & Backref
+        // Status & Backref
         assertThat(dockA1.getStatus()).isEqualTo(DockStatus.OCCUPIED);
         assertThat(dockA2.getStatus()).isEqualTo(DockStatus.EMPTY);
         assertThat(dockB1.getStatus()).isEqualTo(DockStatus.OCCUPIED);
@@ -122,16 +131,16 @@ class UC8Test {
         UserRepository userRepository = mock(UserRepository.class);
         StationRepository stationRepository = mock(StationRepository.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-        UC8_RestoreInitialStateUseCase useCase =
-                new UC8_RestoreInitialStateUseCase(userRepository, stationRepository, eventPublisher);
+        UC8_RestoreInitialStateUseCase useCase = new UC8_RestoreInitialStateUseCase(userRepository, stationRepository,
+                eventPublisher);
 
         when(userRepository.findById(404L)).thenReturn(java.util.Optional.empty());
 
         System.out.println("[Before] No user exists for operatorId=404");
-        RestoreInitialStateRequest request = new RestoreInitialStateRequest(404L);
+        RestoreInitialStateRequest request = new RestoreInitialStateRequest();
 
         System.out.println("[Action] execute() expecting OperatorNotFoundException...");
-        assertThrows(OperatorNotFoundException.class, () -> useCase.execute(request));
+        assertThrows(OperatorNotFoundException.class, () -> useCase.execute(404L, request));
 
         verifyNoInteractions(stationRepository, eventPublisher);
         System.out.println("[Success] OperatorNotFoundException thrown; no state changes performed.\n");
@@ -144,17 +153,19 @@ class UC8Test {
         UserRepository userRepository = mock(UserRepository.class);
         StationRepository stationRepository = mock(StationRepository.class);
         ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-        UC8_RestoreInitialStateUseCase useCase =
-                new UC8_RestoreInitialStateUseCase(userRepository, stationRepository, eventPublisher);
+        UC8_RestoreInitialStateUseCase useCase = new UC8_RestoreInitialStateUseCase(userRepository, stationRepository,
+                eventPublisher);
 
-        User riderUser = new User(); riderUser.setId(12L); riderUser.setRole(Role.RIDER);
+        User riderUser = new User();
+        riderUser.setId(12L);
+        riderUser.setRole(Role.RIDER);
         when(userRepository.findById(12L)).thenReturn(java.util.Optional.of(riderUser));
 
         System.out.println("[Before] User 12 exists but role=RIDER");
-        RestoreInitialStateRequest request = new RestoreInitialStateRequest(12L);
+        RestoreInitialStateRequest request = new RestoreInitialStateRequest();
 
         System.out.println("[Action] execute() expecting ForbiddenOperationException...");
-        assertThrows(ForbiddenOperationException.class, () -> useCase.execute(request));
+        assertThrows(ForbiddenOperationException.class, () -> useCase.execute(12L, request));
 
         verifyNoInteractions(stationRepository, eventPublisher);
         System.out.println("[Success] ForbiddenOperationException thrown; no state changes performed.\n");
