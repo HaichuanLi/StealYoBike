@@ -29,9 +29,10 @@ public class UC7_OperatorSendBikeToMaintenance {
     private final ApplicationEventPublisher events;
 
     @Transactional
-    public OperatorSendBikeToMaintenanceResponse execute(OperatorSendBikeToMaintenanceRequest request) {
-        // authN/authZ
-        User operator = userRepository.findById(request.operatorId())
+    public OperatorSendBikeToMaintenanceResponse execute(Long operatorId,
+            OperatorSendBikeToMaintenanceRequest request) {
+        // authN/authZ: operatorId is provided by controller from Authentication
+        User operator = userRepository.findById(operatorId)
                 .orElseThrow(OperatorNotFoundException::new);
         if (operator.getRole() != Role.OPERATOR) {
             throw new ForbiddenOperationException("User is not authorized to perform this action");
@@ -52,7 +53,6 @@ public class UC7_OperatorSendBikeToMaintenance {
 
         return new OperatorSendBikeToMaintenanceResponse(
                 savedBike.getId(),
-                savedBike.getState().toString()
-        );
+                savedBike.getState().toString());
     }
 }

@@ -29,7 +29,8 @@ class UC6Test {
         StationRepository stationRepo = mock(StationRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
-        UC6_OperatorMarksStationOutOfService sut = new UC6_OperatorMarksStationOutOfService(stationRepo, publisher);
+        UC6_OperatorMarksStationOutOfService sut = new UC6_OperatorMarksStationOutOfService(stationRepo, publisher,
+                userRepo);
 
         // Mock operator
         User operator = new User();
@@ -69,7 +70,7 @@ class UC6Test {
 
         // Execute use case
         ChangeStationStateRequest request = new ChangeStationStateRequest(10L);
-        ChangeStationStateResponse response = sut.execute(request);
+        ChangeStationStateResponse response = sut.execute(1L, request);
 
         // Log the after-state
         System.out.println("\nAfter execution:");

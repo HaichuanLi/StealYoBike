@@ -7,6 +7,11 @@ import com.acme.bms.api.operator.ChangeStationStateRequest;
 import com.acme.bms.api.operator.ChangeStationStateResponse;
 import com.acme.bms.application.events.ChangeStationStatusEvent;
 import com.acme.bms.application.exception.StationNotFoundException;
+import com.acme.bms.domain.repo.UserRepository;
+import com.acme.bms.domain.entity.User;
+import com.acme.bms.application.exception.OperatorNotFoundException;
+import com.acme.bms.application.exception.ForbiddenOperationException;
+import com.acme.bms.domain.entity.Role;
 import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
@@ -21,9 +26,17 @@ public class UC6_OperatorMarksStationOutOfService {
 
     private final StationRepository stationRepository;
     private final ApplicationEventPublisher events;
+    private final UserRepository users;
 
     @Transactional
-    public ChangeStationStateResponse execute(ChangeStationStateRequest request) {
+    public ChangeStationStateResponse execute(Long operatorId, ChangeStationStateRequest request) {
+        // validate operator
+        User operator = users.findById(operatorId)
+                .orElseThrow(OperatorNotFoundException::new);
+        if (operator.getRole() != Role.OPERATOR) {
+            throw new ForbiddenOperationException("Only operators can change station state.");
+        }
+
         DockingStation station = stationRepository.findById(request.stationId())
                 .orElseThrow(() -> new StationNotFoundException(request.stationId()));
 

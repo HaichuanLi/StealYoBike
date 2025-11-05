@@ -19,6 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import com.acme.bms.application.events.StationsChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.acme.bms.domain.repo.UserRepository;
+import com.acme.bms.domain.entity.User;
+import com.acme.bms.application.exception.OperatorNotFoundException;
+import com.acme.bms.application.exception.ForbiddenOperationException;
+import com.acme.bms.domain.entity.Role;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ public class UC5_RebalanceBikesUseCase {
 
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
+    private final UserRepository userRepository;
     private ApplicationEventPublisher events;
 
     @Autowired(required = false)
@@ -34,7 +40,13 @@ public class UC5_RebalanceBikesUseCase {
     }
 
     @Transactional
-    public RebalanceResponse execute(RebalanceRequest req) {
+    public RebalanceResponse execute(Long operatorId, RebalanceRequest req) {
+        // authN/authZ: validate operator
+        User operator = userRepository.findById(operatorId)
+                .orElseThrow(OperatorNotFoundException::new);
+        if (operator.getRole() != Role.OPERATOR) {
+            throw new ForbiddenOperationException("User is not authorized to perform this action");
+        }
         DockingStation from = stationRepo.findById(req.fromStationId())
                 .orElseThrow(() -> new StationNotFoundException(req.fromStationId()));
         DockingStation to = stationRepo.findById(req.toStationId())

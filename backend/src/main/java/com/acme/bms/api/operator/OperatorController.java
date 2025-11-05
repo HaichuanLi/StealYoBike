@@ -8,6 +8,7 @@ import com.acme.bms.application.usecase.UC8_RestoreInitialStateUseCase;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -25,26 +26,44 @@ public class OperatorController {
     private final UC8_RestoreInitialStateUseCase uc8;
 
     @PostMapping("/rebalance")
-    public ResponseEntity<RebalanceResponse> rebalance(@Valid @RequestBody RebalanceRequest request) {
-        return ResponseEntity.ok(uc5.execute(request));
+    public ResponseEntity<RebalanceResponse> rebalance(@AuthenticationPrincipal String principal,
+            @Valid @RequestBody RebalanceRequest request) {
+        Long operatorId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc5.execute(operatorId, request));
     }
 
     @PostMapping("/stations/out-of-service")
     public ResponseEntity<ChangeStationStateResponse> markOutOfService(
-            @Valid @RequestBody ChangeStationStateRequest request) {
+            @AuthenticationPrincipal String principal, @Valid @RequestBody ChangeStationStateRequest request) {
+        Long operatorId = parsePrincipalToLong(principal);
 
-        return ResponseEntity.ok(uc6.execute(request));
+        return ResponseEntity.ok(uc6.execute(operatorId, request));
     }
 
     @PostMapping("/bikes/maintenance")
     public ResponseEntity<OperatorSendBikeToMaintenanceResponse> sendBikeToMaintenance(
+            @AuthenticationPrincipal String principal,
             @Valid @RequestBody OperatorSendBikeToMaintenanceRequest request) {
-        return ResponseEntity.ok(uc7.execute(request));
+        Long operatorId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc7.execute(operatorId, request));
     }
 
     @PostMapping("/restore-initial-state")
     public ResponseEntity<RestoreInitialStateResponse> restoreInitialState(
-            @Valid @RequestBody RestoreInitialStateRequest request) {
-        return ResponseEntity.ok(uc8.execute(request));
+            @AuthenticationPrincipal String principal, @Valid @RequestBody RestoreInitialStateRequest request) {
+        Long operatorId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc8.execute(operatorId, request));
+    }
+
+    private Long parsePrincipalToLong(Object principal) {
+        if (principal == null) {
+            throw new IllegalArgumentException("No authenticated principal available");
+        }
+        if (principal instanceof String) {
+            return Long.valueOf((String) principal);
+        } else if (principal instanceof Long) {
+            return (Long) principal;
+        }
+        return Long.valueOf(principal.toString());
     }
 }
