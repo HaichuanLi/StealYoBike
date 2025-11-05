@@ -120,9 +120,15 @@ public class DataInitConfig {
                                 .role(Role.OPERATOR)
                                 .fullName("operatorfullname")
                                 .build();
-                userRepository.save(operator);
-                log.info("Created default operator user with username '{}'",
-                                operator.getUsername());
+                // Only create the default operator if it doesn't already exist
+                if (!userRepository.existsByEmail(operator.getEmail())
+                                && !userRepository.existsByUsername(operator.getUsername())) {
+                        userRepository.save(operator);
+                        log.info("Created default operator user with username '{}'",
+                                        operator.getUsername());
+                } else {
+                        log.info("Default operator user already exists (email or username), skipping creation");
+                }
 
         }
 

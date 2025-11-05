@@ -9,9 +9,9 @@
 	let { selectedStation }: { selectedStation: number } = $props();
 
 	let station = $state<StationDetailResponse | null>(null);
+	let selectedDock = $state<StationDetailResponse['docks'][number] | null>(null);
 	// Remember the last stationId we fetched to avoid duplicate network calls
 	let lastFetchedStationId = $state<number | null>(null);
-	let selectedDock = $state<StationDetailResponse['docks'][number] | null>(null);
 
 	$effect(() => {
 		// If no station selected, clear state

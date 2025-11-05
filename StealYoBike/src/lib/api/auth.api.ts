@@ -2,7 +2,8 @@ import type {
 	LoginRequest,
 	LoginResponse,
 	RegisterRequest,
-	RegisterResponse
+	RegisterResponse,
+	UserInfoResponse
 } from '$lib/api/types';
 import type { AxiosResponse } from 'axios';
 import { api } from './index';
@@ -27,6 +28,11 @@ export const authApi = {
 		return response;
 	},
 
+	getCurrentUser: async (): Promise<AxiosResponse<UserInfoResponse>> => {
+		const response = await api.get<UserInfoResponse>('/auth/me');
+        return response;
+    },
+
 	logout: () => {
 		localStorage.removeItem('authToken');
 		// Clear any cookies if using cookie-based auth
@@ -35,7 +41,7 @@ export const authApi = {
 				.replace(/^ +/, '')
 				.replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
 		});
-		window.location.href = '/login';
+		//window.location.href = '/login';
 	},
 
 	isAuthenticated: (): boolean => {
@@ -45,4 +51,5 @@ export const authApi = {
 	getToken: (): string | null => {
 		return localStorage.getItem('authToken');
 	}
+	
 };
