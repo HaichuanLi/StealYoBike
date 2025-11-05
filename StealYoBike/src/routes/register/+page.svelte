@@ -107,8 +107,7 @@
 				id="paymentToken"
 				name="paymentToken"
 				type="text"
-				placeholder="Enter your payment token"
-				required
+				placeholder="Enter your payment token (can do later)"
 			/>
 		</div>
 		<button

@@ -50,6 +50,13 @@ export const authApi = {
 
 	getToken: (): string | null => {
 		return localStorage.getItem('authToken');
+	},
+
+	updatePaymentToken: async (paymentToken: string): Promise<AxiosResponse<UserInfoResponse>> => {
+		const response = await api.put<UserInfoResponse>('/auth/me/payment-token', {
+			paymentToken
+		});
+		return response;
 	}
 	
 };

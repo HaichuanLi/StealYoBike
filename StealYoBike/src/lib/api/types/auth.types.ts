@@ -31,4 +31,5 @@ export interface UserInfoResponse {
     username: string;
     fullName: string;
     role: string;
+	paymentToken: string;
 }

@@ -28,6 +28,12 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
+  </dependency>
+
     <!-- JPA / Hibernate -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
