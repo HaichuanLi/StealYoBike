@@ -20,12 +20,12 @@ public class AvailableState extends BikeState {
     @Override
     public boolean checkoutBike() {
         System.out.println("Please reserve the bike before checking out.");
-        return true;
+        return false;
     }
 
     @Override
     public boolean returnBike(Dock dock) {
-        System.out.println("Bike successfully return");
+        System.out.println("Bike successfully returned (no action needed).");
         return false;
     }
 

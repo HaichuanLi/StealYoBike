@@ -1,7 +1,5 @@
 package com.acme.bms.domain.entity;
 
-import java.awt.Label;
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,8 +18,10 @@ public class Bill {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-    private Trip trip;
-    private double totalAmount = 0;
+	@ManyToOne
+	@JoinColumn(name = "trip_id")
+	private Trip trip;
+	private double totalAmount = 0;
 
 	private LocalDateTime createdAt;
 
