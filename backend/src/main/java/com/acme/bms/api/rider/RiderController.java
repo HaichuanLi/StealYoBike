@@ -51,6 +51,14 @@ public class RiderController {
         return ResponseEntity.ok(res);
     }
 
+    @PostMapping("/cancel-reservation")
+    public ResponseEntity<ReservationCancelResponse> cancelReservation(
+            @AuthenticationPrincipal String principal) {
+        Long riderId = parsePrincipalToLong(principal);
+        ReservationCancelResponse res = reserveUC.cancelCurrentReservation(riderId);
+        return ResponseEntity.ok(res);
+    }
+
     private Long parsePrincipalToLong(Object principal) {
         if (principal == null) {
             throw new IllegalArgumentException("No authenticated principal available");

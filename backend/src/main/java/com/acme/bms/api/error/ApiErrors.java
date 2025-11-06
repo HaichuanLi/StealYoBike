@@ -75,6 +75,14 @@ public class ApiErrors {
                 "https://api.bms/errors/not-found", Map.of());
     }
 
+    @ExceptionHandler(com.acme.bms.application.exception.ReservationNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> reservationNotFound(
+            com.acme.bms.application.exception.ReservationNotFoundException ex) {
+        logger.info("Reservation not found: {}", ex.getMessage());
+        return problem(404, "Not found", ex.getMessage(),
+                "https://api.bms/errors/not-found", Map.of());
+    }
+
     @ExceptionHandler(StationAlreadyOutOfServiceException.class)
     public ResponseEntity<Map<String, Object>> alreadyOos(StationAlreadyOutOfServiceException ex) {
         return problem(409, "Conflict", ex.getMessage(),
@@ -85,6 +93,13 @@ public class ApiErrors {
     public ResponseEntity<Map<String, Object>> noBikes(NoAvailableBikesException ex) {
         return problem(422, "No bikes available", ex.getMessage(),
                 "https://api.bms/errors/unprocessable", Map.of());
+    }
+
+    @ExceptionHandler(ActiveReservationOrTripExistsException.class)
+    public ResponseEntity<Map<String, Object>> activeReservationOrTripExists(
+            ActiveReservationOrTripExistsException ex) {
+        return problem(409, "Conflict", ex.getMessage(),
+                "https://api.bms/errors/conflict", Map.of());
     }
 
     @ExceptionHandler(TripNotActiveException.class)
