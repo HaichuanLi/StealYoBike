@@ -3,7 +3,7 @@
 	import { riderApi } from '$lib/api/rider.api';
 	import type { StationSummary } from '$lib/api/types';
 	import type { UserInfoResponse } from '$lib/api/types/auth.types';
-	import type { ReserveBikeResponse } from '$lib/api/types/rider.types';
+	import type { ReserveBikeResponse, TripInfoResponse } from '$lib/api/types/rider.types';
 	import DashboardBody from '$lib/components/DashboardBody/DashboardBody.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
@@ -11,12 +11,14 @@
 	import PinPopup from '$lib/components/PinPopup/PinPopup.svelte';
 	import ReservationCard from '$lib/components/ReservationCard/ReservationCard.svelte';
 	import StationCard from '$lib/components/StationCard/StationCard.svelte';
+	import TripCard from '$lib/components/TripCard/TripCard.svelte';
 	import { onMount } from 'svelte';
 
 	let selectedStation = $state<StationSummary | null>(null);
 	let user = $state<UserInfoResponse | null>(null);
 	let loading = $state(true);
 	let reservation = $state<ReserveBikeResponse | null>(null);
+	let currentTrip = $state<TripInfoResponse | null>(null);
 
 	let showPaymentPopup = $state(false);
 	let paymentTokenInput = $state('');
@@ -34,15 +36,30 @@
 	let isReservationExpired = $derived(
 		reservation !== null && new Date(reservation.expiresAt) < new Date()
 	);
-	// TODO: Add currentTrip state when trip functionality is implemented
-	let hasActiveReservationOrTrip = $derived(reservation !== null);
+	let hasActiveReservationOrTrip = $derived(reservation !== null || currentTrip !== null);
 
 	onMount(async () => {
 		try {
 			const response = await authApi.getCurrentUser();
 			user = response.data;
-			const reservationResponse = await riderApi.getCurrentReservation();
-			reservation = reservationResponse.data;
+
+			// Try to get current reservation
+			try {
+				const reservationResponse = await riderApi.getCurrentReservation();
+				reservation = reservationResponse.data;
+			} catch (error) {
+				// No active reservation
+				reservation = null;
+			}
+
+			// Try to get current trip
+			try {
+				const tripResponse = await riderApi.getCurrentTrip();
+				currentTrip = tripResponse.data;
+			} catch (error) {
+				// No active trip
+				currentTrip = null;
+			}
 		} catch (error) {
 			console.error('Failed to load user:', error);
 			user = null;
@@ -63,13 +80,19 @@
 		reservation = response.data;
 	}
 
-	function handleReturnBike() {
+	async function handleReturnBike() {
 		if (!hasPaymentMethod) {
 			showPaymentPopup = true;
 			return;
 		}
-		console.log('Returning bike...');
-		// cook return logic
+		const response = await riderApi.returnBike({
+			tripId: currentTrip?.tripId!,
+			stationId: selectedStation?.stationId!
+		});
+		if (response.status === 200) {
+			console.log('Return bike response:', response);
+			currentTrip = null;
+		}
 	}
 
 	async function handleCancelReservation() {
@@ -100,8 +123,8 @@
 				pin: pin
 			});
 			reservation = null;
+			currentTrip = response.data;
 			closePinPopup();
-			alert('Bike checked out successfully!');
 		} catch (error) {
 			console.error('Failed to checkout bike:', error);
 			throw error;
@@ -134,23 +157,28 @@
 	<div>
 		<Map bind:selectedStation />
 	</div>
-	<div class="flex flex-col gap-4">
+	<div class="flex min-h-fit flex-col gap-4">
 		<StationCard
 			station={selectedStation}
 			{hasPaymentMethod}
 			{hasActiveReservationOrTrip}
+			{currentTrip}
 			bind:isElectric
 			onReserveBike={handleReserveBike}
 			onReturnBike={handleReturnBike}
 			onAddPayment={handleAddPayment}
 		/>
-		<ReservationCard
-			{reservation}
-			{loading}
-			{hasPaymentMethod}
-			onCancel={handleCancelReservation}
-			onCheckout={handleCheckoutBike}
-		/>
+		{#if currentTrip}
+			<TripCard trip={currentTrip} {loading} {selectedStation} />
+		{:else}
+			<ReservationCard
+				{reservation}
+				{loading}
+				{hasPaymentMethod}
+				onCancel={handleCancelReservation}
+				onCheckout={handleCheckoutBike}
+			/>
+		{/if}
 	</div>
 </DashboardBody>
 

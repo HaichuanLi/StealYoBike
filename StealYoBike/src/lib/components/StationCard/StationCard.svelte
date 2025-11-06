@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { StationSummary } from '$lib/api/types';
+	import type { TripInfoResponse } from '$lib/api/types/rider.types';
 	import BikeTypeToggle from '$lib/components/BikeTypeToggle/BikeTypeToggle.svelte';
 	import Button from '$lib/components/Button/Button.svelte';
 	import StationDockList from '$lib/components/StationDetails/StationDockList.svelte';
@@ -9,6 +10,7 @@
 		station: StationSummary | null;
 		hasPaymentMethod: boolean;
 		hasActiveReservationOrTrip: boolean;
+		currentTrip: TripInfoResponse | null;
 		isElectric?: boolean;
 		onReserveBike: () => void;
 		onReturnBike: () => void;
@@ -19,6 +21,7 @@
 		station,
 		hasPaymentMethod,
 		hasActiveReservationOrTrip,
+		currentTrip,
 		isElectric = $bindable(false),
 		onReserveBike,
 		onReturnBike,
@@ -52,6 +55,22 @@
 				station={stationState.stationDetails}
 				bind:selectedDock={stationState.selectedDock}
 			/>
+			{#if currentTrip}
+				<div class="my-4 flex flex-col items-center justify-center">
+					{#if stationState.stationDetails.docks.filter((dock) => dock.status === 'EMPTY').length === 0}
+						<p class="mb-2 text-sm text-gray-600">
+							No dock is currently available at this station.
+						</p>
+					{:else}
+						<Button
+							onclick={onReturnBike}
+							text="Return Bike"
+							disable={!hasPaymentMethod}
+							variant="blue"
+						/>
+					{/if}
+				</div>
+			{/if}
 		{:else}
 			<BikeTypeToggle bind:isElectric />
 			<div class="flex flex-col items-center justify-center">

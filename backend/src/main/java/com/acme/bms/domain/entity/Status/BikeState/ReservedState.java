@@ -19,6 +19,12 @@ public class ReservedState extends BikeState {
     public boolean checkoutBike() {
         bike.setState(new OnTripState(bike));
         bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.ON_TRIP);
+        Dock dock = bike.getDock();
+        if (dock != null) {
+            dock.setStatus(com.acme.bms.domain.entity.Status.DockStatus.EMPTY);
+            dock.setBike(null);
+        }
+        bike.setDock(null); // Clear bike's dock reference when checked out
         System.out.println("Bike checked out successfully.");
         return true;
     }
