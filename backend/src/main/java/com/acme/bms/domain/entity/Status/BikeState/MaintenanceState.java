@@ -39,6 +39,16 @@ public class MaintenanceState extends BikeState {
     }
 
     @Override
+    public boolean activateFromMaintenance() {
+        bike.setState(new AvailableState(bike));
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.AVAILABLE);
+        // clear forced flag when bike is activated
+        bike.setMaintenanceForced(false);
+        System.out.println("Bike activated from maintenance and is now available.");
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "Maintenance";
     }

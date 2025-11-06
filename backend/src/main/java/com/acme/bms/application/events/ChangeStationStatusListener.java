@@ -50,4 +50,11 @@ public class ChangeStationStatusListener {
                 event.tripId(), event.userId(), event.bikeId(), event.stationId());
         stationSseService.broadcastStations();
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(OperatorSendBikeToMaintenanceEvent event) {
+        log.info("OperatorSendBikeToMaintenanceEvent: operatorId={}, bikeId={}",
+                event.operatorId(), event.bikeId());
+        stationSseService.broadcastStations();
+    }
 }

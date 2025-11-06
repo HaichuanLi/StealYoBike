@@ -26,5 +26,17 @@
 			station={stationState.stationDetails}
 			bind:selectedDock={stationState.selectedDock}
 		/>
+		{#if stationState.selectedDock?.bike}
+			<div class="flex justify-center">
+				<Button
+					text={stationState.selectedDock.bike.status === 'Available'
+						? 'Send for Maintenance'
+						: 'Activate Bike'}
+					variant={stationState.selectedDock.bike.status === 'Available' ? 'red' : 'green'}
+					onclick={async () =>
+						await operatorApi.toggleBikeStatus(stationState.selectedDock!.bike!.bikeId!)}
+				/>
+			</div>
+		{/if}
 	</div>
 {/if}
