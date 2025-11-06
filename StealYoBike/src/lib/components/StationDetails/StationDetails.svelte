@@ -10,9 +10,10 @@
 </script>
 
 {#if stationState.stationDetails}
-	<div class="flex size-full flex-col gap-4 rounded-xl">
-		<div class="h-[15%] w-full content-center rounded-t-xl bg-lime-300 text-center">
-			<span class="text-4xl font-bold">{stationState.stationDetails.name}</span>
+	<div class="flex size-full flex-col gap-4 rounded-xl bg-amber-100">
+		<div class="h-[15%] min-h-fit w-full content-center rounded-t-xl bg-lime-300 text-center">
+			<span class="text-lg font-semibold">{stationState.stationDetails.name}</span>
+			<p class="text-sm">{stationState.stationDetails.streetAddress}</p>
 		</div>
 		<div class="content-center place-self-center">
 			<Button
@@ -27,7 +28,7 @@
 			bind:selectedDock={stationState.selectedDock}
 		/>
 		{#if stationState.selectedDock?.bike}
-			<div class="flex justify-center">
+			<div class="flex justify-center p-4">
 				<Button
 					text={stationState.selectedDock.bike.status === 'Available'
 						? 'Send for Maintenance'
