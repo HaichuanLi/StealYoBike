@@ -98,4 +98,9 @@ public class Bike {
         return state.sendToMaintenance();
     }
 
+    public boolean activateFromMaintenance() {
+        ensureState();
+        return state.activateFromMaintenance();
+    }
+
 }

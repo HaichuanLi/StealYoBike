@@ -48,6 +48,14 @@ public class OperatorController {
         return ResponseEntity.ok(uc7.execute(operatorId, request));
     }
 
+    @PostMapping("/bikes/out-of-service")
+    public ResponseEntity<OperatorSendBikeToMaintenanceResponse> toggleBikeStatus(
+            @AuthenticationPrincipal String principal,
+            @Valid @RequestBody OperatorSendBikeToMaintenanceRequest request) {
+        Long operatorId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc7.execute(operatorId, request));
+    }
+
     @PostMapping("/restore-initial-state")
     public ResponseEntity<RestoreInitialStateResponse> restoreInitialState(
             @AuthenticationPrincipal String principal, @Valid @RequestBody RestoreInitialStateRequest request) {

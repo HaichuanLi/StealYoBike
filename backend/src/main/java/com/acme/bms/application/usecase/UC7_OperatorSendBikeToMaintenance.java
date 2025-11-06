@@ -42,11 +42,22 @@ public class UC7_OperatorSendBikeToMaintenance {
         Bike bike = bikeRepository.findById(request.bikeId())
                 .orElseThrow(() -> new BikeNotFoundException(request.bikeId()));
 
-        // state transition
-        if (!bike.sendToMaintenance()) {
+        // Toggle state transition
+        boolean success;
+        if (bike.getStatus() == com.acme.bms.domain.entity.Status.BikeStatus.MAINTENANCE) {
+            // Activate bike from maintenance
+            success = bike.activateFromMaintenance();
+        } else {
+            // Send bike to maintenance
+            success = bike.sendToMaintenance();
+            if (success) {
+                bike.setState(new MaintenanceState(bike));
+            }
+        }
+
+        if (!success) {
             throw new BikeMaintenanceStateException();
         }
-        bike.setState(new MaintenanceState(bike));
 
         Bike savedBike = bikeRepository.save(bike);
         events.publishEvent(new OperatorSendBikeToMaintenanceEvent(operator.getId(), savedBike.getId()));

@@ -52,7 +52,7 @@ class UC7Test {
 
         // Execute use case directly with operatorId (controller is responsible for
         // extracting principal)
-        OperatorSendBikeToMaintenanceRequest request = new OperatorSendBikeToMaintenanceRequest(100L, null);
+        OperatorSendBikeToMaintenanceRequest request = new OperatorSendBikeToMaintenanceRequest(100L);
         OperatorSendBikeToMaintenanceResponse response = sut.execute(1L, request);
 
         // Log after execution
@@ -67,5 +67,52 @@ class UC7Test {
         verify(bikeRepo).save(bike);
         verify(publisher).publishEvent(isA(OperatorSendBikeToMaintenanceEvent.class));
         System.out.println("\nTest passed: Bike correctly transitioned to Maintenance state.");
+    }
+
+    @Test
+    void execute_activatesBikeFromMaintenance_and_publishesEvent() {
+        System.out.println("UC7 TEST: Operator activates bike from maintenance (toggle)");
+
+        // Mock dependencies
+        BikeRepository bikeRepo = mock(BikeRepository.class);
+        UserRepository userRepo = mock(UserRepository.class);
+        ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+        UC7_OperatorSendBikeToMaintenance sut = new UC7_OperatorSendBikeToMaintenance(bikeRepo, userRepo, publisher);
+
+        // Mock operator
+        User operator = new User();
+        operator.setId(1L);
+        operator.setRole(Role.OPERATOR);
+        when(userRepo.findById(1L)).thenReturn(Optional.of(operator));
+
+        // Mock bike in maintenance state
+        Bike bike = spy(new Bike());
+        bike.setId(100L);
+        bike.setState(new MaintenanceState(bike)); // bike initially in maintenance
+        bike.setStatus(com.acme.bms.domain.entity.Status.BikeStatus.MAINTENANCE);
+
+        when(bikeRepo.findById(100L)).thenReturn(Optional.of(bike));
+        when(bikeRepo.save(bike)).thenReturn(bike);
+
+        // Log preconditions
+        System.out.println("Before execution:");
+        System.out.println("  Bike ID: " + bike.getId() + " | State: " + bike.getState());
+
+        // Execute use case - should toggle from Maintenance to Available
+        OperatorSendBikeToMaintenanceRequest request = new OperatorSendBikeToMaintenanceRequest(100L);
+        OperatorSendBikeToMaintenanceResponse response = sut.execute(1L, request);
+
+        // Log after execution
+        System.out.println("\nAfter execution:");
+        System.out.println("  Bike ID: " + bike.getId() + " | State: " + bike.getState());
+        System.out.println("  Response -> Bike ID: " + response.bikeId() + ", State: " + response.state());
+
+        // Verify
+        assertThat(response.bikeId()).isEqualTo(100L);
+        assertThat(response.state()).isEqualTo("Available");
+        assertThat(bike.getState()).isInstanceOf(AvailableState.class);
+        verify(bikeRepo).save(bike);
+        verify(publisher).publishEvent(isA(OperatorSendBikeToMaintenanceEvent.class));
+        System.out.println("\nTest passed: Bike correctly transitioned from Maintenance to Available state.");
     }
 }

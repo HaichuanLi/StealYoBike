@@ -24,7 +24,6 @@ public class StationSseService {
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
     private final ObjectMapper mapper = new ObjectMapper();
-    private volatile String lastPayloadJson = null;
 
     @Transactional(readOnly = true)
     public SseEmitter subscribe() {
@@ -43,9 +42,6 @@ public class StationSseService {
             String json = null;
             try {
                 json = mapper.writeValueAsString(payload);
-                synchronized (this) {
-                    lastPayloadJson = json;
-                }
             } catch (JsonProcessingException e) {
             }
 
@@ -70,15 +66,6 @@ public class StationSseService {
             payloadJson = mapper.writeValueAsString(payload);
         } catch (JsonProcessingException e) {
             payloadJson = null;
-        }
-
-        if (payloadJson != null) {
-            synchronized (this) {
-                if (payloadJson.equals(lastPayloadJson)) {
-                    return;
-                }
-                lastPayloadJson = payloadJson;
-            }
         }
 
         for (SseEmitter emitter : emitters) {

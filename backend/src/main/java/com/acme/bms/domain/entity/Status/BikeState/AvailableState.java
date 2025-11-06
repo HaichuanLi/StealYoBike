@@ -39,6 +39,12 @@ public class AvailableState extends BikeState {
     }
 
     @Override
+    public boolean activateFromMaintenance() {
+        System.out.println("Bike is already available.");
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "Available";
     }

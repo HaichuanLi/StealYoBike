@@ -16,7 +16,9 @@ public abstract class BikeState {
 
     public abstract boolean returnBike(Dock dock);
 
-    public abstract boolean sendToMaintenance(); 
+    public abstract boolean sendToMaintenance();
+
+    public abstract boolean activateFromMaintenance();
 
     public abstract String toString();
 }

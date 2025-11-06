@@ -53,6 +53,12 @@ public class ReservedState extends BikeState {
     }
 
     @Override
+    public boolean activateFromMaintenance() {
+        System.out.println("Bike is reserved, not in maintenance.");
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "Reserved";
     }

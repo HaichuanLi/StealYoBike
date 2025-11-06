@@ -15,5 +15,17 @@ export const operatorApi = {
 			console.error('Error toggling station status:', error);
 			throw error;
 		}
+	},
+	toggleBikeStatus: async (bikeId: number): Promise<AxiosResponse<ChangeStationResponse>> => {
+		try {
+			const response = await api.post(`operator/bikes/out-of-service`, {
+				bikeId: bikeId
+			});
+			console.warn(response);
+			return response;
+		} catch (error) {
+			console.error('Error toggling bike status:', error);
+			throw error;
+		}
 	}
 };

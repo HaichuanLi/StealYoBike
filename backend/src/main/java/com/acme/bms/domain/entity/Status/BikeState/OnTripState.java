@@ -60,6 +60,12 @@ public class OnTripState extends BikeState {
     }
 
     @Override
+    public boolean activateFromMaintenance() {
+        System.out.println("Bike is on trip, not in maintenance.");
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "On Trip";
     }
