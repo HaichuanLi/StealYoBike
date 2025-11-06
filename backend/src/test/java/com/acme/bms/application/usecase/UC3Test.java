@@ -39,16 +39,15 @@ class UC3Test {
         StationRepository stationRepo = mock(StationRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
 
-        UC3_ReserveCheckoutUseCase sut =
-                new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo, userRepo);
+        UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo,
+                userRepo);
 
-        String currentUsername = "victor";
         ReserveBikeRequest req = new ReserveBikeRequest(100L, BikeType.ELECTRIC);
 
-        // Mock user
+        // Mock user (use id lookup; UC3 uses findById)
         User rider = new User();
         rider.setId(1L);
-        when(userRepo.findByUsername(currentUsername)).thenReturn(Optional.of(rider));
+        when(userRepo.findById(rider.getId())).thenReturn(Optional.of(rider));
 
         // Mock station + bike
         DockingStation station = mock(DockingStation.class);
@@ -68,8 +67,8 @@ class UC3Test {
             return r;
         });
 
-        System.out.println("[Action] Executing UC3 for user '" + currentUsername + "'");
-        ReserveBikeResponse resp = sut.execute(req, currentUsername);
+        System.out.println("[Action] Executing UC3 for user '" + rider.getId() + "'");
+        ReserveBikeResponse resp = sut.execute(req, rider.getId());
 
         System.out.println("[After] Verifying results...");
         assertThat(resp.reservationId()).isEqualTo(999L);
@@ -103,15 +102,14 @@ class UC3Test {
         StationRepository stationRepo = mock(StationRepository.class);
         UserRepository userRepo = mock(UserRepository.class);
 
-        UC3_ReserveCheckoutUseCase sut =
-                new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo, userRepo);
+        UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, publisher, stationRepo,
+                userRepo);
 
-        String currentUsername = "victor";
         ReserveBikeRequest req = new ReserveBikeRequest(200L, BikeType.REGULAR); // ✅ changed from MECHANICAL
 
         User rider = new User();
         rider.setId(10L);
-        when(userRepo.findByUsername(currentUsername)).thenReturn(Optional.of(rider));
+        when(userRepo.findById(rider.getId())).thenReturn(Optional.of(rider));
 
         DockingStation station = mock(DockingStation.class);
         when(stationRepo.findById(200L)).thenReturn(Optional.of(station));
@@ -120,7 +118,7 @@ class UC3Test {
         System.out.println("[Action] Executing UC3 expecting NoAvailableBikesException...");
         NoAvailableBikesException ex = assertThrows(
                 NoAvailableBikesException.class,
-                () -> sut.execute(req, currentUsername));
+                () -> sut.execute(req, rider.getId()));
 
         System.out.println("[After] Exception caught successfully:");
         System.out.println("   Message: " + ex.getMessage());

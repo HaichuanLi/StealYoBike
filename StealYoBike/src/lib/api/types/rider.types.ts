@@ -17,7 +17,7 @@ export interface ReserveBikeResponse {
 	reservationId: number;
 	bikeId: number;
 	stationId: number;
-	expirationTime: string;
+	expiresAt: string;
 	pin: string;
 }
 export interface ReturnBikeRequest {
@@ -31,4 +31,11 @@ export interface ReturnBikeResponse {
 	endTime: string;
 	totalCost: number;
 	status: string;
+}
+export interface ReservationInfoResponse {
+	reservationId: number;
+	bikeId: number;
+	stationId: number;
+	expiresAt: string;
+	pin: string;
 }

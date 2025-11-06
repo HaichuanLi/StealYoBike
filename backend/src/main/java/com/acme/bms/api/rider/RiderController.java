@@ -23,11 +23,11 @@ public class RiderController {
     // UC3: Reserve a bike
     @PostMapping("/reserve")
     public ResponseEntity<ReserveBikeResponse> reserveBike(
-            @AuthenticationPrincipal org.springframework.security.core.userdetails.User principal,
+            @AuthenticationPrincipal String principal,
             @Valid @RequestBody ReserveBikeRequest request) {
-
+        Long riderId = parsePrincipalToLong(principal);
         // pass current username to the use case
-        ReserveBikeResponse out = reserveUC.execute(request, principal != null ? principal.getUsername() : null);
+        ReserveBikeResponse out = reserveUC.execute(request, riderId);
         return ResponseEntity.created(URI.create("/api/rider/reservations/" + out.reservationId())).body(out);
     }
 
@@ -37,9 +37,29 @@ public class RiderController {
         return ResponseEntity.ok(returnUC.execute(request));
     }
 
-    //quickly verify authentication and display the correct user state
+    // quickly verify authentication and display the correct user state
     @GetMapping("/me")
     public Map<String, Object> me(@AuthenticationPrincipal org.springframework.security.core.userdetails.User user) {
         return Map.of("username", user != null ? user.getUsername() : null);
+    }
+
+    @GetMapping("/current-reservation")
+    public ResponseEntity<ReservationInfoResponse> getCurrentReservation(
+            @AuthenticationPrincipal String principal) {
+        Long riderId = parsePrincipalToLong(principal);
+        ReservationInfoResponse res = reserveUC.getCurrentReservation(riderId);
+        return ResponseEntity.ok(res);
+    }
+
+    private Long parsePrincipalToLong(Object principal) {
+        if (principal == null) {
+            throw new IllegalArgumentException("No authenticated principal available");
+        }
+        if (principal instanceof String) {
+            return Long.valueOf((String) principal);
+        } else if (principal instanceof Long) {
+            return (Long) principal;
+        }
+        return Long.valueOf(principal.toString());
     }
 }
