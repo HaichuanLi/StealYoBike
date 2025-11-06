@@ -60,7 +60,7 @@
 			</div>
 		{/if}
 	</div>
-	<div class="h-full min-h-fit w-1/2 rounded-2xl bg-amber-100 p-4">
+	<div class="h-full min-h-fit w-1/2 rounded-2xl bg-amber-200 p-4">
 		{#if selectedDock?.bike}
 			<div class="text-lg font-semibold">Bike details</div>
 			<div class="mt-2">ID: {selectedDock.bike.bikeId}</div>

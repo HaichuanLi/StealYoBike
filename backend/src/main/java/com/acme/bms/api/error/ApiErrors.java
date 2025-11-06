@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.hibernate.LazyInitializationException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,6 +156,14 @@ public class ApiErrors {
         return problem(500, "Internal Server Error",
                 "An I/O error occurred. If the issue persists, contact support.",
                 "https://api.bms/errors/internal", Map.of());
+    }
+
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public ResponseEntity<Map<String, Object>> asyncTimeout(AsyncRequestTimeoutException ex) {
+        // SSE connections timing out during shutdown is expected behavior
+        // Log at debug level to avoid polluting error logs
+        logger.debug("Async request timeout (likely SSE connection during shutdown)");
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(Exception.class)

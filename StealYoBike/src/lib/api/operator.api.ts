@@ -1,7 +1,11 @@
 import type {} from '$lib/api/types';
 import type { AxiosResponse } from 'axios';
 import { api } from './index';
-import type { ChangeStationResponse } from './types/operator.type';
+import type {
+	ChangeStationResponse,
+	RebalanceRequest,
+	RebalanceResponse
+} from './types/operator.type';
 
 export const operatorApi = {
 	toggleStationStatus: async (stationId: number): Promise<AxiosResponse<ChangeStationResponse>> => {
@@ -25,6 +29,16 @@ export const operatorApi = {
 			return response;
 		} catch (error) {
 			console.error('Error toggling bike status:', error);
+			throw error;
+		}
+	},
+	rebalanceBikes: async (request: RebalanceRequest): Promise<AxiosResponse<RebalanceResponse>> => {
+		try {
+			const response = await api.post<RebalanceResponse>('operator/rebalance', request);
+			console.log('Rebalance response:', response.data);
+			return response;
+		} catch (error) {
+			console.error('Error rebalancing bikes:', error);
 			throw error;
 		}
 	}
