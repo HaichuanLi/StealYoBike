@@ -20,3 +20,13 @@ export interface RebalanceResponse {
 	fromStationId: number;
 	toStationId: number;
 }
+
+export type RestoreInitialStateRequest = Record<string, never>;
+
+export interface RestoreInitialStateResponse {
+	stations: number;
+	docks: number;
+	bikes: number;
+	message: string;
+	restoredAt: string; // ISO 8601 timestamp
+}

@@ -5,11 +5,12 @@
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
 	import RebalanceBikes from '$lib/components/RebalanceBikes/RebalanceBikes.svelte';
+	import RestoreInitialState from '$lib/components/RestoreInitialState/RestoreInitialState.svelte';
 	import StationDetails from '$lib/components/StationDetails/StationDetails.svelte';
 	import { stationsSnapshot } from '$lib/stores/stations';
 
 	let selectedStation = $state<StationSummary | null>(null);
-	let activeView = $state<'station' | 'rebalance'>('station');
+	let activeView = $state<'station' | 'rebalance' | 'restore'>('station');
 
 	// Get all stations for the rebalance component
 	let allStations = $derived($stationsSnapshot || []);
@@ -35,6 +36,11 @@
 					variant={activeView === 'rebalance' ? 'teal' : 'green'}
 					onclick={() => (activeView = 'rebalance')}
 				/>
+				<Button
+					text="Restore State"
+					variant={activeView === 'restore' ? 'teal' : 'green'}
+					onclick={() => (activeView = 'restore')}
+				/>
 			</div>
 
 			<!-- Content Area -->
@@ -51,6 +57,13 @@
 						onRebalanceComplete={() => {
 							// The map will automatically update via SSE
 							console.log('Rebalance completed successfully');
+						}}
+					/>
+				{:else if activeView === 'restore'}
+					<RestoreInitialState
+						onRestoreComplete={() => {
+							// The map will automatically update via SSE
+							console.log('Initial state restored successfully');
 						}}
 					/>
 				{/if}
