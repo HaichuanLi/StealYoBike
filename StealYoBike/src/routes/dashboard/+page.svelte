@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { authApi } from '$lib/api/auth.api';
+	import { riderApi } from '$lib/api/rider.api';
 	import type { StationSummary } from '$lib/api/types';
 	import type { UserInfoResponse } from '$lib/api/types/auth.types';
+	import type { ReserveBikeResponse } from '$lib/api/types/rider.types';
 	import Button from '$lib/components/Button/Button.svelte';
 	import DashboardBody from '$lib/components/DashboardBody/DashboardBody.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
@@ -16,15 +18,17 @@
 	let showPaymentPopup = $state(false);
 	let paymentTokenInput = $state('');
 	let savingPayment = $state(false);
-	// bike type toggle: false = O (default), true = I
 	let isElectric = $state(false);
 
 	let hasPaymentMethod = $derived(user?.paymentToken != null && user?.paymentToken !== '');
+	let reservation = $state<ReserveBikeResponse | null>(null);
 
 	onMount(async () => {
 		try {
 			const response = await authApi.getCurrentUser();
 			user = response.data;
+			const reservationResponse = await riderApi.getCurrentReservation();
+			reservation = reservationResponse.data;
 		} catch (error) {
 			console.error('Failed to load user:', error);
 			user = null;
@@ -33,13 +37,16 @@
 		}
 	});
 
-	function handleReserveBike() {
+	async function handleReserveBike() {
 		if (!hasPaymentMethod) {
 			showPaymentPopup = true;
 			return;
 		}
-		console.log('Reserving bike...');
-		// cook up reserve logic
+		const response = await riderApi.reserveBike({
+			stationId: selectedStation?.stationId!,
+			bikeType: isElectric ? 'ELECTRIC' : 'REGULAR'
+		});
+		reservation = response.data;
 	}
 
 	function handleReturnBike() {
@@ -67,18 +74,19 @@
 	<div>
 		<Map bind:selectedStation />
 	</div>
-	<div>
-		<div class="size-full rounded-xl bg-lime-50">
+	<div class="flex flex-col gap-4">
+		<div class="grow rounded-xl bg-lime-50">
 			{#if selectedStation}
 				<div
-					class="h-[15%] w-full content-center rounded-t-xl {isElectric
+					class="h-[15%] min-h-fit w-full content-center rounded-t-xl {isElectric
 						? 'bg-cyan-300'
 						: 'bg-lime-300'} p-4 text-center"
 				>
-					<h2 class="text-lg font-semibold">{selectedStation.name}</h2>
+					<h2 class="text-lg font-semibold">
+						{selectedStation.name}, ID: {selectedStation.stationId}
+					</h2>
 					<p class="text-sm">{selectedStation.streetAddress}</p>
 				</div>
-				<!-- switch toggle for bike type -->
 				<div class="flex items-center py-3">
 					<div class="relative m-auto h-[32px] w-[163px]">
 						<input
@@ -129,6 +137,20 @@
 				<div class="h-full content-center text-center">Select a Station to get Started!</div>
 			{/if}
 		</div>
+		{#if reservation}
+			<div class="mt-4 rounded-xl bg-lime-50 p-4">
+				<h3 class="mb-2 text-lg font-semibold">Reservation Details</h3>
+				<p>Reservation ID: {reservation.reservationId}</p>
+				<p>Bike ID: {reservation.bikeId}</p>
+				<p>Station ID: {reservation.stationId}</p>
+				<p>Expires At: {new Date(reservation.expiresAt).toLocaleString()}</p>
+				<p>PIN: {reservation.pin}</p>
+			</div>
+		{:else if !loading}
+			<div class="mt-4 rounded-xl bg-lime-50 p-4 text-center">
+				<p>No active reservations.</p>
+			</div>
+		{/if}
 	</div>
 </DashboardBody>
 

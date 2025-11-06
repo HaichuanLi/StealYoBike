@@ -65,9 +65,7 @@ api.interceptors.response.use(
 		});
 
 		if (response?.status === 401) {
-			console.warn('[API] Received 401 Unauthorized, clearing auth and redirecting to login');
-			// Clear auth token
-			localStorage.removeItem('authToken');
+			console.warn('[API] Received 401 Unauthorized');
 		} else if (response?.status === 403) {
 			console.error('[API] Received 403 Forbidden - check permissions or authentication');
 		}

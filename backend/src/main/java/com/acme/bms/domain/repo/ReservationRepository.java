@@ -10,4 +10,6 @@ import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
     List<Reservation> findByStatusAndExpiresAtBefore(ReservationStatus status, Instant expirationTime);
+
+    Reservation findByRiderIdAndStatus(Long riderId, ReservationStatus status);
 }

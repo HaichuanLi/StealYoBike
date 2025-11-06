@@ -15,10 +15,12 @@ import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.entity.User;
+import com.acme.bms.api.rider.ReservationInfoResponse;
 
 import com.acme.bms.application.exception.StationNotFoundException;
 import com.acme.bms.application.exception.NoAvailableBikesException;
 import com.acme.bms.application.exception.UserNotFoundException;
+import com.acme.bms.application.exception.ReservationNotFoundException;
 
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -31,12 +33,12 @@ public class UC3_ReserveCheckoutUseCase {
     private final UserRepository userRepository;
 
     @Transactional
-    public ReserveBikeResponse execute(ReserveBikeRequest request, String currentUsername) {
-        if (currentUsername == null || currentUsername.isBlank()) {
+    public ReserveBikeResponse execute(ReserveBikeRequest request, Long riderId) {
+        if (riderId == null) {
             throw new UserNotFoundException(); // treated as 401/404 by handler
         }
 
-        User rider = userRepository.findByUsername(currentUsername)
+        User rider = userRepository.findById(riderId)
                 .orElseThrow(UserNotFoundException::new);
 
         DockingStation station = stationRepository.findById(request.stationId())
@@ -57,7 +59,16 @@ public class UC3_ReserveCheckoutUseCase {
                 bike.getId(),
                 station.getId(),
                 reservation.getPin(),
-                reservation.getExpiresAt()
-        );
+                reservation.getExpiresAt());
+    }
+
+    @Transactional(readOnly = true)
+    public ReservationInfoResponse getCurrentReservation(Long riderId) {
+        Reservation reservation = reservationRepository.findByRiderIdAndStatus(riderId,
+                com.acme.bms.domain.entity.Status.ReservationStatus.ACTIVE);
+        if (reservation == null) {
+            throw new ReservationNotFoundException();
+        }
+        return new ReservationInfoResponse(reservation);
     }
 }
