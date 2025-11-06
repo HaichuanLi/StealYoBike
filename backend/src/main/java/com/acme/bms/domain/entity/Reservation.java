@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity;
 
 import com.acme.bms.domain.entity.Status.ReservationStatus;
+import com.acme.bms.domain.entity.Status.DockStatus;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -54,9 +55,11 @@ public class Reservation {
     public void cancelReservation() {
         if (this.status == ReservationStatus.ACTIVE) {
             this.status = ReservationStatus.CANCELLED;
-            // Bike is still in its dock when reservation is cancelled
-            // Use returnBike() with the bike's current dock to transition back to AVAILABLE
             if (this.bike.getDock() != null) {
+                if (this.bike.getDock().getStatus() == DockStatus.OUT_OF_SERVICE) {
+                    this.bike.getState().sendToMaintenance();
+                    return;
+                }
                 this.bike.getState().returnBike(this.bike.getDock());
             }
         }
