@@ -4,7 +4,9 @@ import { api } from './index';
 import type {
 	ChangeStationResponse,
 	RebalanceRequest,
-	RebalanceResponse
+	RebalanceResponse,
+	RestoreInitialStateRequest,
+	RestoreInitialStateResponse
 } from './types/operator.type';
 
 export const operatorApi = {
@@ -39,6 +41,21 @@ export const operatorApi = {
 			return response;
 		} catch (error) {
 			console.error('Error rebalancing bikes:', error);
+			throw error;
+		}
+	},
+	restoreInitialState: async (
+		request: RestoreInitialStateRequest = {}
+	): Promise<AxiosResponse<RestoreInitialStateResponse>> => {
+		try {
+			const response = await api.post<RestoreInitialStateResponse>(
+				'operator/restore-initial-state',
+				request
+			);
+			console.log('Restore initial state response:', response.data);
+			return response;
+		} catch (error) {
+			console.error('Error restoring initial state:', error);
 			throw error;
 		}
 	}
