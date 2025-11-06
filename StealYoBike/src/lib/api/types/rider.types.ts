@@ -5,7 +5,9 @@ export interface CheckoutRequest {
 export interface CheckoutResponse {
 	tripId: number;
 	bikeId: number;
+	bikeType: 'REGULAR' | 'ELECTRIC';
 	startStationId: number;
+	startStationName: string;
 	startTime: string;
 	status: string;
 }
@@ -22,12 +24,12 @@ export interface ReserveBikeResponse {
 }
 export interface ReturnBikeRequest {
 	tripId: number;
-	endStationId: number;
+	stationId: number;
 }
 export interface ReturnBikeResponse {
 	tripId: number;
 	bikeId: number;
-	endStationId: number;
+	stationId: number;
 	endTime: string;
 	totalCost: number;
 	status: string;
@@ -41,5 +43,14 @@ export interface ReservationInfoResponse {
 }
 export interface ReservationCancelResponse {
 	reservationId: number;
+	status: string;
+}
+export interface TripInfoResponse {
+	tripId: number;
+	bikeId: number;
+	bikeType: 'REGULAR' | 'ELECTRIC';
+	startStationId: number;
+	startStationName: string;
+	startTime: string;
 	status: string;
 }

@@ -36,4 +36,18 @@ public class ChangeStationStatusListener {
         log.info("StationsChangedEvent: broadcasting snapshot");
         stationSseService.broadcastStations();
     }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(BikeReservedEvent event) {
+        log.info("BikeReservedEvent: reservationId={}, userId={}, bikeId={}",
+                event.reservationId(), event.userId(), event.bikeId());
+        stationSseService.broadcastStations();
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handle(BikeCheckedOutEvent event) {
+        log.info("BikeCheckedOutEvent: tripId={}, userId={}, bikeId={}, stationId={}",
+                event.tripId(), event.userId(), event.bikeId(), event.stationId());
+        stationSseService.broadcastStations();
+    }
 }

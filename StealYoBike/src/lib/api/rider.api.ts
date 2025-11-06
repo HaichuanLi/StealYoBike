@@ -8,7 +8,8 @@ import type {
 	ReserveBikeRequest,
 	ReserveBikeResponse,
 	ReturnBikeRequest,
-	ReturnBikeResponse
+	ReturnBikeResponse,
+	TripInfoResponse
 } from './types/rider.types';
 
 export const riderApi = {
@@ -26,5 +27,8 @@ export const riderApi = {
 	},
 	cancelCurrentReservation: async (): Promise<AxiosResponse<ReservationCancelResponse>> => {
 		return await api.post<ReservationCancelResponse>(`/rider/cancel-reservation`);
+	},
+	getCurrentTrip: async (): Promise<AxiosResponse<TripInfoResponse>> => {
+		return await api.get<TripInfoResponse>(`/rider/current-trip`);
 	}
 };

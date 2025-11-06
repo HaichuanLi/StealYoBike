@@ -13,6 +13,7 @@ import com.acme.bms.domain.entity.Bike;
 import com.acme.bms.domain.entity.Reservation;
 import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.application.events.BikeReservedEvent;
+import com.acme.bms.application.events.BikeCheckedOutEvent;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.entity.DockingStation;
 import com.acme.bms.domain.repo.UserRepository;
@@ -25,6 +26,11 @@ import com.acme.bms.application.exception.NoAvailableBikesException;
 import com.acme.bms.application.exception.UserNotFoundException;
 import com.acme.bms.application.exception.ReservationNotFoundException;
 import com.acme.bms.application.exception.ActiveReservationOrTripExistsException;
+import com.acme.bms.api.rider.CheckoutRequest;
+import com.acme.bms.api.rider.CheckoutResponse;
+import com.acme.bms.domain.entity.Status.TripStatus;
+import com.acme.bms.api.rider.TripInfoResponse;
+import java.time.LocalDateTime;
 
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -109,5 +115,71 @@ public class UC3_ReserveCheckoutUseCase {
         reservation.cancelReservation();
         reservationRepository.save(reservation);
         return new ReservationCancelResponse(reservation.getId(), "Reservation cancelled successfully.");
+    }
+
+    @Transactional
+    public CheckoutResponse checkoutBike(CheckoutRequest request, Long riderId) {
+        if (riderId == null) {
+            throw new UserNotFoundException();
+        }
+
+        Reservation reservation = reservationRepository.findById(request.reservationId())
+                .orElseThrow(() -> new ReservationNotFoundException());
+
+        if (!reservation.getRider().getId().equals(riderId)) {
+            throw new IllegalStateException("Reservation does not belong to this rider");
+        }
+
+        if (reservation.getStatus() != com.acme.bms.domain.entity.Status.ReservationStatus.ACTIVE) {
+            throw new IllegalStateException("Reservation is not active");
+        }
+
+        if (reservation.isExpired()) {
+            throw new IllegalStateException("Reservation has expired");
+        }
+
+        if (!reservation.getPin().equals(request.pin())) {
+            throw new IllegalArgumentException("Invalid PIN");
+        }
+
+        Bike bike = reservation.getBike();
+        DockingStation station = bike.getDock().getStation();
+        if (!bike.checkoutBike()) {
+            throw new IllegalStateException("Bike cannot be checked out");
+        }
+
+        Trip trip = Trip.builder()
+                .rider(reservation.getRider())
+                .bike(bike)
+                .startStation(station)
+                .startTime(LocalDateTime.now())
+                .status(TripStatus.STARTED)
+                .priceCents(0)
+                .build();
+
+        tripRepository.save(trip);
+
+        reservation.setStatus(com.acme.bms.domain.entity.Status.ReservationStatus.FULFILLED);
+        reservationRepository.save(reservation);
+
+        eventPublisher.publishEvent(new BikeCheckedOutEvent(trip.getId(), riderId, bike.getId(), station.getId()));
+
+        return new CheckoutResponse(
+                trip.getId(),
+                bike.getId(),
+                bike.getType(),
+                station.getId(),
+                station.getName(),
+                trip.getStartTime().atZone(java.time.ZoneId.systemDefault()).toInstant(),
+                trip.getStatus().name());
+    }
+
+    @Transactional(readOnly = true)
+    public TripInfoResponse getCurrentTrip(Long riderId) {
+        Trip trip = tripRepository.findByRiderIdAndStatus(riderId, TripStatus.STARTED);
+        if (trip == null) {
+            return null;
+        }
+        return new TripInfoResponse(trip);
     }
 }

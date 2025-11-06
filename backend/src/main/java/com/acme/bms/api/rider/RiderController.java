@@ -59,6 +59,26 @@ public class RiderController {
         return ResponseEntity.ok(res);
     }
 
+    @PostMapping("/checkout")
+    public ResponseEntity<CheckoutResponse> checkoutBike(
+            @AuthenticationPrincipal String principal,
+            @Valid @RequestBody CheckoutRequest request) {
+        Long riderId = parsePrincipalToLong(principal);
+        CheckoutResponse res = reserveUC.checkoutBike(request, riderId);
+        return ResponseEntity.ok(res);
+    }
+
+    @GetMapping("/current-trip")
+    public ResponseEntity<TripInfoResponse> getCurrentTrip(
+            @AuthenticationPrincipal String principal) {
+        Long riderId = parsePrincipalToLong(principal);
+        TripInfoResponse res = reserveUC.getCurrentTrip(riderId);
+        if (res == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(res);
+    }
+
     private Long parsePrincipalToLong(Object principal) {
         if (principal == null) {
             throw new IllegalArgumentException("No authenticated principal available");
