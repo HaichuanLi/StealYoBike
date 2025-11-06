@@ -47,8 +47,8 @@
 	{/each}
 </div>
 
-<div class="flex h-[30%] w-full flex-row gap-2 p-2">
-	<div class="h-full w-1/2 rounded-2xl bg-amber-200 p-4">
+<div class="flex w-full flex-row gap-2 p-2">
+	<div class="h-full min-h-fit w-1/2 rounded-2xl bg-amber-200 p-4">
 		{#if selectedDock}
 			<div class="text-lg font-semibold">Dock ID: {selectedDock.dockId}</div>
 			<div class="mt-2">Status: {selectedDock.status}</div>
@@ -60,7 +60,7 @@
 			</div>
 		{/if}
 	</div>
-	<div class="h-full w-1/2 rounded-2xl bg-amber-100 p-4">
+	<div class="h-full min-h-fit w-1/2 rounded-2xl bg-amber-100 p-4">
 		{#if selectedDock?.bike}
 			<div class="text-lg font-semibold">Bike details</div>
 			<div class="mt-2">ID: {selectedDock.bike.bikeId}</div>
