@@ -1,6 +1,5 @@
 package com.acme.bms.domain.billing;
 
-import com.acme.bms.domain.entity.Bill;
 import com.acme.bms.domain.entity.Trip;
 
 public class BillBuilderDirector {

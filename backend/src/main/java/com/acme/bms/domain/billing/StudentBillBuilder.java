@@ -15,7 +15,7 @@ public class StudentBillBuilder implements BillBuilder {
     private double baseFee = 2;
     private double usageFee = 0.10;
     private double eBikeFeeMultiplier = 1.5;
-    private double studentDiscountPercentage = 10.0;
+    private double studentDiscountPercentage = 0.10;
 
 
     @Override
