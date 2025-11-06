@@ -43,25 +43,23 @@
 			</h2>
 			<p class="text-sm">{station.streetAddress}</p>
 		</div>
-		{#if hasActiveReservationOrTrip && stationState.stationDetails}
+		{#if station.status === 'OUT_OF_SERVICE'}
+			<div class="h-full content-center text-center">
+				<p class="mt-4 text-red-600">This station is currently inactive.</p>
+			</div>
+		{:else if hasActiveReservationOrTrip && stationState.stationDetails}
 			<StationDockList
 				station={stationState.stationDetails}
 				bind:selectedDock={stationState.selectedDock}
 			/>
 		{:else}
 			<BikeTypeToggle bind:isElectric />
-			<div class="flex h-full flex-col items-center justify-center gap-2 sm:*:max-w-40 lg:flex-row">
+			<div class="flex flex-col items-center justify-center">
 				<Button
 					onclick={onReserveBike}
 					text="Reserve Bike"
 					disable={!hasPaymentMethod}
 					variant="green"
-				/>
-				<Button
-					onclick={onReturnBike}
-					text="Return Bike"
-					disable={!hasPaymentMethod}
-					variant="teal"
 				/>
 			</div>
 			{#if !hasPaymentMethod}
