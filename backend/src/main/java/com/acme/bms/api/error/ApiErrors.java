@@ -126,6 +126,22 @@ public class ApiErrors {
                 "https://api.bms/errors/lazy-initialization", Map.of());
     }
 
+    @ExceptionHandler(java.io.IOException.class)
+    public ResponseEntity<Map<String, Object>> ioException(java.io.IOException ex) {
+        // Broken pipe errors are expected when SSE clients disconnect
+        // Log at debug level instead of error to reduce noise
+        if (ex.getMessage() != null && ex.getMessage().contains("Broken pipe")) {
+            logger.debug("SSE client disconnected: {}", ex.getMessage());
+            // Return 200 since this is expected behavior
+            return ResponseEntity.ok().build();
+        }
+        // For other IOExceptions, log as error
+        logger.error("IOException: {}", ex.toString());
+        return problem(500, "Internal Server Error",
+                "An I/O error occurred. If the issue persists, contact support.",
+                "https://api.bms/errors/internal", Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> fallback(Exception ex) {
         logger.error("Unhandled exception: {}", ex.toString());
