@@ -32,11 +32,9 @@ public class Reservation {
     private Instant createdAt;
     private Instant expiresAt;
 
-    @Transient // not persisted
-    private Thread timer;
-
     // Required by JPA
-    protected Reservation() {}
+    protected Reservation() {
+    }
 
     // Custom constructor for app logic
     public Reservation(User rider, Bike bike) {
@@ -49,40 +47,22 @@ public class Reservation {
         }
         this.status = ReservationStatus.ACTIVE;
         this.createdAt = Instant.now();
-        this.timer = new ReservationTimer(this);
-        this.timer.start();
+        this.expiresAt = this.createdAt.plusSeconds(300); // 5 minutes
+        bike.setReservationExpiry(this.expiresAt);
     }
-
 
     public void cancelReservation() {
         if (this.status == ReservationStatus.ACTIVE) {
             this.status = ReservationStatus.CANCELLED;
-            this.bike.getState().returnBike(this.bike.getDock());
-            this.timer.interrupt();
+            // Bike is still in its dock when reservation is cancelled
+            // Use returnBike() with the bike's current dock to transition back to AVAILABLE
+            if (this.bike.getDock() != null) {
+                this.bike.getState().returnBike(this.bike.getDock());
+            }
         }
     }
 
-    // inner timer class
-    class ReservationTimer extends Thread {
-        private final Reservation reservation;
-
-        public ReservationTimer(Reservation reservation) {
-            this.reservation = reservation;
-        }
-
-        @Override
-        public void run() {
-            reservation.expiresAt = reservation.createdAt.plus(java.time.Duration.ofMinutes(5));
-            reservation.bike.setReservationExpiry(reservation.expiresAt);
-            try {
-                Thread.sleep(5 * 60 * 1000); // 5 minutes
-                if (reservation.getStatus() == ReservationStatus.ACTIVE) {
-                    reservation.setStatus(ReservationStatus.EXPIRED);
-                    reservation.bike.getState().returnBike(reservation.bike.getDock());
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
+    public boolean isExpired() {
+        return Instant.now().isAfter(expiresAt);
     }
 }
