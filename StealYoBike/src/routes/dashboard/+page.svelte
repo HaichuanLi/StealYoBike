@@ -9,6 +9,7 @@
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
 	import PaymentPopUp from '$lib/components/PaymentPopUp/PaymentPopUp.svelte';
+	import PinPopup from '$lib/components/PinPopup/PinPopup.svelte';
 	import { onMount } from 'svelte';
 
 	let selectedStation = $state<StationSummary | null>(null);
@@ -20,8 +21,17 @@
 	let savingPayment = $state(false);
 	let isElectric = $state(false);
 
-	let hasPaymentMethod = $derived(user?.paymentToken != null && user?.paymentToken !== '');
+	let showPinPopup = $state(false);
+	let pinInput = $state('');
+	let submittingPin = $state(false);
+
+	let hasPaymentMethod = $derived(
+		user !== null && user.paymentToken !== null && user.paymentToken.trim() !== ''
+	);
 	let reservation = $state<ReserveBikeResponse | null>(null);
+	let isReservationExpired = $derived(
+		reservation !== null && new Date(reservation.expiresAt) < new Date()
+	);
 
 	onMount(async () => {
 		try {
@@ -58,10 +68,52 @@
 		// cook return logic
 	}
 
+	async function handleCancelReservation() {
+		try {
+			const response = await riderApi.cancelCurrentReservation();
+			reservation = null;
+		} catch (error) {
+			console.error('Failed to cancel reservation:', error);
+		}
+	}
+
+	async function handleCheckoutBike() {
+		if (!hasPaymentMethod) {
+			showPaymentPopup = true;
+			return;
+		}
+		if (isReservationExpired) {
+			alert('Your reservation has expired. Please cancel it and make a new reservation.');
+			return;
+		}
+		showPinPopup = true;
+	}
+
+	async function handlePinSubmit(pin: string) {
+		try {
+			const response = await riderApi.checkoutBike({
+				reservationId: reservation!.reservationId,
+				pin: pin
+			});
+			reservation = null;
+			closePinPopup();
+			alert('Bike checked out successfully!');
+		} catch (error) {
+			console.error('Failed to checkout bike:', error);
+			throw error;
+		}
+	}
+
 	function closePaymentPopup() {
 		showPaymentPopup = false;
 		paymentTokenInput = '';
 		savingPayment = false;
+	}
+
+	function closePinPopup() {
+		showPinPopup = false;
+		pinInput = '';
+		submittingPin = false;
 	}
 
 	function handleUserUpdate(updatedUser: UserInfoResponse) {
@@ -125,7 +177,7 @@
 				</div>
 				{#if !hasPaymentMethod}
 					<div class="mt-4 p-4 text-center">
-						<p class="mb-2 text-sm text-orange-600">⚠️ Payment method required to use bikes</p>
+						<p class="mb-2 text-sm text-orange-600">Payment method required to use bikes</p>
 						<Button
 							onclick={() => (showPaymentPopup = true)}
 							text="Add Payment Method"
@@ -140,11 +192,34 @@
 		{#if reservation}
 			<div class="mt-4 rounded-xl bg-lime-50 p-4">
 				<h3 class="mb-2 text-lg font-semibold">Reservation Details</h3>
+				{#if isReservationExpired}
+					<div class="mb-3 rounded bg-red-100 p-3 text-center">
+						<p class="font-semibold text-red-700">This reservation has expired!</p>
+						<p class="text-sm text-red-600">Please cancel it and make a new reservation.</p>
+					</div>
+				{/if}
 				<p>Reservation ID: {reservation.reservationId}</p>
 				<p>Bike ID: {reservation.bikeId}</p>
 				<p>Station ID: {reservation.stationId}</p>
-				<p>Expires At: {new Date(reservation.expiresAt).toLocaleString()}</p>
+				<p class={isReservationExpired ? 'font-semibold text-red-600' : ''}>
+					Expires At: {new Date(reservation.expiresAt).toLocaleString()}
+				</p>
 				<p>PIN: {reservation.pin}</p>
+				<div class="my-2 border-t border-lime-200"></div>
+				<div class="flex flex-row justify-center gap-2">
+					<Button
+						onclick={handleCancelReservation}
+						text="Cancel Reservation"
+						disable={!hasPaymentMethod}
+						variant="teal"
+					/>
+					<Button
+						onclick={handleCheckoutBike}
+						text="Checkout Bike"
+						disable={!hasPaymentMethod || isReservationExpired}
+						variant="green"
+					/>
+				</div>
 			</div>
 		{:else if !loading}
 			<div class="mt-4 rounded-xl bg-lime-50 p-4 text-center">
@@ -160,4 +235,12 @@
 	bind:savingPayment
 	{closePaymentPopup}
 	onUserUpdate={handleUserUpdate}
+/>
+
+<PinPopup
+	bind:showPinPopup
+	bind:pinInput
+	bind:submittingPin
+	{closePinPopup}
+	onPinSubmit={handlePinSubmit}
 />

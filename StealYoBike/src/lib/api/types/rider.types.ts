@@ -39,3 +39,7 @@ export interface ReservationInfoResponse {
 	expiresAt: string;
 	pin: string;
 }
+export interface ReservationCancelResponse {
+	reservationId: number;
+	status: string;
+}
