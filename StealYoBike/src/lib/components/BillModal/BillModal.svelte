@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { TripBillResponse } from '$lib/api/types';
-	import { riderApi } from '$lib/api/rider.api';
 	import { authApi } from '$lib/api/auth.api';
-	import { createEventDispatcher } from 'svelte';
-	import { onMount } from 'svelte';
+	import { riderApi } from '$lib/api/rider.api';
+	import type { TripBillResponse } from '$lib/api/types';
 	import { showToast } from '$lib/stores/toast';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import Button from '../Button/Button.svelte';
 
 	export let show = false;
 	export let bill: TripBillResponse | null = null;
@@ -64,9 +64,9 @@
 </script>
 
 {#if show && bill}
-	<div class="fixed inset-0 bg-transparent flex items-center justify-center z-50">
-		<div class="bg-white/95 backdrop-blur-sm rounded-lg p-6 w-11/12 max-w-md">
-			<h3 class="text-xl font-semibold mb-2">Trip Bill</h3>
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
+		<div class="w-11/12 max-w-md rounded-lg bg-white/95 p-6 backdrop-blur-sm">
+			<h3 class="mb-2 text-xl font-semibold">Trip Bill</h3>
 			<p class="text-sm text-gray-600">Bill ID: {bill.billId}</p>
 			<p class="mt-2">Total: ${bill.totalAmount.toFixed(2)}</p>
 			{#if bill.createdAt}
@@ -78,7 +78,11 @@
 				<p>Bike ID: {bill.trip?.bikeId}</p>
 				<p>Start Station: {bill.trip?.startStationName}</p>
 				<p>End Station: {bill.endStationName ?? '—'}</p>
-				<p>Start Time: {bill.startTime ? new Date(bill.startTime).toLocaleString() : bill.trip?.startTime}</p>
+				<p>
+					Start Time: {bill.startTime
+						? new Date(bill.startTime).toLocaleString()
+						: bill.trip?.startTime}
+				</p>
 				<p>End Time: {bill.endTime ? new Date(bill.endTime).toLocaleString() : '—'}</p>
 				<p>Duration: {bill.durationMinutes} minutes</p>
 
@@ -94,18 +98,17 @@
 				<div class="mt-3">
 					<p class="text-sm">Payment token on file: {userPaymentToken ?? '—'}</p>
 					{#if bill.paid}
-						<p class="text-sm text-green-700 font-semibold">Paid at {bill.paidAt ? new Date(bill.paidAt).toLocaleString() : ''}</p>
+						<p class="text-sm font-semibold text-green-700">
+							Paid at {bill.paidAt ? new Date(bill.paidAt).toLocaleString() : ''}
+						</p>
 						<p class="text-sm">Payment token used: {bill.paymentTokenUsed ?? '—'}</p>
 					{/if}
 				</div>
 			</div>
-			<div class="mt-4 text-right space-x-2">
-				<button class="px-4 py-2 bg-gray-300 text-black rounded" on:click={close}>Close</button>
+			<div class="mt-4 space-x-2 text-right">
+				<Button text="Close" variant="gray" onclick={close} />
 				{#if !bill.paid}
-					<button class="px-4 py-2 bg-blue-600 text-white rounded" on:click={pay} disabled={isPaying}>
-						{#if isPaying}Paying...{/if}
-						{#if !isPaying}Pay{/if}
-					</button>
+					<Button text="Pay" variant="blue" onclick={pay} disable={isPaying} />
 				{/if}
 			</div>
 			{#if message}
