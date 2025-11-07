@@ -1,10 +1,6 @@
 package com.acme.bms.api.operator;
 
-import com.acme.bms.application.usecase.UC5_RebalanceBikesUseCase;
-import com.acme.bms.application.usecase.UC6_OperatorMarksStationOutOfService;
-import com.acme.bms.application.usecase.UC7_OperatorSendBikeToMaintenance;
-import com.acme.bms.application.usecase.UC8_RestoreInitialStateUseCase;
-import com.acme.bms.application.usecase.UC14_ListAllUsersPastTrips;
+import com.acme.bms.application.usecase.*;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +24,8 @@ public class OperatorController {
     private final UC7_OperatorSendBikeToMaintenance uc7;
     private final UC8_RestoreInitialStateUseCase uc8;
     private final UC14_ListAllUsersPastTrips uc14;
+    private final UC15_GetTripDetails uc15;
+
 
     @PostMapping("/rebalance")
     public ResponseEntity<RebalanceResponse> rebalance(@AuthenticationPrincipal String principal,
@@ -73,6 +71,11 @@ public class OperatorController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate toDate,
             @RequestParam(required = false, name = "type") String bikeType) {
         return ResponseEntity.ok(uc14.execute(fromDate, toDate, bikeType));
+    }
+
+    @GetMapping("/trips/{tripId}/details")
+    public ResponseEntity<com.acme.bms.api.trip.TripResponse> getTripDetailsForOperator(@PathVariable Long tripId) {
+        return ResponseEntity.ok(uc15.forOperator(tripId));
     }
 
     private Long parsePrincipalToLong(Object principal) {
