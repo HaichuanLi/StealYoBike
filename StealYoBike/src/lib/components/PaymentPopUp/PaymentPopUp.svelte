@@ -27,14 +27,21 @@
         }
 
         savingPayment = true;
-        try {
-            const response = await authApi.updatePaymentToken(paymentTokenInput.trim());
+		try {
+			// Ensure user is authenticated before attempting to save
+			if (!authApi.isAuthenticated()) {
+				alert('You must be signed in to save a payment method. Please sign in first.');
+				closePaymentPopup();
+				return;
+			}
+
+			const response = await authApi.updatePaymentToken(paymentTokenInput.trim());
 			onUserUpdate(response.data);
-            
-            console.log('Payment token saved successfully:', response.data.paymentToken);
-            closePaymentPopup();
-            
-        } catch (error) {
+
+			console.log('Payment token saved successfully:', response.data.paymentToken);
+			closePaymentPopup();
+
+		} catch (error) {
             console.error('Failed to save payment token:', error);
             alert('Failed to save payment token. Please try again.');
         } finally {
