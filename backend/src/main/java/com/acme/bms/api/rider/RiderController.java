@@ -1,5 +1,6 @@
 package com.acme.bms.api.rider;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -62,9 +63,12 @@ public class RiderController {
 
     @GetMapping("/trips/history")
     public ResponseEntity<java.util.List<com.acme.bms.api.rider.PastTripResponse>> getPastTrips(
-            @AuthenticationPrincipal String principal) {
+            @AuthenticationPrincipal String principal,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate toDate,
+            @RequestParam(required = false, name = "type") String bikeType) {
         Long riderId = parsePrincipalToLong(principal);
-        return ResponseEntity.ok(listPastTripsUC.execute(riderId));
+        return ResponseEntity.ok(listPastTripsUC.execute(riderId, fromDate, toDate, bikeType));
     }
 
     // quickly verify authentication and display the correct user state

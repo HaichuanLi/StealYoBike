@@ -15,16 +15,32 @@
     let showSidebar = false;
     let isOperator = false;
 
+    // AC17 filters (minimal)
+    let fromDate = ''; // YYYY-MM-DD
+    let toDate = '';   // YYYY-MM-DD
+    let bikeType: '' | 'REGULAR' | 'ELECTRIC' = '';
+
     async function load() {
         try {
             loading = true;
+
+            // only send params if any filter is set
+            const hasFilters = !!(fromDate || toDate || bikeType);
+            const params = hasFilters
+                ? {
+                    ...(fromDate ? { fromDate } : {}),
+                    ...(toDate ? { toDate } : {}),
+                    ...(bikeType ? { type: bikeType } : {})
+                }
+                : undefined;
+
             if (isOperator) {
                 // Load all trips for operator
-                const resp = await operatorApi.getAllPastTrips();
+                const resp = await operatorApi.getAllPastTrips(params);
                 pastTrips = resp.data;
             } else {
                 // Load rider's own trips
-                const resp = await riderApi.getPastTrips();
+                const resp = await riderApi.getPastTrips(params);
                 pastTrips = resp.data;
             }
         } catch (err) {
@@ -62,27 +78,34 @@
             t._paying = false;
         }
     }
+
+    function clearFilters() {
+        fromDate = '';
+        toDate = '';
+        bikeType = '';
+        load();
+    }
 </script>
 
 <section class="p-6">
     <!-- Menu button -->
     <button
-        class="fixed top-4 left-4 z-50 p-2"
-        on:click={() => showSidebar = true}
-        aria-label="Open Menu"
+            class="fixed top-4 left-4 z-50 p-2"
+            on:click={() => showSidebar = true}
+            aria-label="Open Menu"
     >
-        <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            class="h-6 w-6" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
+        <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
         >
-            <path 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
-                d="M4 6h16M4 12h16M4 18h16"
+            <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 6h16M4 12h16M4 18h16"
             />
         </svg>
     </button>
@@ -91,6 +114,29 @@
         <Sidebar bind:showSidebar />
     {/if}
     <h1 class="text-2xl font-semibold mb-4 ml-12">{isOperator ? 'All User Trips' : 'My Trips'}</h1>
+
+    <!-- Filter row -->
+    <div class="ml-12 mb-4 flex flex-wrap items-end gap-3">
+        <div class="flex flex-col">
+            <label class="text-xs text-gray-600">From</label>
+            <input type="date" bind:value={fromDate} class="border rounded px-2 py-1" />
+        </div>
+        <div class="flex flex-col">
+            <label class="text-xs text-gray-600">To</label>
+            <input type="date" bind:value={toDate} class="border rounded px-2 py-1" />
+        </div>
+        <div class="flex flex-col">
+            <label class="text-xs text-gray-600">Bike</label>
+            <select bind:value={bikeType} class="border rounded px-2 py-1">
+                <option value=''>All</option>
+                <option value='REGULAR'>Regular</option>
+                <option value='ELECTRIC'>E-bike</option>
+            </select>
+        </div>
+        <button class="px-3 py-1 bg-blue-600 text-white rounded" on:click={load}>Apply</button>
+        <button class="px-3 py-1 bg-gray-200 rounded" on:click={clearFilters}>Clear</button>
+    </div>
+
     {#if loading}
         <p>Loading...</p>
     {:else if pastTrips && pastTrips.length > 0}
@@ -112,7 +158,7 @@
                         <div class="font-semibold">${t.totalAmount.toFixed(2)}</div>
                         {#if t.paid}
                             <div class="text-sm text-green-700">Paid</div>
-                        {:else if !isOperator} 
+                        {:else if !isOperator}
                             <button class="mt-1 px-3 py-1 bg-blue-600 text-white rounded" disabled={t._paying} on:click={() => payTrip(t)}>{t._paying ? 'Paying...' : 'Pay'}</button>
                         {:else}
                             <div class="text-sm text-yellow-600">Unpaid</div>

@@ -6,6 +6,7 @@ import com.acme.bms.application.usecase.UC7_OperatorSendBikeToMaintenance;
 import com.acme.bms.application.usecase.UC8_RestoreInitialStateUseCase;
 import com.acme.bms.application.usecase.UC14_ListAllUsersPastTrips;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -67,8 +68,11 @@ public class OperatorController {
     }
 
     @GetMapping("/trips/history")
-    public ResponseEntity<List<PastTripResponse>> getAllPastTrips() {
-        return ResponseEntity.ok(uc14.execute());
+    public ResponseEntity<List<PastTripResponse>> getAllPastTrips(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate toDate,
+            @RequestParam(required = false, name = "type") String bikeType) {
+        return ResponseEntity.ok(uc14.execute(fromDate, toDate, bikeType));
     }
 
     private Long parsePrincipalToLong(Object principal) {
