@@ -1,16 +1,12 @@
 package com.acme.bms.api.rider;
 
+import com.acme.bms.application.usecase.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import com.acme.bms.application.usecase.UC3_ReserveCheckoutUseCase;
-import com.acme.bms.application.usecase.UC4_ReturnBikeUseCase;
-import com.acme.bms.application.usecase.UC11_RiderCheckTripBill;
-import com.acme.bms.application.usecase.UC13_ListPastTrips;
 
 import java.net.URI;
 import java.util.Map;
@@ -25,6 +21,7 @@ public class RiderController {
     private final UC11_RiderCheckTripBill billUC;
     private final UC13_ListPastTrips listPastTripsUC;
     private final com.acme.bms.application.usecase.UC12_PayTripBill uc12;
+    private final UC15_GetTripDetails uc15;
 
     // UC3: Reserve a bike
     @PostMapping("/reserve")
@@ -111,6 +108,13 @@ public class RiderController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(res);
+    }
+    @GetMapping("/trips/{tripId}/details")
+    public ResponseEntity<com.acme.bms.api.trip.TripResponse> getTripDetailsForRider(
+            @AuthenticationPrincipal String principal,
+            @PathVariable Long tripId) {
+        Long riderId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc15.forRider(riderId, tripId));
     }
 
     private Long parsePrincipalToLong(Object principal) {

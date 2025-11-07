@@ -98,3 +98,19 @@ export interface TripInfoResponse {
 	startTime: string;
 	status: string;
 }
+
+export interface TripResponse {
+	tripId: number;
+	riderName: string | null;
+	startStation: string | null;
+	endStation: string | null;
+	startTime: string | null;
+	endTime: string | null;
+	durationMinutes: number;
+	bikeType: 'REGULAR' | 'ELECTRIC' | null;
+	baseFee: number;
+	perMinuteFee: number;
+	eBikeSurcharge: number;
+	totalCost: number;
+	timeline: string;
+}

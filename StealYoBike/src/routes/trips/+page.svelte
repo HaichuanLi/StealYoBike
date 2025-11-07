@@ -2,12 +2,13 @@
     import { onMount } from 'svelte';
     import { riderApi } from '$lib/api/rider.api';
     import { operatorApi } from '$lib/api/operator.api';
-    import type { PastTripResponse } from '$lib/api/types/rider.types';
+    import type { PastTripResponse, TripResponse } from '$lib/api/types/rider.types';
     import { authApi } from '$lib/api/auth.api';
     import Toast from '$lib/components/Toast/Toast.svelte';
     import Sidebar from '$lib/components/sidebar/sidebar.svelte';
     import { showToast } from '$lib/stores/toast';
     import type { WithUIState } from '$lib/api/types/ui.types';
+    import TripDetailsModal from '$lib/components/TripDetailsModal/TripDetailsModal.svelte';
 
     let pastTrips: WithUIState<PastTripResponse>[] | null = null;
     let loading = false;
@@ -15,16 +16,21 @@
     let showSidebar = false;
     let isOperator = false;
 
-    // AC17 filters (minimal)
-    let fromDate = ''; // YYYY-MM-DD
-    let toDate = '';   // YYYY-MM-DD
+    // filters
+    let fromDate = '';
+    let toDate = '';
     let bikeType: '' | 'REGULAR' | 'ELECTRIC' = '';
+
+    // UC15/UC16 modal state
+    let showDetails = false;
+    let details: TripResponse | null = null;
+
+    // UC16: input state
+    let searchTripId = '';
 
     async function load() {
         try {
             loading = true;
-
-            // only send params if any filter is set
             const hasFilters = !!(fromDate || toDate || bikeType);
             const params = hasFilters
                 ? {
@@ -35,11 +41,9 @@
                 : undefined;
 
             if (isOperator) {
-                // Load all trips for operator
                 const resp = await operatorApi.getAllPastTrips(params);
                 pastTrips = resp.data;
             } else {
-                // Load rider's own trips
                 const resp = await riderApi.getPastTrips(params);
                 pastTrips = resp.data;
             }
@@ -56,7 +60,7 @@
             const u = await authApi.getCurrentUser();
             user = u.data;
             isOperator = user?.role === 'OPERATOR';
-        } catch (err) {
+        } catch {
             user = null;
         }
         await load();
@@ -64,10 +68,8 @@
 
     async function payTrip(t: WithUIState<PastTripResponse>) {
         try {
-            // show spinner per trip by temporarily attaching paying flag
             t._paying = true;
-            const resp = await riderApi.payTrip(t.tripId, { paymentToken: user?.paymentToken ?? '' });
-            // refresh list
+            await riderApi.payTrip(t.tripId, { paymentToken: user?.paymentToken ?? '' });
             await load();
             showToast('Payment successful', 'success');
         } catch (err) {
@@ -85,56 +87,103 @@
         bikeType = '';
         load();
     }
+
+    // UC15 (details)
+    async function openDetails(tripId: number) {
+        try {
+            details = isOperator
+                ? (await operatorApi.getTripDetails(tripId)).data
+                : (await riderApi.getTripDetails(tripId)).data;
+            showDetails = true;
+        } catch (e) {
+            console.error(e);
+            showToast('Failed to load trip details', 'error');
+        }
+    }
+    function closeDetails() {
+        showDetails = false;
+        details = null;
+    }
+
+    // UC16 (search by ID → shows the same modal)
+    async function searchByTripId() {
+        const id = Number(searchTripId);
+        if (!id || Number.isNaN(id)) {
+            showToast('Enter a valid Trip ID', 'error');
+            return;
+        }
+        try {
+            // Try UC16 endpoints first
+            details = isOperator
+                ? (await operatorApi.searchTripById(id)).data
+                : (await riderApi.searchTripById(id)).data;
+            showDetails = true;
+        } catch (err) {
+            // Fallback to UC15 details (in case only that route exists)
+            try {
+                details = isOperator
+                    ? (await operatorApi.getTripDetails(id)).data
+                    : (await riderApi.getTripDetails(id)).data;
+                showDetails = true;
+            } catch (e2) {
+                console.error('Search failed', err, e2);
+                showToast('Trip not found', 'error');
+            }
+        }
+    }
 </script>
 
 <section class="p-6">
     <!-- Menu button -->
     <button
             class="fixed top-4 left-4 z-50 p-2"
-            on:click={() => showSidebar = true}
+            on:click={() => (showSidebar = true)}
             aria-label="Open Menu"
     >
-        <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-        >
-            <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-            />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
 
     {#if showSidebar}
         <Sidebar bind:showSidebar />
     {/if}
-    <h1 class="text-2xl font-semibold mb-4 ml-12">{isOperator ? 'All User Trips' : 'My Trips'}</h1>
+    <h1 class="ml-12 mb-4 text-2xl font-semibold">{isOperator ? 'All User Trips' : 'My Trips'}</h1>
+
+    <!-- UC16: Search row -->
+    <div class="ml-12 mb-4 flex flex-wrap items-end gap-3">
+        <div class="flex flex-col">
+            <label class="text-xs text-gray-600">Search by Trip ID</label>
+            <input
+                    type="number"
+                    bind:value={searchTripId}
+                    class="w-48 rounded border px-2 py-1"
+                    placeholder="e.g. 123"
+            />
+        </div>
+        <button class="rounded bg-indigo-600 px-3 py-1 text-white" on:click={searchByTripId}>Search</button>
+    </div>
 
     <!-- Filter row -->
     <div class="ml-12 mb-4 flex flex-wrap items-end gap-3">
         <div class="flex flex-col">
             <label class="text-xs text-gray-600">From</label>
-            <input type="date" bind:value={fromDate} class="border rounded px-2 py-1" />
+            <input type="date" bind:value={fromDate} class="rounded border px-2 py-1" />
         </div>
         <div class="flex flex-col">
             <label class="text-xs text-gray-600">To</label>
-            <input type="date" bind:value={toDate} class="border rounded px-2 py-1" />
+            <input type="date" bind:value={toDate} class="rounded border px-2 py-1" />
         </div>
         <div class="flex flex-col">
             <label class="text-xs text-gray-600">Bike</label>
-            <select bind:value={bikeType} class="border rounded px-2 py-1">
+            <select bind:value={bikeType} class="rounded border px-2 py-1">
                 <option value=''>All</option>
                 <option value='REGULAR'>Regular</option>
                 <option value='ELECTRIC'>E-bike</option>
             </select>
         </div>
-        <button class="px-3 py-1 bg-blue-600 text-white rounded" on:click={load}>Apply</button>
-        <button class="px-3 py-1 bg-gray-200 rounded" on:click={clearFilters}>Clear</button>
+        <button class="rounded bg-blue-600 px-3 py-1 text-white" on:click={load}>Apply</button>
+        <button class="rounded bg-gray-200 px-3 py-1" on:click={clearFilters}>Clear</button>
     </div>
 
     {#if loading}
@@ -142,7 +191,7 @@
     {:else if pastTrips && pastTrips.length > 0}
         <ul class="space-y-3">
             {#each pastTrips as t}
-                <li class="p-4 border rounded flex justify-between items-center">
+                <li class="flex items-center justify-between rounded border p-4">
                     <div>
                         <div class="font-medium">Trip #{t.tripId}</div>
                         {#if isOperator && t.userName}
@@ -152,17 +201,22 @@
                             <div class="text-sm">Bike #{t.bikeId} ({t.bikeType})</div>
                         {/if}
                         <div class="text-sm text-gray-600">{t.startStationName ?? '—'} → {t.endStationName ?? '—'}</div>
-                        <div class="text-xs text-gray-500">{t.startTime ? new Date(t.startTime).toLocaleString() : ''} — {t.endTime ? new Date(t.endTime).toLocaleString() : ''} ({t.durationMinutes}m)</div>
+                        <div class="text-xs text-gray-500">
+                            {t.startTime ? new Date(t.startTime).toLocaleString() : ''} — {t.endTime ? new Date(t.endTime).toLocaleString() : ''} ({t.durationMinutes}m)
+                        </div>
                     </div>
-                    <div class="text-right">
+                    <div class="space-y-1 text-right">
                         <div class="font-semibold">${t.totalAmount.toFixed(2)}</div>
-                        {#if t.paid}
-                            <div class="text-sm text-green-700">Paid</div>
-                        {:else if !isOperator}
-                            <button class="mt-1 px-3 py-1 bg-blue-600 text-white rounded" disabled={t._paying} on:click={() => payTrip(t)}>{t._paying ? 'Paying...' : 'Pay'}</button>
-                        {:else}
-                            <div class="text-sm text-yellow-600">Unpaid</div>
-                        {/if}
+                        <div class="flex justify-end gap-2">
+                            <button class="rounded border px-3 py-1" on:click={() => openDetails(t.tripId)}>Details</button>
+                            {#if t.paid}
+                                <div class="text-sm text-green-700">Paid</div>
+                            {:else if !isOperator}
+                                <button class="rounded bg-blue-600 px-3 py-1 text-white" disabled={t._paying} on:click={() => payTrip(t)}>{t._paying ? 'Paying...' : 'Pay'}</button>
+                            {:else}
+                                <div class="text-sm text-yellow-600">Unpaid</div>
+                            {/if}
+                        </div>
                     </div>
                 </li>
             {/each}
@@ -172,5 +226,8 @@
     {/if}
 </section>
 
-<!-- Toast so messages show on trips page too -->
+<!-- Details popup (reused for UC15 & UC16) -->
+<TripDetailsModal show={showDetails} {details} onClose={closeDetails} />
+
+<!-- Toast -->
 <Toast />
