@@ -31,4 +31,8 @@ export const riderApi = {
 	getCurrentTrip: async (): Promise<AxiosResponse<TripInfoResponse>> => {
 		return await api.get<TripInfoResponse>(`/rider/current-trip`);
 	}
+	,
+	getTripBill: async (tripId: number): Promise<AxiosResponse<any>> => {
+		return await api.get(`/rider/trips/${tripId}/bill`);
+	}
 };

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 
 import com.acme.bms.application.usecase.UC3_ReserveCheckoutUseCase;
 import com.acme.bms.application.usecase.UC4_ReturnBikeUseCase;
+import com.acme.bms.application.usecase.UC11_RiderCheckTripBill;
 
 import java.net.URI;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class RiderController {
 
     private final UC3_ReserveCheckoutUseCase reserveUC;
     private final UC4_ReturnBikeUseCase returnUC;
+    private final UC11_RiderCheckTripBill billUC;
 
     // UC3: Reserve a bike
     @PostMapping("/reserve")
@@ -35,6 +37,15 @@ public class RiderController {
     @PostMapping("/return")
     public ResponseEntity<ReturnBikeResponse> returnBike(@Valid @RequestBody ReturnBikeRequest request) {
         return ResponseEntity.ok(returnUC.execute(request));
+    }
+
+    @GetMapping("/trips/{tripId}/bill")
+    public ResponseEntity<com.acme.bms.api.rider.TripBillResponse> getTripBill(
+            @AuthenticationPrincipal String principal,
+            @PathVariable Long tripId) {
+        Long riderId = parsePrincipalToLong(principal);
+        var resp = billUC.execute(tripId, riderId);
+        return ResponseEntity.ok(resp);
     }
 
     // quickly verify authentication and display the correct user state

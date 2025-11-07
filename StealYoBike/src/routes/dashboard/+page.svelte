@@ -3,7 +3,7 @@
 	import { riderApi } from '$lib/api/rider.api';
 	import type { StationSummary } from '$lib/api/types';
 	import type { UserInfoResponse } from '$lib/api/types/auth.types';
-	import type { ReserveBikeResponse, TripInfoResponse } from '$lib/api/types/rider.types';
+	import type { ReserveBikeResponse, TripInfoResponse, TripBillResponse } from '$lib/api/types/rider.types';
 	import DashboardBody from '$lib/components/DashboardBody/DashboardBody.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
@@ -12,6 +12,7 @@
 	import ReservationCard from '$lib/components/ReservationCard/ReservationCard.svelte';
 	import StationCard from '$lib/components/StationCard/StationCard.svelte';
 	import TripCard from '$lib/components/TripCard/TripCard.svelte';
+	import BillModal from '$lib/components/BillModal/BillModal.svelte';
 	import { onMount } from 'svelte';
 
 	let selectedStation = $state<StationSummary | null>(null);
@@ -29,6 +30,9 @@
 	let submittingPin = $state(false);
 
 	let isElectric = $state(false);
+
+	let tripBill = $state<TripBillResponse | null>(null);
+	let showBillModal = $state(false);
 
 	let hasPaymentMethod = $derived(
 		user !== null && user.paymentToken !== null && user.paymentToken.trim() !== ''
@@ -85,14 +89,22 @@
 			showPaymentPopup = true;
 			return;
 		}
-		const response = await riderApi.returnBike({
-			tripId: currentTrip?.tripId!,
-			stationId: selectedStation?.stationId!
-		});
-		if (response.status === 200) {
-			console.log('Return bike response:', response);
-			currentTrip = null;
-		}
+			const response = await riderApi.returnBike({
+				tripId: currentTrip?.tripId!,
+				stationId: selectedStation?.stationId!
+			});
+			if (response.status === 200) {
+				console.log('Return bike response:', response);
+				// attempt to fetch the computed bill for this trip and show it
+				try {
+					const billResp = await riderApi.getTripBill(response.data.tripId);
+					tripBill = billResp.data;
+					showBillModal = true;
+				} catch (err) {
+					console.warn('Failed to fetch trip bill:', err);
+				}
+				currentTrip = null;
+			}
 	}
 
 	async function handleCancelReservation() {
@@ -197,3 +209,5 @@
 	{closePinPopup}
 	onPinSubmit={handlePinSubmit}
 />
+
+<BillModal bind:show={showBillModal} bind:bill={tripBill} />
