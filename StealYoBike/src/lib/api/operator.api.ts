@@ -9,6 +9,7 @@ import type {
 	RestoreInitialStateResponse
 } from './types/operator.type';
 import type { PastTripResponse } from './types/rider.types';
+import type { TripFilterParams } from './rider.api';
 
 export const operatorApi = {
 	toggleStationStatus: async (stationId: number): Promise<AxiosResponse<ChangeStationResponse>> => {
@@ -61,7 +62,8 @@ export const operatorApi = {
 		}
 	},
 
-    getAllPastTrips: async (): Promise<AxiosResponse<PastTripResponse[]>> => {
-        return await api.get<PastTripResponse[]>('operator/trips/history');
-    }
+	// AC17: now accepts optional filters
+	getAllPastTrips: async (params?: TripFilterParams): Promise<AxiosResponse<PastTripResponse[]>> => {
+		return await api.get<PastTripResponse[]>('operator/trips/history', { params });
+	}
 };

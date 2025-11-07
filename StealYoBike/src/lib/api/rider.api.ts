@@ -14,6 +14,13 @@ import type {
 	PastTripResponse
 } from './types/rider.types';
 
+// AC17: optional filter params (match backend enum)
+export type TripFilterParams = {
+	fromDate?: string; // YYYY-MM-DD
+	toDate?: string;   // YYYY-MM-DD
+	type?: 'REGULAR' | 'ELECTRIC';
+};
+
 export const riderApi = {
 	reserveBike: async (request: ReserveBikeRequest): Promise<AxiosResponse<ReserveBikeResponse>> => {
 		return await api.post<ReserveBikeResponse>('/rider/reserve', request);
@@ -37,12 +44,13 @@ export const riderApi = {
 	getTripBill: async (tripId: number): Promise<AxiosResponse<any>> => {
 		return await api.get<TripBillResponse>(`/rider/trips/${tripId}/bill`);
 	}
-,
+	,
 	payTrip: async (tripId: number, body: { paymentToken: string }): Promise<AxiosResponse<TripBillResponse>> => {
 		return await api.post<TripBillResponse>(`/rider/trips/${tripId}/pay`, body);
 	}
-,
-    getPastTrips: async (): Promise<AxiosResponse<PastTripResponse[]>> => {
-        return await api.get<PastTripResponse[]>('/rider/trips/history');
-    }
+	,
+	// AC17: now accepts optional filters
+	getPastTrips: async (params?: TripFilterParams): Promise<AxiosResponse<PastTripResponse[]>> => {
+		return await api.get<PastTripResponse[]>('/rider/trips/history', { params });
+	}
 };
