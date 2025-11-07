@@ -21,7 +21,7 @@
 	let markerLayers: LayerGroup | undefined;
 	let markersById = $state<Map<number, Marker>>(new Map());
 	let markersWithHandlers = $state<Set<number>>(new Set());
-	let icon: Icon | undefined;
+	let icons: Map<string, Icon> = new Map();
 	let mapInitialized = $state(false);
 	let leafletLoaded = false;
 
@@ -37,6 +37,62 @@
 			}
 		}
 	});
+
+	function getStationColor(status: 'ACTIVE' | 'OUT_OF_SERVICE'): string {
+		return status === 'ACTIVE' ? '#22c55e' : '#ef4444'; // green for active, red for out of service
+	}
+
+	function createStationIconSvg(color: string): string {
+		return `data:image/svg+xml;base64,${btoa(`
+			<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+				<defs>
+					<clipPath id="upperClip">
+						<rect x="0" y="0" width="48" height="27.77" />
+					</clipPath>
+				</defs>
+				<path
+					d="M24,4.5h0A15.93,15.93,0,0,0,8.08,20.42c0,6.22,3.93,11.9,7.8,16a51.8,51.8,0,0,0,7.73,6.78l.39.27.39-.27a51.8,51.8,0,0,0,7.73-6.78c3.87-4.14,7.8-9.81,7.8-16A15.93,15.93,0,0,0,24,4.5Z"
+					fill="${color}"
+					clip-path="url(#upperClip)"
+				/>
+				<path
+					d="M24,4.5h0A15.93,15.93,0,0,0,8.08,20.42c0,6.22,3.93,11.9,7.8,16a51.8,51.8,0,0,0,7.73,6.78l.39.27.39-.27a51.8,51.8,0,0,0,7.73-6.78c3.87-4.14,7.8-9.81,7.8-16A15.93,15.93,0,0,0,24,4.5Z"
+					fill="none"
+					stroke="#000000"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+				<circle fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" cx="31.41" cy="20" r="3.98" />
+				<circle fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" cx="16.64" cy="20" r="3.98" />
+				<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="29.12 13.06 23.72 20 16.64 20 22.06 13.06 29.12 13.06" />
+				<polyline fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" points="31.41 20 28.27 10.48 25.96 10.48" />
+				<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" x1="21.54" y1="10.86" x2="23.72" y2="20" />
+				<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" x1="20.13" y1="10.86" x2="23.07" y2="10.86" />
+				<line fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" x1="9.86" y1="27.77" x2="38.14" y2="27.77" />
+			</svg>
+		`)}`;
+	}
+
+	function getIconForStatus(status: 'ACTIVE' | 'OUT_OF_SERVICE'): Icon | null {
+		if (!leafletLoaded) return null;
+
+		if (!icons.has(status)) {
+			const L = window.L;
+			const color = getStationColor(status);
+			const iconUrl = createStationIconSvg(color);
+
+			const icon = L.icon({
+				iconUrl: iconUrl,
+				iconSize: [50, 50],
+				iconAnchor: [25, 50],
+				popupAnchor: [0, -50]
+			});
+
+			icons.set(status, icon);
+		}
+
+		return icons.get(status)!;
+	}
 
 	async function waitForLeaflet(): Promise<typeof window.L> {
 		// Wait for Leaflet to be available (max 5 seconds)
@@ -77,14 +133,6 @@
 			markerLayers = L.layerGroup();
 			markerLayers.addTo(map);
 
-			// Create custom icon
-			icon = L.icon({
-				iconUrl: '/stationIcon.svg',
-				iconSize: [50, 50],
-				iconAnchor: [25, 50],
-				popupAnchor: [0, -50]
-			});
-
 			mapInitialized = true;
 
 			// Add initial markers
@@ -100,13 +148,15 @@
 		}
 	}
 
-	function createMarker(loc: [number, number]): Marker | null {
-		if (!leafletLoaded || !icon) return null;
+	function createMarker(station: StationSummary): Marker | null {
+		if (!leafletLoaded) return null;
 
 		const L = window.L;
-		const [lat, lng] = loc;
-		const marker = L.marker([lat, lng], { icon: icon }).bindPopup(
-			`<strong>Location:</strong><br/>Latitude: ${lat.toFixed(6)}<br/>Longitude: ${lng.toFixed(6)}`
+		const icon = getIconForStatus(station.status);
+		if (!icon) return null;
+
+		const marker = L.marker([station.latitude, station.longitude], { icon: icon }).bindPopup(
+			`<strong>Location:</strong><br/>Latitude: ${station.latitude.toFixed(6)}<br/>Longitude: ${station.longitude.toFixed(6)}`
 		);
 		return marker;
 	}
@@ -127,6 +177,16 @@
 				if ((existing as any).setLatLng) {
 					try {
 						(existing as any).setLatLng([loc.latitude, loc.longitude]);
+					} catch (err) {
+						// ignore
+					}
+				}
+
+				// Update icon based on status
+				const icon = getIconForStatus(loc.status);
+				if (icon && (existing as any).setIcon) {
+					try {
+						(existing as any).setIcon(icon);
 					} catch (err) {
 						// ignore
 					}
@@ -158,7 +218,7 @@
 					markersWithHandlers.add(id);
 				}
 			} else {
-				const marker = createMarker([loc.latitude, loc.longitude]);
+				const marker = createMarker(loc);
 				if (marker && markerLayers) {
 					const popupContainer = document.createElement('div');
 					popupContainer.className = '';
