@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { riderApi } from '$lib/api/rider.api';
+    import { operatorApi } from '$lib/api/operator.api';
     import type { PastTripResponse } from '$lib/api/types/rider.types';
     import { authApi } from '$lib/api/auth.api';
     import Toast from '$lib/components/Toast/Toast.svelte';
@@ -12,12 +13,20 @@
     let loading = false;
     let user: any = null;
     let showSidebar = false;
+    let isOperator = false;
 
     async function load() {
         try {
             loading = true;
-            const resp = await riderApi.getPastTrips();
-            pastTrips = resp.data;
+            if (isOperator) {
+                // Load all trips for operator
+                const resp = await operatorApi.getAllPastTrips();
+                pastTrips = resp.data;
+            } else {
+                // Load rider's own trips
+                const resp = await riderApi.getPastTrips();
+                pastTrips = resp.data;
+            }
         } catch (err) {
             console.warn('Failed to load past trips', err);
             pastTrips = null;
@@ -30,6 +39,7 @@
         try {
             const u = await authApi.getCurrentUser();
             user = u.data;
+            isOperator = user?.role === 'OPERATOR';
         } catch (err) {
             user = null;
         }
@@ -80,7 +90,7 @@
     {#if showSidebar}
         <Sidebar bind:showSidebar />
     {/if}
-    <h1 class="text-2xl font-semibold mb-4 ml-12">My Trips</h1>
+    <h1 class="text-2xl font-semibold mb-4 ml-12">{isOperator ? 'All User Trips' : 'My Trips'}</h1>
     {#if loading}
         <p>Loading...</p>
     {:else if pastTrips && pastTrips.length > 0}
@@ -89,6 +99,12 @@
                 <li class="p-4 border rounded flex justify-between items-center">
                     <div>
                         <div class="font-medium">Trip #{t.tripId}</div>
+                        {#if isOperator && t.userName}
+                            <div class="text-sm font-medium text-blue-600">User: {t.userName}</div>
+                        {/if}
+                        {#if t.bikeId}
+                            <div class="text-sm">Bike #{t.bikeId} ({t.bikeType})</div>
+                        {/if}
                         <div class="text-sm text-gray-600">{t.startStationName ?? '—'} → {t.endStationName ?? '—'}</div>
                         <div class="text-xs text-gray-500">{t.startTime ? new Date(t.startTime).toLocaleString() : ''} — {t.endTime ? new Date(t.endTime).toLocaleString() : ''} ({t.durationMinutes}m)</div>
                     </div>
@@ -96,8 +112,10 @@
                         <div class="font-semibold">${t.totalAmount.toFixed(2)}</div>
                         {#if t.paid}
                             <div class="text-sm text-green-700">Paid</div>
-                        {:else}
+                        {:else if !isOperator} 
                             <button class="mt-1 px-3 py-1 bg-blue-600 text-white rounded" disabled={t._paying} on:click={() => payTrip(t)}>{t._paying ? 'Paying...' : 'Pay'}</button>
+                        {:else}
+                            <div class="text-sm text-yellow-600">Unpaid</div>
                         {/if}
                     </div>
                 </li>

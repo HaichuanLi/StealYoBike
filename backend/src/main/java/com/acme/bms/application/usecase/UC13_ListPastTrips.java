@@ -46,7 +46,8 @@ public class UC13_ListPastTrips {
             Boolean paid = bill != null ? bill.isPaid() : false;
             Long billId = bill != null ? bill.getId() : null;
 
-            return new PastTripResponse(tripId, bikeId, bikeType, startTime, endTime, duration, startStation, endStation, total, paid, billId);
+            return new PastTripResponse(tripId, bikeId, bikeType, startTime, endTime, duration, startStation, endStation, 
+                total, paid, billId, riderId, t.getRider() != null ? t.getRider().getUsername() : null);
         }).collect(Collectors.toList());
     }
 }
