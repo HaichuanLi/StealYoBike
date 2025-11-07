@@ -2,7 +2,9 @@
 	import type { TripBillResponse } from '$lib/api/types';
 	import { riderApi } from '$lib/api/rider.api';
 	import { authApi } from '$lib/api/auth.api';
+	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
+	import { showToast } from '$lib/stores/toast';
 
 	export let show = false;
 	export let bill: TripBillResponse | null = null;
@@ -24,6 +26,15 @@
 		loadUserPaymentToken();
 	});
 
+	// If the modal becomes visible later (component may be mounted already),
+	// refresh the user's payment token each time the modal is shown so the
+	// displayed "payment token on file" stays up-to-date.
+	$: if (show) {
+		loadUserPaymentToken();
+	}
+
+	const dispatch = createEventDispatcher();
+
 	async function pay() {
 		if (!bill) return;
 		isPaying = true;
@@ -33,9 +44,14 @@
 			const resp = await riderApi.payTrip(bill.tripId, { paymentToken: tokenToUse });
 			bill = resp.data;
 			message = 'Payment recorded.';
+			// inform parent that payment occurred so it can refresh lists
+			dispatch('paid', { tripId: bill.tripId });
+			// show toast
+			showToast('Payment successful', 'success');
 		} catch (err) {
 			console.error('Payment failed', err);
 			message = 'Payment failed. Try again.';
+			showToast('Payment failed', 'error');
 		} finally {
 			isPaying = false;
 		}

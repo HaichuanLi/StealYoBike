@@ -10,7 +10,8 @@ import type {
 	ReturnBikeRequest,
 	ReturnBikeResponse,
 	TripInfoResponse,
-	TripBillResponse
+	TripBillResponse,
+	PastTripResponse
 } from './types/rider.types';
 
 export const riderApi = {
@@ -40,4 +41,8 @@ export const riderApi = {
 	payTrip: async (tripId: number, body: { paymentToken: string }): Promise<AxiosResponse<TripBillResponse>> => {
 		return await api.post<TripBillResponse>(`/rider/trips/${tripId}/pay`, body);
 	}
+,
+    getPastTrips: async (): Promise<AxiosResponse<PastTripResponse[]>> => {
+        return await api.get<PastTripResponse[]>('/rider/trips/history');
+    }
 };

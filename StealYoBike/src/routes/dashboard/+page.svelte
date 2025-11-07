@@ -3,7 +3,7 @@
 	import { riderApi } from '$lib/api/rider.api';
 	import type { StationSummary } from '$lib/api/types';
 	import type { UserInfoResponse } from '$lib/api/types/auth.types';
-	import type { ReserveBikeResponse, TripInfoResponse, TripBillResponse } from '$lib/api/types/rider.types';
+	import type { ReserveBikeResponse, TripInfoResponse, TripBillResponse, PastTripResponse } from '$lib/api/types/rider.types';
 	import DashboardBody from '$lib/components/DashboardBody/DashboardBody.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
@@ -13,7 +13,9 @@
 	import StationCard from '$lib/components/StationCard/StationCard.svelte';
 	import TripCard from '$lib/components/TripCard/TripCard.svelte';
 	import BillModal from '$lib/components/BillModal/BillModal.svelte';
+	import Toast from '$lib/components/Toast/Toast.svelte';
 	import { onMount } from 'svelte';
+	import { showToast } from '$lib/stores/toast';
 
 	let selectedStation = $state<StationSummary | null>(null);
 	let user = $state<UserInfoResponse | null>(null);
@@ -33,6 +35,22 @@
 
 	let tripBill = $state<TripBillResponse | null>(null);
 	let showBillModal = $state(false);
+	let pastTrips = $state<PastTripResponse[] | null>(null);
+	let loadingPast = $state(false);
+	let payingIds = $state<Set<number>>(new Set());
+
+	async function refreshPastTrips() {
+		try {
+			loadingPast = true;
+			const resp = await riderApi.getPastTrips();
+			pastTrips = resp.data;
+		} catch (err) {
+			console.warn('Failed to load past trips', err);
+			pastTrips = null;
+		} finally {
+			loadingPast = false;
+		}
+	}
 
 	let hasPaymentMethod = $derived(
 		user !== null && user.paymentToken !== null && user.paymentToken.trim() !== ''
@@ -70,6 +88,9 @@
 		} finally {
 			loading = false;
 		}
+
+		// load past trips
+		await refreshPastTrips();
 	});
 
 	async function handleReserveBike() {
@@ -100,6 +121,8 @@
 					const billResp = await riderApi.getTripBill(response.data.tripId);
 					tripBill = billResp.data;
 					showBillModal = true;
+					// refresh past trips so the new bill appears
+					await refreshPastTrips();
 				} catch (err) {
 					console.warn('Failed to fetch trip bill:', err);
 				}
@@ -162,6 +185,24 @@
 	function handleAddPayment() {
 		showPaymentPopup = true;
 	}
+
+	async function payPastTrip(tripId: number) {
+		try {
+			payingIds.add(tripId);
+			// trigger reactivity
+			payingIds = new Set(payingIds);
+			const payResp = await riderApi.payTrip(tripId, { paymentToken: user?.paymentToken ?? '' });
+			// refresh list
+			await refreshPastTrips();
+			showToast('Payment successful', 'success');
+		} catch (err) {
+			console.error('Payment failed', err);
+			showToast('Payment failed', 'error');
+		} finally {
+			payingIds.delete(tripId);
+			payingIds = new Set(payingIds);
+		}
+	}
 </script>
 
 <DashboardHeader />
@@ -194,6 +235,8 @@
 	</div>
 </DashboardBody>
 
+<!-- Past trips moved to the Trips page. -->
+
 <PaymentPopUp
 	bind:showPaymentPopup
 	bind:paymentTokenInput
@@ -210,4 +253,7 @@
 	onPinSubmit={handlePinSubmit}
 />
 
-<BillModal bind:show={showBillModal} bind:bill={tripBill} />
+<BillModal bind:show={showBillModal} bind:bill={tripBill} on:paid={() => refreshPastTrips()} />
+
+<!-- Global toast (local to dashboard) -->
+<Toast />

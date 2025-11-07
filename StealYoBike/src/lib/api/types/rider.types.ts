@@ -60,6 +60,20 @@ export interface TripBillResponse {
 	trip: TripInfoResponse;
 }
 
+export interface PastTripResponse {
+	tripId: number;
+	bikeId: number | null;
+	bikeType: 'REGULAR' | 'ELECTRIC' | null;
+	startTime: string | null;
+	endTime: string | null;
+	durationMinutes: number;
+	startStationName: string | null;
+	endStationName: string | null;
+	totalAmount: number;
+	paid: boolean;
+	billId: number | null;
+}
+
 export interface ReservationInfoResponse {
 	reservationId: number;
 	bikeId: number;
