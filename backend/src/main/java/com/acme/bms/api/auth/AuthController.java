@@ -14,15 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.acme.bms.application.usecase.UC1_RegisterUserUseCase;
 import com.acme.bms.application.usecase.UC2_LoginUserUseCase;
+import com.acme.bms.application.usecase.UC10_ProvidePaymentMethod;
+import com.acme.bms.application.exception.UserNotFoundException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Optional;
 import com.acme.bms.domain.repo.UserRepository;
-import com.acme.bms.domain.entity.User;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,6 +35,7 @@ public class AuthController {
 
     private final UC1_RegisterUserUseCase registerUC;
     private final UC2_LoginUserUseCase loginUC;
+    private final UC10_ProvidePaymentMethod providePaymentUC;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -51,49 +52,32 @@ public class AuthController {
     public ResponseEntity<UserInfoResponse> updatePaymentToken(
         @AuthenticationPrincipal String userId,
         @Valid @RequestBody UpdatePaymentTokenRequest request) {
-    try {
-        log.info("Updating payment token for user: {}", userId);
-
-        if (userId == null) {
-            log.warn("No authenticated user found");
-            return ResponseEntity.status(401).build();
-        }
-
-        Long userIdLong;
         try {
-            userIdLong = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            log.error("Invalid user ID format: {}", userId);
-            return ResponseEntity.status(400).build();
-        }
+            if (userId == null) {
+                log.warn("No authenticated user found");
+                return ResponseEntity.status(401).build();
+            }
 
-        Optional<User> userOpt = userRepository.findById(userIdLong);
+            Long userIdLong;
+            try {
+                userIdLong = Long.parseLong(userId);
+            } catch (NumberFormatException e) {
+                log.error("Invalid user ID format: {}", userId);
+                return ResponseEntity.status(400).build();
+            }
 
-        if (userOpt.isEmpty()) {
-            log.error("User not found with ID: {}", userIdLong);
+            log.info("Updating payment token for user: {}", userIdLong);
+
+            UserInfoResponse response = providePaymentUC.execute(request, userIdLong);
+
+            log.info("Updated payment token for user: {}", response.username());
+
+            return ResponseEntity.ok(response);
+        } catch (UserNotFoundException e) {
             return ResponseEntity.status(404).build();
-        }
-
-        User user = userOpt.get();
-        user.setPaymentToken(request.paymentToken());
-        userRepository.save(user);
-
-        log.info("Updated payment token for user: {}", user.getUsername());
-
-        UserInfoResponse response = new UserInfoResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getFullName(),
-                user.getRole().toString(),
-                user.getPaymentToken()
-        );
-
-        return ResponseEntity.ok(response);
-
-    } catch (Exception e) {
-        log.error("Error updating payment token", e);
-        return ResponseEntity.status(500).build();
+        } catch (Exception e) {
+            log.error("Error updating payment token", e);
+            return ResponseEntity.status(500).build();
         }
     }
 

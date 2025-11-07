@@ -52,6 +52,11 @@ public class UC3_ReserveCheckoutUseCase {
         User rider = userRepository.findById(riderId)
                 .orElseThrow(UserNotFoundException::new);
 
+        // Require a payment method on file before allowing reservations/checkouts
+        if (rider.getPaymentToken() == null || rider.getPaymentToken().isBlank()) {
+            throw new com.acme.bms.application.exception.PaymentMethodRequiredException();
+        }
+
         // Check if rider already has an active reservation
         Reservation existingReservation = reservationRepository.findByRiderIdAndStatus(riderId,
                 com.acme.bms.domain.entity.Status.ReservationStatus.ACTIVE);

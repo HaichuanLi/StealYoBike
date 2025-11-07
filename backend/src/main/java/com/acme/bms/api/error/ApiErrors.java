@@ -96,6 +96,12 @@ public class ApiErrors {
                 "https://api.bms/errors/unprocessable", Map.of());
     }
 
+    @ExceptionHandler(com.acme.bms.application.exception.PaymentMethodRequiredException.class)
+    public ResponseEntity<Map<String, Object>> paymentRequired(com.acme.bms.application.exception.PaymentMethodRequiredException ex) {
+        return problem(402, "Payment required", ex.getMessage(),
+                "https://api.bms/errors/payment-required", Map.of());
+    }
+
     @ExceptionHandler(ActiveReservationOrTripExistsException.class)
     public ResponseEntity<Map<String, Object>> activeReservationOrTripExists(
             ActiveReservationOrTripExistsException ex) {
