@@ -6,10 +6,12 @@
     import Toast from '$lib/components/Toast/Toast.svelte';
     import Sidebar from '$lib/components/sidebar/sidebar.svelte';
     import { showToast } from '$lib/stores/toast';
+    import type { WithUIState } from '$lib/api/types/ui.types';
 
-    let pastTrips: PastTripResponse[] | null = null;
+    let pastTrips: WithUIState<PastTripResponse>[] | null = null;
     let loading = false;
     let user: any = null;
+    let showSidebar = false;
 
     async function load() {
         try {
@@ -34,10 +36,10 @@
         await load();
     });
 
-    async function payTrip(t: PastTripResponse) {
+    async function payTrip(t: WithUIState<PastTripResponse>) {
         try {
             // show spinner per trip by temporarily attaching paying flag
-            t['_paying'] = true as any;
+            t._paying = true;
             const resp = await riderApi.payTrip(t.tripId, { paymentToken: user?.paymentToken ?? '' });
             // refresh list
             await load();
@@ -47,14 +49,38 @@
             showToast('Payment failed', 'error');
             alert('Payment failed');
         } finally {
-            delete t['_paying'];
+            t._paying = false;
         }
     }
 </script>
 
 <section class="p-6">
-    <Sidebar />
-    <h1 class="text-2xl font-semibold mb-4">My Trips</h1>
+    <!-- Menu button -->
+    <button
+        class="fixed top-4 left-4 z-50 p-2"
+        on:click={() => showSidebar = true}
+        aria-label="Open Menu"
+    >
+        <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            class="h-6 w-6" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+        >
+            <path 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M4 6h16M4 12h16M4 18h16"
+            />
+        </svg>
+    </button>
+
+    {#if showSidebar}
+        <Sidebar bind:showSidebar />
+    {/if}
+    <h1 class="text-2xl font-semibold mb-4 ml-12">My Trips</h1>
     {#if loading}
         <p>Loading...</p>
     {:else if pastTrips && pastTrips.length > 0}
@@ -71,7 +97,7 @@
                         {#if t.paid}
                             <div class="text-sm text-green-700">Paid</div>
                         {:else}
-                            <button class="mt-1 px-3 py-1 bg-blue-600 text-white rounded" disabled={t['_paying']} on:click={() => payTrip(t)}>{t['_paying'] ? 'Paying...' : 'Pay'}</button>
+                            <button class="mt-1 px-3 py-1 bg-blue-600 text-white rounded" disabled={t._paying} on:click={() => payTrip(t)}>{t._paying ? 'Paying...' : 'Pay'}</button>
                         {/if}
                     </div>
                 </li>
