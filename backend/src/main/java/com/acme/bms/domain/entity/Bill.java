@@ -24,5 +24,8 @@ public class Bill {
 	private double totalAmount = 0;
 
 	private LocalDateTime createdAt;
+	private boolean paid = false;
+	private LocalDateTime paidAt;
+	private String paymentTokenUsed;
 
 }

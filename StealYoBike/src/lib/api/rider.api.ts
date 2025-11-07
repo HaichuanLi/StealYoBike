@@ -9,7 +9,8 @@ import type {
 	ReserveBikeResponse,
 	ReturnBikeRequest,
 	ReturnBikeResponse,
-	TripInfoResponse
+	TripInfoResponse,
+	TripBillResponse
 } from './types/rider.types';
 
 export const riderApi = {
@@ -33,6 +34,10 @@ export const riderApi = {
 	}
 	,
 	getTripBill: async (tripId: number): Promise<AxiosResponse<any>> => {
-		return await api.get(`/rider/trips/${tripId}/bill`);
+		return await api.get<TripBillResponse>(`/rider/trips/${tripId}/bill`);
+	}
+,
+	payTrip: async (tripId: number, body: { paymentToken: string }): Promise<AxiosResponse<TripBillResponse>> => {
+		return await api.post<TripBillResponse>(`/rider/trips/${tripId}/pay`, body);
 	}
 };

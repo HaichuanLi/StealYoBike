@@ -7,20 +7,23 @@ import java.time.ZoneId;
 import java.time.Duration;
 
 public record TripBillResponse(
-        Long billId,
-        Long tripId,
-        double totalAmount,
-        Instant createdAt,
-        Instant startTime,
-        Instant endTime,
-        long durationMinutes,
-        double baseFee,
-        double usageCost,
-        double electricCharge,
-        double discountAmount,
-        Long endStationId,
-        String endStationName,
-        TripInfoResponse trip
+    Long billId,
+    Long tripId,
+    double totalAmount,
+    Instant createdAt,
+    Instant startTime,
+    Instant endTime,
+    long durationMinutes,
+    double baseFee,
+    double usageCost,
+    double electricCharge,
+    double discountAmount,
+    Long endStationId,
+    String endStationName,
+    boolean paid,
+    String paymentTokenUsed,
+    Instant paidAt,
+    TripInfoResponse trip
 ) {
     public static TripBillResponse from(Bill bill, TripInfoResponse trip) {
         var tripEntity = bill.getTrip();
@@ -62,21 +65,24 @@ public record TripBillResponse(
             endStationName = tripEntity.getEndStation().getName();
         }
 
-        return new TripBillResponse(
-                bill.getId(),
-                tripEntity.getId(),
-                total,
-                bill.getCreatedAt() == null ? null : bill.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant(),
-                start,
-                end,
-                minutes,
-                base,
-                usage,
-                electricCharge,
-                discount,
-                endStationId,
-                endStationName,
-                trip
-        );
+    return new TripBillResponse(
+        bill.getId(),
+        tripEntity.getId(),
+        total,
+        bill.getCreatedAt() == null ? null : bill.getCreatedAt().atZone(ZoneId.systemDefault()).toInstant(),
+        start,
+        end,
+        minutes,
+        base,
+        usage,
+        electricCharge,
+        discount,
+        endStationId,
+        endStationName,
+        bill.isPaid(),
+        bill.getPaymentTokenUsed(),
+        bill.getPaidAt() == null ? null : bill.getPaidAt().atZone(ZoneId.systemDefault()).toInstant(),
+        trip
+    );
     }
 }

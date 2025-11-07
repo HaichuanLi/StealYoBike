@@ -21,6 +21,7 @@ public class RiderController {
     private final UC3_ReserveCheckoutUseCase reserveUC;
     private final UC4_ReturnBikeUseCase returnUC;
     private final UC11_RiderCheckTripBill billUC;
+    private final com.acme.bms.application.usecase.UC12_PayTripBill uc12;
 
     // UC3: Reserve a bike
     @PostMapping("/reserve")
@@ -46,6 +47,15 @@ public class RiderController {
         Long riderId = parsePrincipalToLong(principal);
         var resp = billUC.execute(tripId, riderId);
         return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/trips/{tripId}/pay")
+    public ResponseEntity<com.acme.bms.api.rider.TripBillResponse> payTripBill(
+            @PathVariable Long tripId,
+            @RequestBody com.acme.bms.api.rider.PayBillRequest req,
+            @AuthenticationPrincipal String principal) {
+        Long riderId = parsePrincipalToLong(principal);
+        return ResponseEntity.ok(uc12.execute(tripId, req.paymentToken(), riderId));
     }
 
     // quickly verify authentication and display the correct user state

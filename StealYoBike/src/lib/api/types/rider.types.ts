@@ -54,6 +54,9 @@ export interface TripBillResponse {
 	discountAmount: number;
 	endStationId: number | null;
 	endStationName: string | null;
+	paid: boolean;
+	paymentTokenUsed: string | null;
+	paidAt: string | null;
 	trip: TripInfoResponse;
 }
 
