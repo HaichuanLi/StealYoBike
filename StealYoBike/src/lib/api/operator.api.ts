@@ -8,6 +8,7 @@ import type {
 	RestoreInitialStateRequest,
 	RestoreInitialStateResponse
 } from './types/operator.type';
+import type { PastTripResponse } from './types/rider.types';
 
 export const operatorApi = {
 	toggleStationStatus: async (stationId: number): Promise<AxiosResponse<ChangeStationResponse>> => {
@@ -58,5 +59,9 @@ export const operatorApi = {
 			console.error('Error restoring initial state:', error);
 			throw error;
 		}
-	}
+	},
+
+    getAllPastTrips: async (): Promise<AxiosResponse<PastTripResponse[]>> => {
+        return await api.get<PastTripResponse[]>('operator/trips/history');
+    }
 };

@@ -3,8 +3,8 @@ package com.acme.bms.api.operator;
 import com.acme.bms.application.usecase.UC5_RebalanceBikesUseCase;
 import com.acme.bms.application.usecase.UC6_OperatorMarksStationOutOfService;
 import com.acme.bms.application.usecase.UC7_OperatorSendBikeToMaintenance;
-
 import com.acme.bms.application.usecase.UC8_RestoreInitialStateUseCase;
+import com.acme.bms.application.usecase.UC14_ListAllUsersPastTrips;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +13,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import java.util.List;
+import com.acme.bms.api.rider.PastTripResponse;
 
 @RestController
 @RequestMapping("/api/operator")
@@ -24,6 +26,7 @@ public class OperatorController {
     private final UC6_OperatorMarksStationOutOfService uc6;
     private final UC7_OperatorSendBikeToMaintenance uc7;
     private final UC8_RestoreInitialStateUseCase uc8;
+    private final UC14_ListAllUsersPastTrips uc14;
 
     @PostMapping("/rebalance")
     public ResponseEntity<RebalanceResponse> rebalance(@AuthenticationPrincipal String principal,
@@ -61,6 +64,11 @@ public class OperatorController {
             @AuthenticationPrincipal String principal, @Valid @RequestBody RestoreInitialStateRequest request) {
         Long operatorId = parsePrincipalToLong(principal);
         return ResponseEntity.ok(uc8.execute(operatorId, request));
+    }
+
+    @GetMapping("/trips/history")
+    public ResponseEntity<List<PastTripResponse>> getAllPastTrips() {
+        return ResponseEntity.ok(uc14.execute());
     }
 
     private Long parsePrincipalToLong(Object principal) {

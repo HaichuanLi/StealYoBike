@@ -17,4 +17,6 @@ public class PastTripResponse {
     private Double totalAmount;
     private Boolean paid;
     private Long billId;
+    private Long userId;
+    private String userName;
 }
