@@ -80,14 +80,15 @@ public class AuthController {
 
         log.info("Updated payment token for user: {}", user.getUsername());
 
-        UserInfoResponse response = new UserInfoResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getUsername(),
-                user.getFullName(),
-                user.getRole().toString(),
-                user.getPaymentToken()
-        );
+    UserInfoResponse response = new UserInfoResponse(
+        user.getId(),
+        user.getEmail(),
+        user.getUsername(),
+        user.getFullName(),
+        user.getRole().toString(),
+        user.getPaymentToken(),
+        user.getPlan() != null ? user.getPlan().name() : null
+    );
 
         return ResponseEntity.ok(response);
 
@@ -109,24 +110,26 @@ public class AuthController {
         try {
             Long userId = Long.parseLong(principalName);
             return ResponseEntity.of(
-                    userRepository.findById(userId)
-                            .map(dbUser -> new UserInfoResponse(
-                                    dbUser.getId(),
-                                    dbUser.getEmail(),
-                                    dbUser.getUsername(),
-                                    dbUser.getFullName(),
-                                    dbUser.getRole().name(),
-                                    dbUser.getPaymentToken())));
+            userRepository.findById(userId)
+                .map(dbUser -> new UserInfoResponse(
+                    dbUser.getId(),
+                    dbUser.getEmail(),
+                    dbUser.getUsername(),
+                    dbUser.getFullName(),
+                    dbUser.getRole().name(),
+                    dbUser.getPaymentToken(),
+                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null)));
         } catch (NumberFormatException ex) {
             return ResponseEntity.of(
-                    userRepository.findByUsername(principalName)
-                            .map(dbUser -> new UserInfoResponse(
-                                    dbUser.getId(),
-                                    dbUser.getEmail(),
-                                    dbUser.getUsername(),
-                                    dbUser.getFullName(),
-                                    dbUser.getRole().name(),
-                                    dbUser.getPaymentToken())));
+                userRepository.findByUsername(principalName)
+                    .map(dbUser -> new UserInfoResponse(
+                        dbUser.getId(),
+                        dbUser.getEmail(),
+                        dbUser.getUsername(),
+                        dbUser.getFullName(),
+                        dbUser.getRole().name(),
+                        dbUser.getPaymentToken(),
+                        dbUser.getPlan() != null ? dbUser.getPlan().name() : null)));
         }
     }
 }
