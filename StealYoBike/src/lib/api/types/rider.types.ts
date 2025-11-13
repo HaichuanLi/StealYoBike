@@ -108,9 +108,12 @@ export interface TripResponse {
 	endTime: string | null;
 	durationMinutes: number;
 	bikeType: 'REGULAR' | 'ELECTRIC' | null;
+	plan: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL' | null;
 	baseFee: number;
 	perMinuteFee: number;
 	eBikeSurcharge: number;
+	// discount applied on the subtotal
+	discountAmount: number;
 	totalCost: number;
 	timeline: string;
 }

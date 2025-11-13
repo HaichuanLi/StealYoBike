@@ -22,6 +22,10 @@ public class Bill {
 	@JoinColumn(name = "trip_id")
 	private Trip trip;
 	private double totalAmount = 0;
+	private double baseFee = 0;
+	private double usageCost = 0;
+	private double electricCharge = 0;
+	private double discountAmount = 0;
 
 	private LocalDateTime createdAt;
 	private boolean paid = false;

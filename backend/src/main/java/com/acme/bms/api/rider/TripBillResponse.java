@@ -1,7 +1,6 @@
 package com.acme.bms.api.rider;
 
 import com.acme.bms.domain.entity.Bill;
-import com.acme.bms.domain.entity.BikeType;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.Duration;
@@ -34,29 +33,12 @@ public record TripBillResponse(
             minutes = Duration.between(start, end).toMinutes();
         }
 
-        // reproduce builder pricing logic (kept in sync with builders)
-        boolean isStudent = false;
-        var rider = tripEntity.getRider();
-        if (rider != null && rider.getEmail() != null && rider.getEmail().toLowerCase().endsWith(".edu")) {
-            isStudent = true;
-        }
-
-        double base = isStudent ? 2.0 : 2.5;
-        double usageRate = isStudent ? 0.10 : 0.15;
-        double eBikeMultiplier = 1.5;
-        double discountRate = isStudent ? 0.10 : 0.0;
-
-        double usage = minutes * usageRate;
-        double subtotal = base + usage;
-        double electricCharge = 0.0;
-        if (tripEntity.getBike() != null && tripEntity.getBike().getType() == BikeType.ELECTRIC) {
-            double withElectric = subtotal * eBikeMultiplier;
-            electricCharge = withElectric - subtotal;
-            subtotal = withElectric;
-        }
-
-        double discount = subtotal * discountRate;
-        double total = subtotal - discount;
+        // Use persisted bill component fields when available so the API reflects the stored bill
+        double base = bill.getBaseFee();
+        double usage = bill.getUsageCost();
+        double electricCharge = bill.getElectricCharge();
+        double discount = bill.getDiscountAmount();
+        double total = bill.getTotalAmount();
 
         Long endStationId = null;
         String endStationName = null;

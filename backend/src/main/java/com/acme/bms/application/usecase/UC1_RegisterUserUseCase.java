@@ -29,15 +29,20 @@ public class UC1_RegisterUserUseCase {
         if (users.existsByEmail(req.email())) throw new EmailAlreadyUsedException();
         if (users.existsByUsername(req.username())) throw new UsernameAlreadyUsedException();
 
-        User saved = users.save(User.builder()
-                .fullName(req.fullName())
-                .address(req.address())
-                .email(req.email())
-                .username(req.username())
-                .passwordHash(passwordEncoder.encode(req.password()))
-                .paymentToken(req.paymentToken())
-                .role(Role.RIDER)
-                .build());
+    User.UserBuilder builder = User.builder()
+        .fullName(req.fullName())
+        .address(req.address())
+        .email(req.email())
+        .username(req.username())
+        .passwordHash(passwordEncoder.encode(req.password()))
+        .paymentToken(req.paymentToken())
+        .role(Role.RIDER);
+
+    if (req.plan() != null) {
+        builder.plan(req.plan());
+    }
+
+    User saved = users.save(builder.build());
 
         events.publishEvent(new UserRegisteredEvent(saved.getId(), saved.getRole().name(), saved.getEmail()));
 

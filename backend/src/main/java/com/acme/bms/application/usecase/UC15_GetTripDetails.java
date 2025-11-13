@@ -61,21 +61,23 @@ public class UC15_GetTripDetails {
         // Bike type
         Bike bike = t.getBike();
         String bikeType = (bike != null && bike.getType() != null) ? bike.getType().name() : null;
+    String plan = t.getRider() != null && t.getRider().getPlan() != null ? t.getRider().getPlan().name() : null;
 
-        // Cost breakdown: prefer Bill if present; otherwise use trip priceCents
+        // Cost breakdown: prefer persisted Bill component fields if present
         double baseFee = 0.0;
         double perMinuteFee = 0.0;
         double eBikeSurcharge = 0.0;
+        double discountAmount = 0.0;
         double totalCost = 0.0;
 
         var billOpt = billRepo.findByTripId(tripId);
         if (billOpt.isPresent()) {
             var b = billOpt.get();
             totalCost = b.getTotalAmount();
-            // Use reflection only if these getters exist in your Bill; if not, they stay 0.0
-            try { baseFee = (double) b.getClass().getMethod("getBaseFee").invoke(b); } catch (Exception ignore) {}
-            try { perMinuteFee = (double) b.getClass().getMethod("getPerMinuteRate").invoke(b); } catch (Exception ignore) {}
-            try { eBikeSurcharge = (double) b.getClass().getMethod("getSurcharge").invoke(b); } catch (Exception ignore) {}
+            baseFee = b.getBaseFee();
+            try { perMinuteFee = (double) b.getClass().getMethod("getUsageCost").invoke(b); } catch (Exception ignore) {}
+            try { eBikeSurcharge = (double) b.getClass().getMethod("getElectricCharge").invoke(b); } catch (Exception ignore) {}
+            try { discountAmount = (double) b.getClass().getMethod("getDiscountAmount").invoke(b); } catch (Exception ignore) {}
         } else {
             Integer cents = t.getPriceCents();
             totalCost = (cents != null ? cents : 0) / 100.0;
@@ -86,7 +88,7 @@ public class UC15_GetTripDetails {
                 + " \u2192 "
                 + (endTime != null ? "Return: " + endTime.format(FMT) : "Return: —");
 
-        return new TripResponse(
+    return new TripResponse(
                 tripId,
                 riderName,
                 startStation,
@@ -95,10 +97,12 @@ public class UC15_GetTripDetails {
                 endTime,
                 durationMinutes,
                 bikeType,
+        plan,
                 baseFee,
-                perMinuteFee,
-                eBikeSurcharge,
-                totalCost,
+        perMinuteFee,
+        eBikeSurcharge,
+        discountAmount,
+        totalCost,
                 timeline
         );
     }

@@ -22,6 +22,7 @@
 
             <div class="grid grid-cols-2 gap-3 text-sm">
                 <div><span class="font-medium">Rider:</span> {details.riderName ?? '—'}</div>
+                <div><span class="font-medium">Plan:</span> {details.plan ?? '—'}</div>
                 <div><span class="font-medium">Bike Type:</span> {details.bikeType ?? '—'}</div>
                 <div><span class="font-medium">Start Station:</span> {details.startStation ?? '—'}</div>
                 <div><span class="font-medium">End Station:</span> {details.endStation ?? '—'}</div>
@@ -36,6 +37,7 @@
                     <div>Base fee:</div> <div class="text-right">{money(details.baseFee)}</div>
                     <div>Per-minute rate:</div> <div class="text-right">{money(details.perMinuteFee)}</div>
                     <div>E-bike surcharge:</div> <div class="text-right">{money(details.eBikeSurcharge)}</div>
+                    <div>Discount:</div> <div class="text-right">{money(details.discountAmount)}</div>
                     <div class="font-semibold">Total:</div> <div class="text-right font-semibold">{money(details.totalCost)}</div>
                 </div>
             </div>

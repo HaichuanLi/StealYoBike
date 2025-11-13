@@ -113,7 +113,6 @@ class UC15Test {
         assertEquals("Uptown", out.endStation());
         assertTrue(out.durationMinutes() >= 16 && out.durationMinutes() <= 18, "duration ~17m");
 
-        // We only guaranteed total via Bill; breakdown may be 0.0 if your Bill has no getters.
         assertEquals(5.50, out.totalCost(), 1e-9);
         assertNotNull(out.timeline());
         assertTrue(out.timeline().contains("Checkout"));
@@ -147,7 +146,6 @@ class UC15Test {
         LocalDateTime startAt = LocalDateTime.now().minusMinutes(10);
         LocalDateTime endAt = LocalDateTime.now();
 
-        // No Bill -> fallback to priceCents (375 -> $3.75)
         Trip trip = Trip.builder()
                 .id(tripId)
                 .rider(rider)
