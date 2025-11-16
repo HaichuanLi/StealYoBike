@@ -153,6 +153,9 @@
 				<p class="text-sm font-medium text-emerald-800">Welcome back!</p>
 				<p class="text-xs text-emerald-600">{user.email}</p>
 				<p class="text-xs text-emerald-500">{user.fullName}</p>
+				<p class="mt-2 text-xs font-semibold text-emerald-700">
+					Tier: <span class="font-bold text-emerald-800">{user.tier || 'REGULAR'}</span>
+				</p>
 				<button
 					onclick={() => onNavigate('/logout')}
 					class="mt-2 text-xs text-emerald-700 underline hover:text-emerald-900"

@@ -38,8 +38,13 @@
                     <div>Per-minute rate:</div> <div class="text-right">{money(details.perMinuteFee)}</div>
                     <div>E-bike surcharge:</div> <div class="text-right">{money(details.eBikeSurcharge)}</div>
                     <div>Discount:</div> <div class="text-right">{money(details.discountAmount)}</div>
+                    <div>Tier Discount:</div> <div class="text-right">{money(details.tierDiscountAmount)}</div>
                     <div class="font-semibold">Total:</div> <div class="text-right font-semibold">{money(details.totalCost)}</div>
                 </div>
+            </div>
+
+            <div class="my-3">
+                <p class="mb-2 text-sm text-gray-700">User Tier: <span class="font-semibold text-emerald-700">{details.tier}</span></p>
             </div>
 
             <div class="my-3">

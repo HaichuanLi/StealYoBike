@@ -6,6 +6,7 @@ import com.acme.bms.domain.entity.BikeType;
 import com.acme.bms.domain.entity.Bill;
 import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.entity.Plan;
+import com.acme.bms.domain.entity.Tier;
 import com.acme.bms.domain.entity.User;
 
 import lombok.Getter;
@@ -80,6 +81,36 @@ public class NonStudentBillBuilder implements BillBuilder{
 
     @Override
     public void applyDiscount() {
-        //no discount for now
+        // no discount for now
+    }
+
+    @Override
+    public void applyTierDiscount() {
+        User rider = bill.getTrip().getRider();
+        if (rider == null) {
+            return;
+        }
+        
+        double tierDiscountPercentage = 0.0;
+        switch (rider.getTier()) {
+            case BRONZE:
+                tierDiscountPercentage = 0.05; // 5% discount
+                break;
+            case SILVER:
+                tierDiscountPercentage = 0.10; // 10% discount
+                break;
+            case GOLD:
+                tierDiscountPercentage = 0.15; // 15% discount
+                break;
+            default:
+                tierDiscountPercentage = 0.0; // No discount for REGULAR tier
+                break;
+        }
+        
+        if (tierDiscountPercentage > 0) {
+            double tierDiscount = bill.getTotalAmount() * tierDiscountPercentage;
+            bill.setTierDiscountAmount(tierDiscount);
+            bill.setTotalAmount(bill.getTotalAmount() * (1 - tierDiscountPercentage));
+        }
     }
 }

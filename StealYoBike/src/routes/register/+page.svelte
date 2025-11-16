@@ -18,12 +18,13 @@
 		const password = formData.get('password') as string;
 		const paymentToken = formData.get('paymentToken') as string;
 		const plan = (formData.get('plan') as string) || 'PAYPERRIDE';
+		const tier = (formData.get('tier') as string) || 'REGULAR';
 
 		isLoading = true;
 		errorMessage = '';
 
 		try {
-			await authApi.register({ fullName, address, email, username, password, paymentToken, plan });
+			await authApi.register({ fullName, address, email, username, password, paymentToken, plan, tier });
 			// Redirect on success
 			goto('/login');
 		} catch (error) {
@@ -121,6 +122,19 @@
 				<option value="PAYPERRIDE">Pay Per Ride (default)</option>
 				<option value="MONTHLY">Monthly (30 min free, 50% e-bike surcharge)</option>
 				<option value="ANNUAL">Annual (45 min free, free e-bike)</option>
+			</select>
+		</div>
+		<div class="mb-4">
+			<label class="mb-2 block font-bold text-gray-700" for="tier">Tier</label>
+			<select
+				id="tier"
+				name="tier"
+				class="w-full rounded border border-gray-300 px-3 py-2 focus:border-green-300 focus:outline-none"
+			>
+				<option value="REGULAR">Regular (default)</option>
+				<option value="BRONZE">Bronze (5% discount)</option>
+				<option value="SILVER">Silver (10% discount)</option>
+				<option value="GOLD">Gold (15% discount)</option>
 			</select>
 		</div>
 		<button

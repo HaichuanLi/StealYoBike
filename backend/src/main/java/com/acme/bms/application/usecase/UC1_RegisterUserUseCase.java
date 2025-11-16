@@ -42,6 +42,10 @@ public class UC1_RegisterUserUseCase {
         builder.plan(req.plan());
     }
 
+    if (req.tier() != null) {
+        builder.tier(req.tier());
+    }
+
     User saved = users.save(builder.build());
 
         events.publishEvent(new UserRegisteredEvent(saved.getId(), saved.getRole().name(), saved.getEmail()));

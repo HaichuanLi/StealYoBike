@@ -68,16 +68,22 @@ public class UC15_GetTripDetails {
         double perMinuteFee = 0.0;
         double eBikeSurcharge = 0.0;
         double discountAmount = 0.0;
+        double tierDiscountAmount = 0.0;
         double totalCost = 0.0;
+        String tier = "REGULAR";
 
         var billOpt = billRepo.findByTripId(tripId);
         if (billOpt.isPresent()) {
             var b = billOpt.get();
             totalCost = b.getTotalAmount();
             baseFee = b.getBaseFee();
-            try { perMinuteFee = (double) b.getClass().getMethod("getUsageCost").invoke(b); } catch (Exception ignore) {}
-            try { eBikeSurcharge = (double) b.getClass().getMethod("getElectricCharge").invoke(b); } catch (Exception ignore) {}
-            try { discountAmount = (double) b.getClass().getMethod("getDiscountAmount").invoke(b); } catch (Exception ignore) {}
+            perMinuteFee = b.getUsageCost();
+            eBikeSurcharge = b.getElectricCharge();
+            discountAmount = b.getDiscountAmount();
+            tierDiscountAmount = b.getTierDiscountAmount();
+            if (t.getRider() != null && t.getRider().getTier() != null) {
+                tier = t.getRider().getTier().toString();
+            }
         } else {
             Integer cents = t.getPriceCents();
             totalCost = (cents != null ? cents : 0) / 100.0;
@@ -102,6 +108,8 @@ public class UC15_GetTripDetails {
         perMinuteFee,
         eBikeSurcharge,
         discountAmount,
+        tierDiscountAmount,
+        tier,
         totalCost,
                 timeline
         );

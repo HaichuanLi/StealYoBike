@@ -17,6 +17,8 @@ public record TripBillResponse(
     double usageCost,
     double electricCharge,
     double discountAmount,
+    double tierDiscountAmount,
+    String tier,
     Long endStationId,
     String endStationName,
     boolean paid,
@@ -38,7 +40,11 @@ public record TripBillResponse(
         double usage = bill.getUsageCost();
         double electricCharge = bill.getElectricCharge();
         double discount = bill.getDiscountAmount();
+        double tierDiscount = bill.getTierDiscountAmount();
         double total = bill.getTotalAmount();
+        String riderTier = tripEntity.getRider() != null && tripEntity.getRider().getTier() != null 
+            ? tripEntity.getRider().getTier().toString() 
+            : "REGULAR";
 
         Long endStationId = null;
         String endStationName = null;
@@ -59,6 +65,8 @@ public record TripBillResponse(
         usage,
         electricCharge,
         discount,
+        tierDiscount,
+        riderTier,
         endStationId,
         endStationName,
         bill.isPaid(),

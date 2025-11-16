@@ -59,4 +59,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Plan plan = Plan.PAYPERRIDE;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Tier tier = Tier.REGULAR;
+
 }

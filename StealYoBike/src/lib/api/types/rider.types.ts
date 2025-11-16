@@ -50,8 +50,10 @@ export interface TripBillResponse {
 	durationMinutes: number;
 	baseFee: number;
 	usageCost: number;
-	electricCharge: number;
+	elecCharge: number;
 	discountAmount: number;
+	tierDiscountAmount: number;
+	tier: string;
 	endStationId: number | null;
 	endStationName: string | null;
 	paid: boolean;
@@ -114,6 +116,8 @@ export interface TripResponse {
 	eBikeSurcharge: number;
 	// discount applied on the subtotal
 	discountAmount: number;
+	tierDiscountAmount: number;
+	tier: string;
 	totalCost: number;
 	timeline: string;
 }
