@@ -9,5 +9,6 @@ public class BillBuilderDirector {
         builder.addUsageCost();
         builder.addElectricCharge();
         builder.applyDiscount();
+        builder.applyTierDiscount();
     }
 }

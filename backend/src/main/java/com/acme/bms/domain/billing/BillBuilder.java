@@ -9,5 +9,6 @@ public interface BillBuilder {
     void addUsageCost();
     void addElectricCharge();
     void applyDiscount();
+    void applyTierDiscount();
     Bill getBill();
 }

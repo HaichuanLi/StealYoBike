@@ -11,9 +11,13 @@ public record TripResponse(
         LocalDateTime endTime,
         long durationMinutes,
         String bikeType,
+        String plan,
         double baseFee,
         double perMinuteFee,
         double eBikeSurcharge,
+        double discountAmount,
+        double tierDiscountAmount,
+        String tier,
         double totalCost,
         String timeline
 ) {}
