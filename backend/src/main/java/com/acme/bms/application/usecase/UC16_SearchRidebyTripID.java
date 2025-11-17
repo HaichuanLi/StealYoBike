@@ -42,6 +42,7 @@ public class UC16_SearchRidebyTripID {
         double totalCost = baseFee + (perMinuteFee * durationMinutes) + eBikeSurcharge;
         double discountAmount = 0.0;
         double tierDiscountAmount = 0.0;
+        double flexDollarUsed = 0.0;
         String tier = "REGULAR";
         
         // Check if a Bill exists for this trip and use its values
@@ -53,6 +54,7 @@ public class UC16_SearchRidebyTripID {
             eBikeSurcharge = b.getElectricCharge();
             discountAmount = b.getDiscountAmount();
             tierDiscountAmount = b.getTierDiscountAmount();
+            flexDollarUsed = b.getFlexDollarUsed();
             totalCost = b.getTotalAmount();
         }
         
@@ -84,6 +86,7 @@ public class UC16_SearchRidebyTripID {
                 discountAmount,
                 tierDiscountAmount,
                 tier,
+                flexDollarUsed,
                 totalCost,
                 timeline
         );

@@ -94,16 +94,16 @@ public class NonStudentBillBuilder implements BillBuilder{
         double tierDiscountPercentage = 0.0;
         switch (rider.getTier()) {
             case BRONZE:
-                tierDiscountPercentage = 0.05; // 5% discount
+                tierDiscountPercentage = 0.05;
                 break;
             case SILVER:
-                tierDiscountPercentage = 0.10; // 10% discount
+                tierDiscountPercentage = 0.10;
                 break;
             case GOLD:
-                tierDiscountPercentage = 0.15; // 15% discount
+                tierDiscountPercentage = 0.15;
                 break;
             default:
-                tierDiscountPercentage = 0.0; // No discount for REGULAR tier
+                tierDiscountPercentage = 0.0;
                 break;
         }
         
@@ -112,5 +112,26 @@ public class NonStudentBillBuilder implements BillBuilder{
             bill.setTierDiscountAmount(tierDiscount);
             bill.setTotalAmount(bill.getTotalAmount() * (1 - tierDiscountPercentage));
         }
+    }
+
+    @Override
+    public void applyFlexDollar() {
+        // Skip if this bill should not use flex dollars (e.g., same trip that earned them)
+        if (bill.isSkipFlexDollar()) {
+            return;
+        }
+        
+        User rider = bill.getTrip().getRider();
+        if (rider == null || rider.getFlexDollar() <= 0) {
+            return;
+        }
+        
+        // Use as much flex dollar as needed up to available amount and bill total
+        double flexUsed = Math.min(rider.getFlexDollar(), bill.getTotalAmount());
+        bill.setFlexDollarUsed(flexUsed);
+        bill.setTotalAmount(bill.getTotalAmount() - flexUsed);
+        
+        // Deduct from rider's flex dollar balance
+        rider.setFlexDollar(rider.getFlexDollar() - flexUsed);
     }
 }

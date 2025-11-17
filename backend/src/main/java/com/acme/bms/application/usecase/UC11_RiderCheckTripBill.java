@@ -29,7 +29,7 @@ public class UC11_RiderCheckTripBill {
     private final TripRepository tripRepo;
     private final BillRepository billRepo;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public TripBillResponse execute(Long tripId, Long riderId) {
         if (riderId == null) {
             throw new UserNotFoundException();
@@ -54,12 +54,25 @@ public class UC11_RiderCheckTripBill {
             builder = new NonStudentBillBuilder();
         }
 
-        BillBuilderDirector director = new BillBuilderDirector();
-        director.constructBill(builder, trip);
-
+        // Create bill first
+        builder.createBill(trip);
         Bill bill = builder.getBill();
-        bill.setCreatedAt(LocalDateTime.now());
+        
+        // Set skipFlexDollar BEFORE calling the rest of constructBill
+        if (trip.getRider() != null && trip.getId() != null && 
+            trip.getId().equals(trip.getRider().getLastFlexDollarEarnedTripId())) {
+            bill.setSkipFlexDollar(true);
+        }
+        
+        // Now complete the bill construction with skipFlexDollar already set
+        builder.calculateBaseCost();
+        builder.addUsageCost();
+        builder.addElectricCharge();
+        builder.applyDiscount();
+        builder.applyTierDiscount();
+        builder.applyFlexDollar();
 
+        bill.setCreatedAt(LocalDateTime.now());
         bill = billRepo.save(bill);
 
         return TripBillResponse.from(bill, new TripInfoResponse(trip));

@@ -93,6 +93,9 @@
 				<p>Electric surcharge: ${bill.electricCharge.toFixed(2)}</p>
 				<p>Discount: -${bill.discountAmount.toFixed(2)}</p>
 				<p>Tier Discount: -${bill.tierDiscountAmount.toFixed(2)}</p>
+				{#if bill.flexDollarUsed > 0}
+					<p>Flex Dollar Used: -${bill.flexDollarUsed.toFixed(2)}</p>
+				{/if}
 				<p class="mt-2 font-semibold">Total: ${bill.totalAmount.toFixed(2)}</p>
 			</div>
 			<p class="mt-3 text-sm text-gray-700">User Tier: <span class="font-semibold text-emerald-700">{bill.tier}</span></p>				<div class="mt-3">

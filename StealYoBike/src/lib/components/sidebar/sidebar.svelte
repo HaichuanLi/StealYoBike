@@ -156,6 +156,9 @@
 				<p class="mt-2 text-xs font-semibold text-emerald-700">
 					Tier: <span class="font-bold text-emerald-800">{user.tier || 'REGULAR'}</span>
 				</p>
+				<p class="text-xs font-semibold text-emerald-700">
+					Flex Dollars: <span class="font-bold text-emerald-800">${user.flexDollar.toFixed(2)}</span>
+				</p>
 				<button
 					onclick={() => onNavigate('/logout')}
 					class="mt-2 text-xs text-emerald-700 underline hover:text-emerald-900"

@@ -10,5 +10,6 @@ public class BillBuilderDirector {
         builder.addElectricCharge();
         builder.applyDiscount();
         builder.applyTierDiscount();
+        builder.applyFlexDollar();
     }
 }

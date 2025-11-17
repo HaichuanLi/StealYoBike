@@ -87,7 +87,9 @@ public class AuthController {
         user.getFullName(),
         user.getRole().toString(),
         user.getPaymentToken(),
-        user.getPlan() != null ? user.getPlan().name() : null
+        user.getPlan() != null ? user.getPlan().name() : null,
+        user.getTier() != null ? user.getTier().toString() : "REGULAR",
+        user.getFlexDollar()
     );
 
         return ResponseEntity.ok(response);
@@ -118,7 +120,9 @@ public class AuthController {
                     dbUser.getFullName(),
                     dbUser.getRole().name(),
                     dbUser.getPaymentToken(),
-                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null)));
+                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
+                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
+                    dbUser.getFlexDollar())));
         } catch (NumberFormatException ex) {
             return ResponseEntity.of(
                 userRepository.findByUsername(principalName)
@@ -129,7 +133,9 @@ public class AuthController {
                         dbUser.getFullName(),
                         dbUser.getRole().name(),
                         dbUser.getPaymentToken(),
-                        dbUser.getPlan() != null ? dbUser.getPlan().name() : null)));
+                        dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
+                        dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
+                        dbUser.getFlexDollar())));
         }
     }
 }

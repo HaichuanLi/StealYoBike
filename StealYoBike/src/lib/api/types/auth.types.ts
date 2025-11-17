@@ -34,4 +34,6 @@ export interface UserInfoResponse {
     role: string;
 	paymentToken: string;
 	plan?: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL';
+	tier: string;
+	flexDollar: number;
 }
