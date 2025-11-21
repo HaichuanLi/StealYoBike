@@ -29,7 +29,6 @@
 		if (mapInitialized && stationSummaries) {
 			updateMarkers();
 
-			// Fit map to show all markers
 			if (stationSummaries.length > 0 && map) {
 				const L = window.L;
 				const bounds = L.latLngBounds(stationSummaries.map((loc) => [loc.latitude, loc.longitude]));
@@ -39,7 +38,7 @@
 	});
 
 	function getStationColor(status: 'ACTIVE' | 'OUT_OF_SERVICE'): string {
-		return status === 'ACTIVE' ? '#22c55e' : '#ef4444'; // green for active, red for out of service
+		return status === 'ACTIVE' ? '#22c55e' : '#ef4444';
 	}
 
 	function createStationIconSvg(color: string): string {
@@ -95,7 +94,6 @@
 	}
 
 	async function waitForLeaflet(): Promise<typeof window.L> {
-		// Wait for Leaflet to be available (max 5 seconds)
 		let attempts = 0;
 		while (!window.L && attempts < 50) {
 			await new Promise((resolve) => setTimeout(resolve, 100));
@@ -116,29 +114,24 @@
 			const L = await waitForLeaflet();
 			leafletLoaded = true;
 
-			// Create the map centered on the first location or a default
 			const centerLocation: [number, number] =
 				stationSummaries && stationSummaries.length > 0
 					? [stationSummaries[0].latitude, stationSummaries[0].longitude]
 					: [45.4972159, -73.6103642];
 			map = L.map(mapElement, { preferCanvas: true }).setView(centerLocation, 13);
 
-			// Add tile layer
 			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				attribution:
 					'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 			}).addTo(map);
 
-			// Create marker layer group
 			markerLayers = L.layerGroup();
 			markerLayers.addTo(map);
 
 			mapInitialized = true;
 
-			// Add initial markers
 			updateMarkers();
 
-			// Fit map to show all markers
 			if (stationSummaries.length > 0) {
 				const bounds = L.latLngBounds(stationSummaries.map((loc) => [loc.latitude, loc.longitude]));
 				map.fitBounds(bounds, { padding: [50, 50] });
@@ -166,14 +159,12 @@
 
 		const seen = new Set<number>();
 
-		// Update or create markers for current stations
 		stationSummaries.forEach((loc) => {
 			const id = loc.stationId;
 			seen.add(id);
 			const existing = markersById.get(id as number);
 
 			if (existing) {
-				// Update position if API available
 				if ((existing as any).setLatLng) {
 					try {
 						(existing as any).setLatLng([loc.latitude, loc.longitude]);
@@ -182,7 +173,6 @@
 					}
 				}
 
-				// Update icon based on status
 				const icon = getIconForStatus(loc.status);
 				if (icon && (existing as any).setIcon) {
 					try {
@@ -192,7 +182,6 @@
 					}
 				}
 
-				// Replace popup content to reflect updated station data
 				try {
 					const popupContainer = document.createElement('div');
 					popupContainer.className = '';
@@ -202,10 +191,9 @@
 					});
 					existing.bindPopup(popupContainer);
 				} catch (err) {
-					// ignore popup update failures
+					// ignore
 				}
 
-				// Ensure handlers are attached only once
 				if (!markersWithHandlers.has(id)) {
 					existing.on('popupopen', () => {
 						if (!selectedStation || selectedStation.stationId !== loc.stationId) {
@@ -213,7 +201,7 @@
 						}
 					});
 					existing.on('popupclose', () => {
-						selectedStation = null;
+						// Don't clear selected station on popup close
 					});
 					markersWithHandlers.add(id);
 				}
@@ -235,7 +223,7 @@
 						}
 					});
 					marker.on('popupclose', () => {
-						selectedStation = null;
+						// Don't clear selected station on popup close
 					});
 					markerLayers.addLayer(marker);
 					markersById.set(id, marker);
@@ -244,7 +232,6 @@
 			}
 		});
 
-		// Remove markers that are no longer present
 		for (const [id, marker] of markersById) {
 			if (!seen.has(id)) {
 				try {
@@ -275,7 +262,6 @@
 
 			if (stationArray.length > 0) {
 				stationSummaries = stationArray;
-				// publish initial snapshot for other components
 				stationsSnapshot.set(stationArray);
 			} else {
 				stationSummaries = [];

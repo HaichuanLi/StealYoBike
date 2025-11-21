@@ -1,24 +1,23 @@
 <script lang="ts">
 	import { authApi } from '$lib/api/auth.api';
 	import { riderApi } from '$lib/api/rider.api';
-	import type { TripBillResponse } from '$lib/api/types';
+	import { riderStore } from '$lib/stores/rider.store.svelte';
 	import { showToast } from '$lib/stores/toast';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import Button from '../Button/Button.svelte';
 
-	export let show = false;
-	export let bill: TripBillResponse | null = null;
-
-	let isPaying = false;
-	let userPaymentToken: string | null = null;
-	let message: string | null = null;
+	let paymentState = $state({
+		isPaying: false,
+		userToken: null as string | null,
+		message: null as string | null
+	});
 
 	async function loadUserPaymentToken() {
 		try {
 			const resp = await authApi.getCurrentUser();
-			userPaymentToken = resp.data?.paymentToken ?? null;
+			paymentState.userToken = resp.data?.paymentToken ?? null;
 		} catch (err) {
-			userPaymentToken = null;
+			paymentState.userToken = null;
 		}
 	}
 
@@ -26,99 +25,94 @@
 		loadUserPaymentToken();
 	});
 
-	// If the modal becomes visible later (component may be mounted already),
-	// refresh the user's payment token each time the modal is shown so the
-	// displayed "payment token on file" stays up-to-date.
-	$: if (show) {
-		loadUserPaymentToken();
-	}
-
-	const dispatch = createEventDispatcher();
-
 	async function pay() {
-		if (!bill) return;
-		isPaying = true;
-		message = null;
+		const tripBill = riderStore.billModalData;
+		if (!tripBill) return;
+		paymentState.isPaying = true;
+		paymentState.message = null;
 		try {
-			const tokenToUse = userPaymentToken ?? '';
-			const resp = await riderApi.payTrip(bill.tripId, { paymentToken: tokenToUse });
-			bill = resp.data;
-			message = 'Payment recorded.';
-			// inform parent that payment occurred so it can refresh lists
-			dispatch('paid', { tripId: bill.tripId });
-			// show toast
+			const tokenToUse = paymentState.userToken ?? '';
+			const resp = await riderApi.payTrip(tripBill.tripId, { paymentToken: tokenToUse });
+
+			riderStore.updateBill(resp.data);
+			paymentState.message = 'Payment recorded.';
 			showToast('Payment successful', 'success');
 		} catch (err) {
-			console.error('Payment failed', err);
-			message = 'Payment failed. Try again.';
+			paymentState.message = 'Payment failed. Try again.';
 			showToast('Payment failed', 'error');
 		} finally {
-			isPaying = false;
+			paymentState.isPaying = false;
 		}
 	}
 
 	function close() {
-		show = false;
-		message = null;
+		riderStore.closeBillModal();
+		paymentState.message = null;
 	}
 </script>
 
-{#if show && bill}
+{#if riderStore.billModalShow && riderStore.billModalData}
+	{@const tripBill = riderStore.billModalData}
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-transparent">
 		<div class="w-11/12 max-w-md rounded-lg bg-white/95 p-6 backdrop-blur-sm">
 			<h3 class="mb-2 text-xl font-semibold">Trip Bill</h3>
-			<p class="text-sm text-gray-600">Bill ID: {bill.billId}</p>
-			<p class="mt-2">Total: ${bill.totalAmount.toFixed(2)}</p>
-			{#if bill.createdAt}
-				<p class="text-sm text-gray-500">Created: {new Date(bill.createdAt).toLocaleString()}</p>
+			<p class="text-sm text-gray-600">Bill ID: {tripBill.billId}</p>
+			<p class="mt-2">Total: ${(tripBill.totalAmount ?? 0).toFixed(2)}</p>
+			{#if tripBill.createdAt}
+				<p class="text-sm text-gray-500">
+					Created: {new Date(tripBill.createdAt).toLocaleString()}
+				</p>
 			{/if}
 			<hr class="my-4" />
 			<div class="text-sm">
-				<p>Trip ID: {bill.tripId}</p>
-				<p>Bike ID: {bill.trip?.bikeId}</p>
-				<p>Start Station: {bill.trip?.startStationName}</p>
-				<p>End Station: {bill.endStationName ?? '—'}</p>
+				<p>Trip ID: {tripBill.tripId}</p>
+				<p>Bike ID: {tripBill.trip?.bikeId ?? '—'}</p>
+				<p>Start Station: {tripBill.trip?.startStationName ?? '—'}</p>
+				<p>End Station: {tripBill.endStationName ?? '—'}</p>
 				<p>
-					Start Time: {bill.startTime
-						? new Date(bill.startTime).toLocaleString()
-						: bill.trip?.startTime}
+					Start Time: {tripBill.startTime
+						? new Date(tripBill.startTime).toLocaleString()
+						: tripBill.trip?.startTime
+							? new Date(tripBill.trip.startTime).toLocaleString()
+							: '—'}
 				</p>
-				<p>End Time: {bill.endTime ? new Date(bill.endTime).toLocaleString() : '—'}</p>
-				<p>Duration: {bill.durationMinutes} minutes</p>
+				<p>End Time: {tripBill.endTime ? new Date(tripBill.endTime).toLocaleString() : '—'}</p>
+				<p>Duration: {tripBill.durationMinutes ?? 0} minutes</p>
 
 				<h4 class="mt-3 font-medium">Price breakdown</h4>
 				<div class="ml-2">
-					<p>Base fee: ${bill.baseFee.toFixed(2)}</p>
-					<p>Usage cost: ${bill.usageCost.toFixed(2)}</p>
-					<p>Electric surcharge: ${bill.elecCharge.toFixed(2)}</p>
-					<p>Discount: -${bill.discountAmount.toFixed(2)}</p>
-					<p>Tier Discount: -${bill.tierDiscountAmount.toFixed(2)}</p>
-					{#if bill.flexDollarUsed > 0}
-						<p>Flex Dollar Used: -${bill.flexDollarUsed.toFixed(2)}</p>
+					<p>Base fee: ${(tripBill.baseFee ?? 0).toFixed(2)}</p>
+					<p>Usage cost: ${(tripBill.usageCost ?? 0).toFixed(2)}</p>
+					<p>Electric surcharge: ${(tripBill.elecCharge ?? 0).toFixed(2)}</p>
+					<p>Discount: -${(tripBill.discountAmount ?? 0).toFixed(2)}</p>
+					<p>Tier Discount: -${(tripBill.tierDiscountAmount ?? 0).toFixed(2)}</p>
+					{#if (tripBill.flexDollarUsed ?? 0) > 0}
+						<p>Flex Dollar Used: -${(tripBill.flexDollarUsed ?? 0).toFixed(2)}</p>
 					{/if}
-					<p class="mt-2 font-semibold">Total: ${bill.totalAmount.toFixed(2)}</p>
+					<p class="mt-2 font-semibold">Total: ${(tripBill.totalAmount ?? 0).toFixed(2)}</p>
 				</div>
 				<p class="mt-3 text-sm text-gray-700">
-					User Tier: <span class="font-semibold text-emerald-700">{bill.tier}</span>
+					User Tier: <span class="font-semibold text-emerald-700">{tripBill.tier ?? 'REGULAR'}</span
+					>
 				</p>
 				<div class="mt-3">
-					<p class="text-sm">Payment token on file: {userPaymentToken ?? '—'}</p>
-					{#if bill.paid}
+					<p class="text-sm">Payment token on file: {paymentState.userToken ?? '—'}</p>
+					{#if tripBill.paid}
 						<p class="text-sm font-semibold text-green-700">
-							Paid at {bill.paidAt ? new Date(bill.paidAt).toLocaleString() : ''}
+							Paid at {tripBill.paidAt ? new Date(tripBill.paidAt).toLocaleString() : ''}
 						</p>
-						<p class="text-sm">Payment token used: {bill.paymentTokenUsed ?? '—'}</p>
+						<p class="text-sm">Payment token used: {tripBill.paymentTokenUsed ?? '—'}</p>
 					{/if}
 				</div>
 			</div>
 			<div class="mt-4 space-x-2 text-right">
 				<Button text="Close" variant="gray" onclick={close} />
-				{#if !bill.paid}
-					<Button text="Pay" variant="blue" onclick={pay} disable={isPaying} />
+				{#if !tripBill.paid}
+					<Button text="Pay" variant="blue" onclick={pay} disable={paymentState.isPaying} />
 				{/if}
 			</div>
-			{#if message}
-				<p class="mt-2 text-sm">{message}</p>
+			{#if paymentState.message}
+				<p class="mt-2 text-sm">{paymentState.message}</p>
 			{/if}
 		</div>
 	</div>

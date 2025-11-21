@@ -1,63 +1,18 @@
 <script lang="ts">
-	import { authApi } from '$lib/api/auth.api';
-	import type { UserInfoResponse } from '$lib/api/types/auth.types';
 	import Button from '$lib/components/Button/Button.svelte';
 	import Popup from '$lib/components/Popup/Popup.svelte';
-
-	interface Props {
-		showPaymentPopup: boolean;
-		paymentTokenInput: string;
-		savingPayment: boolean;
-		closePaymentPopup: () => void;
-		onUserUpdate: (user: UserInfoResponse) => void;
-	}
-
-	let {
-		showPaymentPopup = $bindable(),
-		paymentTokenInput = $bindable(),
-		savingPayment = $bindable(),
-		closePaymentPopup,
-		onUserUpdate
-	}: Props = $props();
-
-	async function savePaymentToken() {
-		if (!paymentTokenInput.trim()) {
-			alert('Please enter a payment token');
-			return;
-		}
-
-		savingPayment = true;
-		try {
-			// Ensure user is authenticated before attempting to save
-			if (!authApi.isAuthenticated()) {
-				alert('You must be signed in to save a payment method. Please sign in first.');
-				closePaymentPopup();
-				return;
-			}
-
-			const response = await authApi.updatePaymentToken(paymentTokenInput.trim());
-			onUserUpdate(response.data);
-
-			console.log('Payment token saved successfully:', response.data.paymentToken);
-			closePaymentPopup();
-		} catch (error) {
-			console.error('Failed to save payment token:', error);
-			alert('Failed to save payment token. Please try again.');
-		} finally {
-			savingPayment = false;
-		}
-	}
+	import { riderStore } from '$lib/stores/rider.store.svelte';
 
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter') {
-			savePaymentToken();
+			riderStore.savePaymentToken(riderStore.paymentModalToken);
 		} else if (event.key === 'Escape') {
-			closePaymentPopup();
+			riderStore.closePaymentModal();
 		}
 	}
 </script>
 
-<Popup isVisible={showPaymentPopup} onClose={closePaymentPopup}>
+<Popup isVisible={riderStore.paymentModalShow} onClose={() => riderStore.closePaymentModal()}>
 	<div class="flex flex-col gap-4 bg-white p-6">
 		<h2 class="text-2xl font-bold">Add Payment Method</h2>
 		<p class="text-gray-700">
@@ -65,19 +20,24 @@
 		</p>
 		<input
 			type="text"
-			bind:value={paymentTokenInput}
+			bind:value={riderStore.paymentModalToken}
 			placeholder="Enter payment token"
 			class="w-full rounded border border-gray-300 px-3 py-2 focus:border-lime-300 focus:outline-none"
-			disabled={savingPayment}
+			disabled={riderStore.paymentModalSaving}
 			onkeydown={handleKeydown}
 		/>
 		<div class="flex justify-end gap-4">
-			<Button onclick={closePaymentPopup} text="Cancel" variant="red" disable={savingPayment} />
 			<Button
-				onclick={savePaymentToken}
-				text={savingPayment ? 'Saving...' : 'Save'}
+				onclick={() => riderStore.closePaymentModal()}
+				text="Cancel"
+				variant="red"
+				disable={riderStore.paymentModalSaving}
+			/>
+			<Button
+				onclick={() => riderStore.savePaymentToken(riderStore.paymentModalToken)}
+				text={riderStore.paymentModalSaving ? 'Saving...' : 'Save'}
 				variant="green"
-				disable={savingPayment}
+				disable={riderStore.paymentModalSaving}
 			/>
 		</div>
 	</div>
