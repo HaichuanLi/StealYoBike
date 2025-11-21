@@ -56,6 +56,76 @@
 			</div>
 		</div>
 
+	<div class="mb-16 rounded-2xl bg-white p-8 shadow-xl md:mt-0">
+
+		<div class="mb-8 flex items-center justify-center gap-3">
+			<div class="rounded-full bg-emerald-100 p-3">
+				<span class="text-4xl">💵</span>
+			</div>
+			<div class="text-center">
+				<h3 class="text-4xl font-black text-emerald-700 drop-shadow-md">Flex Dollars</h3>
+				<p class="text-lg text-emerald-600">Our way of thanking you!</p>
+			</div>
+			<div class="rounded-full bg-emerald-100 p-3">
+				<span class="text-4xl bg-emerald-100">💵</span>
+			</div>
+		</div>
+
+		<div class="mb-8 rounded-xl bg-emerald-50 p-6 backdrop-blur-sm">
+			<p class="text-center text-lg text-gray-700">
+				Earn Flex Dollars with every ride! Use them to get discounts on future trips or
+				apply them towards membership plans. <span class="text-emerald-700 font-bold">The more you ride, the more you save!</span>
+			</p>
+		</div>
+
+		<div class="mb-6 flex items-center justify-center gap-3">
+			<div class="rounded-full bg-emerald-100 p-3 backdrop-blur-sm">
+				<span class="text-3xl">💪</span>
+			</div>
+			<h3 class="text-3xl font-bold text-emerald-700 drop-shadow-md">How to Flex?</h3>
+			<div class="rounded-full bg-emerald-100 p-3 backdrop-blur-sm">
+				<span class="inline-block scale-x-[-1] text-3xl">💪</span>
+			</div>
+		</div>
+
+		<div class="rounded-xl bg-emerald-50 p-6 shadow-lg">
+			<div class="flex items-start gap-4">
+				<div class="flex-shrink-0">
+					<div class="rounded-full bg-white p-3">
+						<span class="text-3xl">🎯</span>
+					</div>
+				</div>
+				<div>
+					<h4 class="mb-2 text-xl font-bold text-emerald-700">Easy Steps to Earn</h4>
+					<p class="text-gray-700 leading-relaxed">
+						Return your bike at a station that has <span class="font-bold text-emerald-600">less than 25% available docks</span> 
+						and earn Flex Dollars based on your <span class="font-bold text-emerald-600">trip duration</span>. 
+						It's our way of encouraging balanced bike distribution across the city!
+					</p>
+				</div>
+			</div>
+			
+			<div class="mt-6 grid gap-4 md:grid-cols-3">
+				<div class="rounded-lg bg-white p-4 text-center">
+					<div class="mb-2 text-2xl">⚡</div>
+					<div class="text-sm font-semibold text-emerald-700">Instant Rewards</div>
+					<div class="text-xs text-gray-600">Credits added immediately</div>
+				</div>
+				<div class="rounded-lg bg-white p-4 text-center">
+					<div class="mb-2 text-2xl">🎁</div>
+					<div class="text-sm font-semibold text-emerald-700">No Expiration</div>
+					<div class="text-xs text-gray-600">Use them anytime</div>
+				</div>
+				<div class="rounded-lg bg-white p-4 text-center">
+					<div class="mb-2 text-2xl">📈</div>
+					<div class="text-sm font-semibold text-emerald-700">Stack Up</div>
+					<div class="text-xs text-gray-600">Unlimited earning potential</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
 		<PricingDetails />
 	</div>
 </div>
