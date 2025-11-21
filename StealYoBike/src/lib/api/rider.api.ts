@@ -15,10 +15,9 @@ import type {
 	TripResponse
 } from './types/rider.types';
 
-// AC17: optional filter params (match backend enum)
 export type TripFilterParams = {
-	fromDate?: string; // YYYY-MM-DD
-	toDate?: string; // YYYY-MM-DD
+	fromDate?: string;
+	toDate?: string;
 	type?: 'REGULAR' | 'ELECTRIC';
 };
 
@@ -41,7 +40,7 @@ export const riderApi = {
 	getCurrentTrip: async (): Promise<AxiosResponse<TripInfoResponse>> => {
 		return await api.get<TripInfoResponse>(`/rider/current-trip`);
 	},
-	getTripBill: async (tripId: number): Promise<AxiosResponse<unknown>> => {
+	getTripBill: async (tripId: number): Promise<AxiosResponse<TripBillResponse>> => {
 		return await api.get<TripBillResponse>(`/rider/trips/${tripId}/bill`);
 	},
 	payTrip: async (
