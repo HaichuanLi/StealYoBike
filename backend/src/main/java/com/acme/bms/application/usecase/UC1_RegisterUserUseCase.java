@@ -26,27 +26,29 @@ public class UC1_RegisterUserUseCase {
 
     @Transactional
     public RegisterResponse execute(RegisterRequest req) {
-        if (users.existsByEmail(req.email())) throw new EmailAlreadyUsedException();
-        if (users.existsByUsername(req.username())) throw new UsernameAlreadyUsedException();
+        if (users.existsByEmail(req.email()))
+            throw new EmailAlreadyUsedException();
+        if (users.existsByUsername(req.username()))
+            throw new UsernameAlreadyUsedException();
 
-    User.UserBuilder builder = User.builder()
-        .fullName(req.fullName())
-        .address(req.address())
-        .email(req.email())
-        .username(req.username())
-        .passwordHash(passwordEncoder.encode(req.password()))
-        .paymentToken(req.paymentToken())
-        .role(Role.RIDER);
+        User.UserBuilder builder = User.builder()
+                .fullName(req.fullName())
+                .address(req.address())
+                .email(req.email())
+                .username(req.username())
+                .passwordHash(passwordEncoder.encode(req.password()))
+                .paymentToken(req.paymentToken())
+                .role(Role.RIDER);
 
-    if (req.plan() != null) {
-        builder.plan(req.plan());
-    }
+        if (req.plan() != null) {
+            builder.plan(req.plan());
+        }
 
-    if (req.tier() != null) {
-        builder.tier(req.tier());
-    }
+        if (req.tier() != null) {
+            builder.tier(req.tier());
+        }
 
-    User saved = users.save(builder.build());
+        User saved = users.save(builder.build());
 
         events.publishEvent(new UserRegisteredEvent(saved.getId(), saved.getRole().name(), saved.getEmail()));
 

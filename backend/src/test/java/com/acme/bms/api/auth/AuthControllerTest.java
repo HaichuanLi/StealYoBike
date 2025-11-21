@@ -23,66 +23,66 @@ import com.acme.bms.domain.repo.UserRepository;
 @ExtendWith(MockitoExtension.class)
 public class AuthControllerTest {
 
-    @Mock
-    UserRepository userRepository;
+        @Mock
+        UserRepository userRepository;
 
-    @Mock
-    UC1_RegisterUserUseCase registerUC;
+        @Mock
+        UC1_RegisterUserUseCase registerUC;
 
-    @Mock
-    UC2_LoginUserUseCase loginUC;
+        @Mock
+        UC2_LoginUserUseCase loginUC;
 
-    @InjectMocks
-    AuthController controller;
+        @InjectMocks
+        AuthController controller;
 
-    @Test
-    void me_returns_userinfo_when_found() {
-        String username = "jdoe";
+        @Test
+        void me_returns_userinfo_when_found() {
+                String username = "jdoe";
 
-        com.acme.bms.domain.entity.User dbUser = com.acme.bms.domain.entity.User.builder()
-                .id(1L)
-                .username(username)
-                .email("jdoe@example.com")
-                .fullName("John Doe")
-                .address("addr")
-                .passwordHash("hash")
-                .role(Role.RIDER)
-                .build();
+                com.acme.bms.domain.entity.User dbUser = com.acme.bms.domain.entity.User.builder()
+                                .id(1L)
+                                .username(username)
+                                .email("jdoe@example.com")
+                                .fullName("John Doe")
+                                .address("addr")
+                                .passwordHash("hash")
+                                .role(Role.RIDER)
+                                .build();
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(dbUser));
+                when(userRepository.findByUsername(username)).thenReturn(Optional.of(dbUser));
 
-        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
-                username, "pw", Collections.emptyList());
+                org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
+                                username, "pw", Collections.emptyList());
 
-        org.springframework.security.core.Authentication auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                principal, null, Collections.emptyList());
+                org.springframework.security.core.Authentication auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                principal, null, Collections.emptyList());
 
-        ResponseEntity<UserInfoResponse> resp = controller.me(auth);
+                ResponseEntity<UserInfoResponse> resp = controller.me(auth);
 
-        assertEquals(200, resp.getStatusCode().value());
-        UserInfoResponse body = resp.getBody();
-        assertNotNull(body);
-        assertEquals(dbUser.getId(), body.id());
-        assertEquals(dbUser.getEmail(), body.email());
-        assertEquals(dbUser.getUsername(), body.username());
-        assertEquals(dbUser.getFullName(), body.fullName());
-        assertEquals(dbUser.getRole().name(), body.role());
-    }
+                assertEquals(200, resp.getStatusCode().value());
+                UserInfoResponse body = resp.getBody();
+                assertNotNull(body);
+                assertEquals(dbUser.getId(), body.id());
+                assertEquals(dbUser.getEmail(), body.email());
+                assertEquals(dbUser.getUsername(), body.username());
+                assertEquals(dbUser.getFullName(), body.fullName());
+                assertEquals(dbUser.getRole().name(), body.role());
+        }
 
-    @Test
-    void me_returns_404_when_not_found() {
-        String username = "missing";
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        @Test
+        void me_returns_404_when_not_found() {
+                String username = "missing";
+                when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
-        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
-                username, "pw", Collections.emptyList());
+                org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
+                                username, "pw", Collections.emptyList());
 
-        org.springframework.security.core.Authentication auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                principal, null, Collections.emptyList());
+                org.springframework.security.core.Authentication auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                principal, null, Collections.emptyList());
 
-        ResponseEntity<UserInfoResponse> resp = controller.me(auth);
+                ResponseEntity<UserInfoResponse> resp = controller.me(auth);
 
-        assertEquals(404, resp.getStatusCode().value());
-        assertNull(resp.getBody());
-    }
+                assertEquals(404, resp.getStatusCode().value());
+                assertNull(resp.getBody());
+        }
 }

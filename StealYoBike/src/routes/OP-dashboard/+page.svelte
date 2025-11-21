@@ -7,7 +7,7 @@
 	import RebalanceBikes from '$lib/components/RebalanceBikes/RebalanceBikes.svelte';
 	import RestoreInitialState from '$lib/components/RestoreInitialState/RestoreInitialState.svelte';
 	import StationDetails from '$lib/components/StationDetails/StationDetails.svelte';
-    import { stationsSnapshot } from '$lib/stores/stations';
+	import { stationsSnapshot } from '$lib/stores/stations';
 
 	let selectedStation = $state<StationSummary | null>(null);
 	let activeView = $state<'station' | 'rebalance' | 'restore'>('station');

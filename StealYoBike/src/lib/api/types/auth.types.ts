@@ -27,11 +27,11 @@ export interface RegisterResponse {
 }
 
 export interface UserInfoResponse {
-    id: number;
-    email: string;
-    username: string;
-    fullName: string;
-    role: string;
+	id: number;
+	email: string;
+	username: string;
+	fullName: string;
+	role: string;
 	paymentToken: string;
 	plan?: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL';
 	tier: string;

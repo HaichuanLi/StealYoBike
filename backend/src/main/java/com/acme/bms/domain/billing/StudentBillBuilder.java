@@ -6,7 +6,6 @@ import com.acme.bms.domain.entity.BikeType;
 import com.acme.bms.domain.entity.Bill;
 import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.entity.Plan;
-import com.acme.bms.domain.entity.Tier;
 import com.acme.bms.domain.entity.User;
 
 import lombok.Getter;
@@ -19,7 +18,6 @@ public class StudentBillBuilder implements BillBuilder {
     private double usageFee = 0.10;
     private double eBikeFeeMultiplier = 1.5;
     private double studentDiscountPercentage = 0.10;
-
 
     @Override
     public void createBill(Trip trip) {
@@ -41,17 +39,15 @@ public class StudentBillBuilder implements BillBuilder {
         User rider = bill.getTrip().getRider();
         Plan plan = rider != null ? rider.getPlan() : Plan.PAYPERRIDE;
         if (plan == Plan.MONTHLY) {
-            if (minutes <= 30){
+            if (minutes <= 30) {
                 usage = 0;
-            }
-            else{
+            } else {
                 usage = minutes - 30 * baseFee;
             }
         } else if (plan == Plan.ANNUAL) {
-            if (minutes <= 45){
+            if (minutes <= 45) {
                 usage = 0;
-            }
-            else{
+            } else {
                 usage = minutes - 30 * baseFee;
             }
         }
@@ -60,18 +56,18 @@ public class StudentBillBuilder implements BillBuilder {
         bill.setTotalAmount(bill.getTotalAmount() + usage);
     }
 
-
     @Override
     public void addElectricCharge() {
-        if (bill.getTrip() != null && bill.getTrip().getBike() != null && bill.getTrip().getBike().getType() == BikeType.ELECTRIC) {
+        if (bill.getTrip() != null && bill.getTrip().getBike() != null
+                && bill.getTrip().getBike().getType() == BikeType.ELECTRIC) {
             User rider = bill.getTrip().getRider();
             Plan plan = rider != null ? rider.getPlan() : Plan.PAYPERRIDE;
 
             double multiplier = eBikeFeeMultiplier;
             if (plan == Plan.MONTHLY) {
-                multiplier = 1 + (eBikeFeeMultiplier - 1) * 0.5; 
+                multiplier = 1 + (eBikeFeeMultiplier - 1) * 0.5;
             } else if (plan == Plan.ANNUAL) {
-                multiplier = 1.0; 
+                multiplier = 1.0;
             }
 
             double electric = bill.getTotalAmount() * (multiplier - 1);
@@ -95,7 +91,7 @@ public class StudentBillBuilder implements BillBuilder {
         if (rider == null) {
             return;
         }
-        
+
         double tierDiscountPercentage = 0.0;
         switch (rider.getTier()) {
             case BRONZE:
@@ -111,7 +107,7 @@ public class StudentBillBuilder implements BillBuilder {
                 tierDiscountPercentage = 0.0;
                 break;
         }
-        
+
         if (tierDiscountPercentage > 0) {
             double tierDiscount = bill.getTotalAmount() * tierDiscountPercentage;
             bill.setTierDiscountAmount(tierDiscount);
@@ -121,23 +117,23 @@ public class StudentBillBuilder implements BillBuilder {
 
     @Override
     public void applyFlexDollar() {
-        // Skip if this bill should not use flex dollars (e.g., same trip that earned them)
+        // Skip if this bill should not use flex dollars (e.g., same trip that earned
+        // them)
         if (bill.isSkipFlexDollar()) {
             return;
         }
-        
+
         User rider = bill.getTrip().getRider();
         if (rider == null || rider.getFlexDollar() <= 0) {
             return;
         }
-        
+
         // Use as much flex dollar as needed up to available amount and bill total
         double flexUsed = Math.min(rider.getFlexDollar(), bill.getTotalAmount());
         bill.setFlexDollarUsed(flexUsed);
         bill.setTotalAmount(bill.getTotalAmount() - flexUsed);
-        
+
         // Deduct from rider's flex dollar balance
         rider.setFlexDollar(rider.getFlexDollar() - flexUsed);
     }
 }
-

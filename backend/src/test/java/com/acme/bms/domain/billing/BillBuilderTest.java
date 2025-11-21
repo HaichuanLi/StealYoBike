@@ -22,7 +22,7 @@ public class BillBuilderTest {
                 .build();
 
         BillBuilderDirector director = new BillBuilderDirector();
-        
+
         StudentBillBuilder strudentbuilder = new StudentBillBuilder();
         director.constructBill(strudentbuilder, trip);
         Bill studentBill = strudentbuilder.getBill();
@@ -38,14 +38,15 @@ public class BillBuilderTest {
                 .startTime(LocalDateTime.now().minusMinutes(20))
                 .endTime(LocalDateTime.now())
                 .build();
-    BillBuilderDirector director = new BillBuilderDirector();
+        BillBuilderDirector director = new BillBuilderDirector();
 
-    NonStudentBillBuilder builder = new NonStudentBillBuilder();
-    director.constructBill(builder, trip);
-    Bill bill = builder.getBill();
+        NonStudentBillBuilder builder = new NonStudentBillBuilder();
+        director.constructBill(builder, trip);
+        Bill bill = builder.getBill();
 
-    // expected using NonStudentBillBuilder: base 2.50 + usage (20 * 0.15) = 5.50, electric multiplier 1.5 => 8.25
-    assertEquals(8.25, bill.getTotalAmount(), 0.0001);
+        // expected using NonStudentBillBuilder: base 2.50 + usage (20 * 0.15) = 5.50,
+        // electric multiplier 1.5 => 8.25
+        assertEquals(8.25, bill.getTotalAmount(), 0.0001);
     }
 
 }

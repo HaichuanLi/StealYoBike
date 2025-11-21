@@ -109,6 +109,7 @@ public class RiderController {
         }
         return ResponseEntity.ok(res);
     }
+
     @GetMapping("/trips/{tripId}/details")
     public ResponseEntity<com.acme.bms.api.trip.TripResponse> getTripDetailsForRider(
             @AuthenticationPrincipal String principal,

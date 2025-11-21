@@ -30,8 +30,8 @@ export const authApi = {
 
 	getCurrentUser: async (): Promise<AxiosResponse<UserInfoResponse>> => {
 		const response = await api.get<UserInfoResponse>('/auth/me');
-        return response;
-    },
+		return response;
+	},
 
 	logout: () => {
 		localStorage.removeItem('authToken');
@@ -58,5 +58,4 @@ export const authApi = {
 		});
 		return response;
 	}
-	
 };

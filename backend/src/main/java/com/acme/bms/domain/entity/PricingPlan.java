@@ -33,7 +33,7 @@ public class PricingPlan {
     @Column
     private Double surcharge; // null for STANDARD, used for EBIKE
 
-    //helpers
+    // helpers
     @Override
     public String toString() {
         return String.format("PricingPlan{id=%d, type=%s, baseFee=%.2f, perMinuteRate=%.2f, surcharge=%.2f}",

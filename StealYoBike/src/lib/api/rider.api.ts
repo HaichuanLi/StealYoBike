@@ -3,21 +3,22 @@ import { api } from './index';
 import type {
 	CheckoutRequest,
 	CheckoutResponse,
+	PastTripResponse,
 	ReservationCancelResponse,
 	ReservationInfoResponse,
 	ReserveBikeRequest,
 	ReserveBikeResponse,
 	ReturnBikeRequest,
 	ReturnBikeResponse,
-	TripInfoResponse,
 	TripBillResponse,
-	PastTripResponse, TripResponse
+	TripInfoResponse,
+	TripResponse
 } from './types/rider.types';
 
 // AC17: optional filter params (match backend enum)
 export type TripFilterParams = {
 	fromDate?: string; // YYYY-MM-DD
-	toDate?: string;   // YYYY-MM-DD
+	toDate?: string; // YYYY-MM-DD
 	type?: 'REGULAR' | 'ELECTRIC';
 };
 
@@ -39,25 +40,26 @@ export const riderApi = {
 	},
 	getCurrentTrip: async (): Promise<AxiosResponse<TripInfoResponse>> => {
 		return await api.get<TripInfoResponse>(`/rider/current-trip`);
-	}
-	,
-	getTripBill: async (tripId: number): Promise<AxiosResponse<any>> => {
+	},
+	getTripBill: async (tripId: number): Promise<AxiosResponse<unknown>> => {
 		return await api.get<TripBillResponse>(`/rider/trips/${tripId}/bill`);
-	}
-	,
-	payTrip: async (tripId: number, body: { paymentToken: string }): Promise<AxiosResponse<TripBillResponse>> => {
+	},
+	payTrip: async (
+		tripId: number,
+		body: { paymentToken: string }
+	): Promise<AxiosResponse<TripBillResponse>> => {
 		return await api.post<TripBillResponse>(`/rider/trips/${tripId}/pay`, body);
-	}
-	,
+	},
 	getPastTrips: async (params?: TripFilterParams): Promise<AxiosResponse<PastTripResponse[]>> => {
 		return await api.get<PastTripResponse[]>('/rider/trips/history', { params });
 	},
 
 	getTripDetails: async (tripId: number) => {
-		return await api.get<import('./types/rider.types').TripResponse>(`/rider/trips/${tripId}/details`);
+		return await api.get<import('./types/rider.types').TripResponse>(
+			`/rider/trips/${tripId}/details`
+		);
 	},
 	searchTripById: async (tripId: number): Promise<AxiosResponse<TripResponse>> => {
 		return await api.get<TripResponse>(`/rider/trips/search`, { params: { tripId } });
 	}
-
 };

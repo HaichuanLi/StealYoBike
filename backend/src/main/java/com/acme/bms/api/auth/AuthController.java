@@ -49,54 +49,53 @@ public class AuthController {
 
     @PutMapping("/me/payment-token")
     public ResponseEntity<UserInfoResponse> updatePaymentToken(
-        @AuthenticationPrincipal String userId,
-        @Valid @RequestBody UpdatePaymentTokenRequest request) {
-    try {
-        log.info("Updating payment token for user: {}", userId);
-
-        if (userId == null) {
-            log.warn("No authenticated user found");
-            return ResponseEntity.status(401).build();
-        }
-
-        Long userIdLong;
+            @AuthenticationPrincipal String userId,
+            @Valid @RequestBody UpdatePaymentTokenRequest request) {
         try {
-            userIdLong = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            log.error("Invalid user ID format: {}", userId);
-            return ResponseEntity.status(400).build();
-        }
+            log.info("Updating payment token for user: {}", userId);
 
-        Optional<User> userOpt = userRepository.findById(userIdLong);
+            if (userId == null) {
+                log.warn("No authenticated user found");
+                return ResponseEntity.status(401).build();
+            }
 
-        if (userOpt.isEmpty()) {
-            log.error("User not found with ID: {}", userIdLong);
-            return ResponseEntity.status(404).build();
-        }
+            Long userIdLong;
+            try {
+                userIdLong = Long.parseLong(userId);
+            } catch (NumberFormatException e) {
+                log.error("Invalid user ID format: {}", userId);
+                return ResponseEntity.status(400).build();
+            }
 
-        User user = userOpt.get();
-        user.setPaymentToken(request.paymentToken());
-        userRepository.save(user);
+            Optional<User> userOpt = userRepository.findById(userIdLong);
 
-        log.info("Updated payment token for user: {}", user.getUsername());
+            if (userOpt.isEmpty()) {
+                log.error("User not found with ID: {}", userIdLong);
+                return ResponseEntity.status(404).build();
+            }
 
-    UserInfoResponse response = new UserInfoResponse(
-        user.getId(),
-        user.getEmail(),
-        user.getUsername(),
-        user.getFullName(),
-        user.getRole().toString(),
-        user.getPaymentToken(),
-        user.getPlan() != null ? user.getPlan().name() : null,
-        user.getTier() != null ? user.getTier().toString() : "REGULAR",
-        user.getFlexDollar()
-    );
+            User user = userOpt.get();
+            user.setPaymentToken(request.paymentToken());
+            userRepository.save(user);
 
-        return ResponseEntity.ok(response);
+            log.info("Updated payment token for user: {}", user.getUsername());
 
-    } catch (Exception e) {
-        log.error("Error updating payment token", e);
-        return ResponseEntity.status(500).build();
+            UserInfoResponse response = new UserInfoResponse(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUsername(),
+                    user.getFullName(),
+                    user.getRole().toString(),
+                    user.getPaymentToken(),
+                    user.getPlan() != null ? user.getPlan().name() : null,
+                    user.getTier() != null ? user.getTier().toString() : "REGULAR",
+                    user.getFlexDollar());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error updating payment token", e);
+            return ResponseEntity.status(500).build();
         }
     }
 
@@ -112,30 +111,30 @@ public class AuthController {
         try {
             Long userId = Long.parseLong(principalName);
             return ResponseEntity.of(
-            userRepository.findById(userId)
-                .map(dbUser -> new UserInfoResponse(
-                    dbUser.getId(),
-                    dbUser.getEmail(),
-                    dbUser.getUsername(),
-                    dbUser.getFullName(),
-                    dbUser.getRole().name(),
-                    dbUser.getPaymentToken(),
-                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
-                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
-                    dbUser.getFlexDollar())));
+                    userRepository.findById(userId)
+                            .map(dbUser -> new UserInfoResponse(
+                                    dbUser.getId(),
+                                    dbUser.getEmail(),
+                                    dbUser.getUsername(),
+                                    dbUser.getFullName(),
+                                    dbUser.getRole().name(),
+                                    dbUser.getPaymentToken(),
+                                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
+                                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
+                                    dbUser.getFlexDollar())));
         } catch (NumberFormatException ex) {
             return ResponseEntity.of(
-                userRepository.findByUsername(principalName)
-                    .map(dbUser -> new UserInfoResponse(
-                        dbUser.getId(),
-                        dbUser.getEmail(),
-                        dbUser.getUsername(),
-                        dbUser.getFullName(),
-                        dbUser.getRole().name(),
-                        dbUser.getPaymentToken(),
-                        dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
-                        dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
-                        dbUser.getFlexDollar())));
+                    userRepository.findByUsername(principalName)
+                            .map(dbUser -> new UserInfoResponse(
+                                    dbUser.getId(),
+                                    dbUser.getEmail(),
+                                    dbUser.getUsername(),
+                                    dbUser.getFullName(),
+                                    dbUser.getRole().name(),
+                                    dbUser.getPaymentToken(),
+                                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
+                                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
+                                    dbUser.getFlexDollar())));
         }
     }
 }

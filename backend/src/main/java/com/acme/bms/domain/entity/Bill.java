@@ -28,7 +28,8 @@ public class Bill {
 	private double discountAmount = 0;
 	private double tierDiscountAmount = 0;
 	private double flexDollarUsed = 0;
-	// If true, flex dollars should not be applied to this bill (e.g., bill for the trip that just earned them)
+	// If true, flex dollars should not be applied to this bill (e.g., bill for the
+	// trip that just earned them)
 	private boolean skipFlexDollar = false;
 
 	private LocalDateTime createdAt;

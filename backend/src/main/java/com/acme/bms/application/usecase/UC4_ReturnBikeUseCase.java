@@ -83,14 +83,15 @@ public class UC4_ReturnBikeUseCase {
         trip.setEndTime(LocalDateTime.now());
         trip.setStatus(TripStatus.COMPLETED);
 
-        // 7) Check station fill BEFORE updating it, and award flex dollar if it was under-utilized
+        // 7) Check station fill BEFORE updating it, and award flex dollar if it was
+        // under-utilized
         if (trip.getRider() != null) {
             int occupiedDocksBeforeReturn = (int) station.getDocks().stream()
                     .filter(d -> d.getStatus() == DockStatus.OCCUPIED)
                     .count();
             int totalDocks = station.getDocks().size();
             double fillPercentageBeforeReturn = totalDocks > 0 ? (double) occupiedDocksBeforeReturn / totalDocks : 0;
-            
+
             // Grant flex dollar if station was under 25% filled before this return
             if (fillPercentageBeforeReturn < 0.25) {
                 trip.getRider().setFlexDollar(trip.getRider().getFlexDollar() + 1.0);

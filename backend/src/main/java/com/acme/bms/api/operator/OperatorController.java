@@ -26,7 +26,6 @@ public class OperatorController {
     private final UC14_ListAllUsersPastTrips uc14;
     private final UC15_GetTripDetails uc15;
 
-
     @PostMapping("/rebalance")
     public ResponseEntity<RebalanceResponse> rebalance(@AuthenticationPrincipal String principal,
             @Valid @RequestBody RebalanceRequest request) {

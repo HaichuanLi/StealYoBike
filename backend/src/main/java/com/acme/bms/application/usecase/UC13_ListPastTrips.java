@@ -25,9 +25,9 @@ public class UC13_ListPastTrips {
 
     public List<PastTripResponse> execute(
             Long riderId,
-            LocalDate fromDate,            // inclusive (00:00)
-            LocalDate toDate,              // inclusive (23:59:59.999999999)
-            String bikeType                // STANDARD | E_BIKE (case-insensitive)
+            LocalDate fromDate, // inclusive (00:00)
+            LocalDate toDate, // inclusive (23:59:59.999999999)
+            String bikeType // STANDARD | E_BIKE (case-insensitive)
     ) {
         List<Trip> trips = tripRepo.findAllByRiderIdAndStatus(riderId, TripStatus.COMPLETED);
 
@@ -40,14 +40,18 @@ public class UC13_ListPastTrips {
         return trips.stream()
                 // date range (by trip start time; inclusive)
                 .filter(t -> {
-                    if (t.getStartTime() == null) return false;
-                    if (startBound != null && t.getStartTime().isBefore(startBound)) return false;
-                    if (endBound != null && t.getStartTime().isAfter(endBound)) return false;
+                    if (t.getStartTime() == null)
+                        return false;
+                    if (startBound != null && t.getStartTime().isBefore(startBound))
+                        return false;
+                    if (endBound != null && t.getStartTime().isAfter(endBound))
+                        return false;
                     return true;
                 })
                 // bike type
                 .filter(t -> {
-                    if (typeNorm == null) return true;
+                    if (typeNorm == null)
+                        return true;
                     return t.getBike() != null
                             && t.getBike().getType() != null
                             && typeNorm.equalsIgnoreCase(t.getBike().getType().name());
@@ -55,7 +59,9 @@ public class UC13_ListPastTrips {
                 .map(t -> {
                     Long tripId = t.getId();
                     Long bikeId = t.getBike() != null ? t.getBike().getId() : null;
-                    String bikeTypeStr = t.getBike() != null && t.getBike().getType() != null ? t.getBike().getType().name() : null;
+                    String bikeTypeStr = t.getBike() != null && t.getBike().getType() != null
+                            ? t.getBike().getType().name()
+                            : null;
                     String startTime = t.getStartTime() != null ? t.getStartTime().format(fmt) : null;
                     String endTime = t.getEndTime() != null ? t.getEndTime().format(fmt) : null;
                     Integer duration = (t.getStartTime() != null && t.getEndTime() != null)

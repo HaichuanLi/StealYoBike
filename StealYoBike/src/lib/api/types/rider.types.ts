@@ -75,8 +75,8 @@ export interface PastTripResponse {
 	totalAmount: number;
 	paid: boolean;
 	billId: number | null;
-    userId: number | null;
-    userName: string | null;
+	userId: number | null;
+	userName: string | null;
 }
 
 export interface ReservationInfoResponse {

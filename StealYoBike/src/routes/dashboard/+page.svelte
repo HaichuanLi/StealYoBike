@@ -3,7 +3,13 @@
 	import { riderApi } from '$lib/api/rider.api';
 	import type { StationSummary } from '$lib/api/types';
 	import type { UserInfoResponse } from '$lib/api/types/auth.types';
-	import type { ReserveBikeResponse, TripInfoResponse, TripBillResponse, PastTripResponse } from '$lib/api/types/rider.types';
+	import type {
+		PastTripResponse,
+		ReserveBikeResponse,
+		TripBillResponse,
+		TripInfoResponse
+	} from '$lib/api/types/rider.types';
+	import BillModal from '$lib/components/BillModal/BillModal.svelte';
 	import DashboardBody from '$lib/components/DashboardBody/DashboardBody.svelte';
 	import DashboardHeader from '$lib/components/DashboardHeader/DashboardHeader.svelte';
 	import Map from '$lib/components/Map/Map.svelte';
@@ -11,11 +17,10 @@
 	import PinPopup from '$lib/components/PinPopup/PinPopup.svelte';
 	import ReservationCard from '$lib/components/ReservationCard/ReservationCard.svelte';
 	import StationCard from '$lib/components/StationCard/StationCard.svelte';
-	import TripCard from '$lib/components/TripCard/TripCard.svelte';
-	import BillModal from '$lib/components/BillModal/BillModal.svelte';
 	import Toast from '$lib/components/Toast/Toast.svelte';
-	import { onMount } from 'svelte';
+	import TripCard from '$lib/components/TripCard/TripCard.svelte';
 	import { showToast } from '$lib/stores/toast';
+	import { onMount } from 'svelte';
 
 	let selectedStation = $state<StationSummary | null>(null);
 	let user = $state<UserInfoResponse | null>(null);
@@ -110,24 +115,24 @@
 			showPaymentPopup = true;
 			return;
 		}
-			const response = await riderApi.returnBike({
-				tripId: currentTrip?.tripId!,
-				stationId: selectedStation?.stationId!
-			});
-			if (response.status === 200) {
-				console.log('Return bike response:', response);
-				// attempt to fetch the computed bill for this trip and show it
-				try {
-					const billResp = await riderApi.getTripBill(response.data.tripId);
-					tripBill = billResp.data;
-					showBillModal = true;
-					// refresh past trips so the new bill appears
-					await refreshPastTrips();
-				} catch (err) {
-					console.warn('Failed to fetch trip bill:', err);
-				}
-				currentTrip = null;
+		const response = await riderApi.returnBike({
+			tripId: currentTrip?.tripId!,
+			stationId: selectedStation?.stationId!
+		});
+		if (response.status === 200) {
+			console.log('Return bike response:', response);
+			// attempt to fetch the computed bill for this trip and show it
+			try {
+				const billResp = await riderApi.getTripBill(response.data.tripId);
+				tripBill = billResp.data as TripBillResponse;
+				showBillModal = true;
+				// refresh past trips so the new bill appears
+				await refreshPastTrips();
+			} catch (err) {
+				console.warn('Failed to fetch trip bill:', err);
 			}
+			currentTrip = null;
+		}
 	}
 
 	async function handleCancelReservation() {

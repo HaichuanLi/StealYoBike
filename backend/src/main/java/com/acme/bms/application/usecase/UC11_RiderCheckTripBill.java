@@ -11,7 +11,6 @@ import com.acme.bms.application.exception.TripNotFoundException;
 import com.acme.bms.application.exception.TripNotActiveException;
 import com.acme.bms.application.exception.UserNotFoundException;
 import com.acme.bms.domain.billing.BillBuilder;
-import com.acme.bms.domain.billing.BillBuilderDirector;
 import com.acme.bms.domain.billing.NonStudentBillBuilder;
 import com.acme.bms.domain.billing.StudentBillBuilder;
 import com.acme.bms.domain.entity.Bill;
@@ -57,13 +56,13 @@ public class UC11_RiderCheckTripBill {
         // Create bill first
         builder.createBill(trip);
         Bill bill = builder.getBill();
-        
+
         // Set skipFlexDollar BEFORE calling the rest of constructBill
-        if (trip.getRider() != null && trip.getId() != null && 
-            trip.getId().equals(trip.getRider().getLastFlexDollarEarnedTripId())) {
+        if (trip.getRider() != null && trip.getId() != null &&
+                trip.getId().equals(trip.getRider().getLastFlexDollarEarnedTripId())) {
             bill.setSkipFlexDollar(true);
         }
-        
+
         // Now complete the bill construction with skipFlexDollar already set
         builder.calculateBaseCost();
         builder.addUsageCost();

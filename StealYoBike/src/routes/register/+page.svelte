@@ -17,14 +17,29 @@
 		const username = formData.get('username') as string;
 		const password = formData.get('password') as string;
 		const paymentToken = formData.get('paymentToken') as string;
-		const plan = (formData.get('plan') as string) || 'PAYPERRIDE';
-		const tier = (formData.get('tier') as string) || 'REGULAR';
+		const plan = ((formData.get('plan') as string) || 'PAYPERRIDE') as
+			| 'PAYPERRIDE'
+			| 'MONTHLY'
+			| 'ANNUAL';
+		const tier = ((formData.get('tier') as string) || 'REGULAR') as
+			| 'REGULAR'
+			| 'BRONZE'
+			| 'SILVER'
+			| 'GOLD';
 
 		isLoading = true;
 		errorMessage = '';
 
 		try {
-			await authApi.register({ fullName, address, email, username, password, paymentToken, plan, tier });
+			await authApi.register({
+				fullName,
+				address,
+				email,
+				username,
+				password,
+				paymentToken,
+				plan
+			});
 			// Redirect on success
 			goto('/login');
 		} catch (error) {

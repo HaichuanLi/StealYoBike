@@ -25,10 +25,12 @@ public class UC12_PayTripBill {
 
     @Transactional
     public TripBillResponse execute(Long tripId, String paymentToken, Long riderId) {
-        if (riderId == null) throw new UserNotFoundException();
+        if (riderId == null)
+            throw new UserNotFoundException();
 
         Trip trip = tripRepo.findById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
-        if (!trip.getRider().getId().equals(riderId)) throw new UserNotFoundException();
+        if (!trip.getRider().getId().equals(riderId))
+            throw new UserNotFoundException();
 
         // avoid creating duplicate bills: check if a bill already exists for the trip
         var maybeBill = billRepo.findByTripId(tripId);

@@ -21,7 +21,7 @@ class UC16Test {
 
         TripRepository mockTripRepo = mock(TripRepository.class);
         PricingPlanRepository mockPricingRepo = mock(PricingPlanRepository.class);
-        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo);
+        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, null);
 
         // Rider & Bike
         User rider = User.builder().id(10L).username("Alice").build();
@@ -84,8 +84,6 @@ class UC16Test {
         System.out.println("Total Cost: " + response.totalCost());
         System.out.println("Timeline: " + response.timeline());
 
-
-
         // Assertions
         assertThat(response.tripId()).isEqualTo(99L);
         assertThat(response.riderName()).isEqualTo("Alice");
@@ -106,7 +104,7 @@ class UC16Test {
 
         TripRepository mockTripRepo = mock(TripRepository.class);
         PricingPlanRepository mockPricingRepo = mock(PricingPlanRepository.class);
-        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo);
+        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, null);
 
         when(mockTripRepo.findById(123L)).thenReturn(Optional.empty());
 

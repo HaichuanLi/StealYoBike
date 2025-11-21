@@ -13,6 +13,6 @@ public class OperatorSendBikeToMaintenanceListener {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handle(OperatorSendBikeToMaintenanceEvent event) {
         log.info("BikeSentToMaintenanceEvent: operatorId={}, bikeId={}",
-                 event.operatorId(), event.bikeId());
+                event.operatorId(), event.bikeId());
     }
 }

@@ -29,8 +29,8 @@ public class UC16_SearchRidebyTripID {
 
         // Fetch pricing plan
         PricingPlan plan = pricingPlanRepository.findByType(trip.getBike().getType() == BikeType.ELECTRIC
-                        ? PricingPlanType.EBIKE
-                        : PricingPlanType.STANDARD)
+                ? PricingPlanType.EBIKE
+                : PricingPlanType.STANDARD)
                 .orElseThrow(() -> new IllegalArgumentException("Pricing plan not found"));
 
         double baseFee = plan.getBaseFee();
@@ -44,7 +44,7 @@ public class UC16_SearchRidebyTripID {
         double tierDiscountAmount = 0.0;
         double flexDollarUsed = 0.0;
         String tier = "REGULAR";
-        
+
         // Check if a Bill exists for this trip and use its values
         var billOpt = billRepository.findByTripId(tripId);
         if (billOpt.isPresent()) {
@@ -57,7 +57,7 @@ public class UC16_SearchRidebyTripID {
             flexDollarUsed = b.getFlexDollarUsed();
             totalCost = b.getTotalAmount();
         }
-        
+
         if (trip.getRider() != null && trip.getRider().getTier() != null) {
             tier = trip.getRider().getTier().toString();
         }
@@ -65,10 +65,10 @@ public class UC16_SearchRidebyTripID {
         // Timeline
         String timeline = String.format("%s: checkout → %s: return",
                 trip.getStartTime() != null ? trip.getStartTime() : "N/A",
-                trip.getEndTime() != null ? trip.getEndTime() : "N/A"
-        );
+                trip.getEndTime() != null ? trip.getEndTime() : "N/A");
 
-        String planStr = trip.getRider() != null && trip.getRider().getPlan() != null ? trip.getRider().getPlan().name() : "N/A";
+        String planStr = trip.getRider() != null && trip.getRider().getPlan() != null ? trip.getRider().getPlan().name()
+                : "N/A";
 
         return new TripResponse(
                 trip.getId(),
@@ -88,7 +88,6 @@ public class UC16_SearchRidebyTripID {
                 tier,
                 flexDollarUsed,
                 totalCost,
-                timeline
-        );
+                timeline);
     }
 }

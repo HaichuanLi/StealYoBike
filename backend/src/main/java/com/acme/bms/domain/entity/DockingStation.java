@@ -60,14 +60,15 @@ public class DockingStation {
     public int getNumberOfAvailableBikes(BikeType bikeType) {
         int count = 0;
         for (Dock dock : docks) {
-            if (dock.getBike() != null && dock.getBike().getState().toString().equals("Available") && dock.getBike().getType().equals(bikeType)) {
+            if (dock.getBike() != null && dock.getBike().getState().toString().equals("Available")
+                    && dock.getBike().getType().equals(bikeType)) {
                 count++;
             }
         }
         return count;
     }
 
-     public Dock findEmptyDock() {
+    public Dock findEmptyDock() {
         for (Dock dock : docks) {
             if (dock.getStatus() == DockStatus.EMPTY) {
                 return dock;

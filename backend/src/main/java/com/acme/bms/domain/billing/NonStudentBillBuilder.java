@@ -6,18 +6,16 @@ import com.acme.bms.domain.entity.BikeType;
 import com.acme.bms.domain.entity.Bill;
 import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.entity.Plan;
-import com.acme.bms.domain.entity.Tier;
 import com.acme.bms.domain.entity.User;
 
 import lombok.Getter;
 
 @Getter
-public class NonStudentBillBuilder implements BillBuilder{
+public class NonStudentBillBuilder implements BillBuilder {
     private Bill bill;
     private double baseFee = 2.50;
     private double usageFee = 0.15;
     private double eBikeFeeMultiplier = 1.5;
-
 
     @Override
     public void createBill(Trip trip) {
@@ -39,17 +37,15 @@ public class NonStudentBillBuilder implements BillBuilder{
         User rider = bill.getTrip().getRider();
         Plan plan = rider != null ? rider.getPlan() : Plan.PAYPERRIDE;
         if (plan == Plan.MONTHLY) {
-            if (minutes <= 30){
+            if (minutes <= 30) {
                 usage = 0;
-            }
-            else{
+            } else {
                 usage = minutes - 30 * baseFee;
             }
         } else if (plan == Plan.ANNUAL) {
-            if (minutes <= 45){
+            if (minutes <= 45) {
                 usage = 0;
-            }
-            else{
+            } else {
                 usage = minutes - 30 * baseFee;
             }
         }
@@ -60,7 +56,8 @@ public class NonStudentBillBuilder implements BillBuilder{
 
     @Override
     public void addElectricCharge() {
-        if (bill.getTrip() != null && bill.getTrip().getBike() != null && bill.getTrip().getBike().getType() == BikeType.ELECTRIC) {
+        if (bill.getTrip() != null && bill.getTrip().getBike() != null
+                && bill.getTrip().getBike().getType() == BikeType.ELECTRIC) {
             User rider = bill.getTrip().getRider();
             Plan plan = rider != null ? rider.getPlan() : Plan.PAYPERRIDE;
 
@@ -90,7 +87,7 @@ public class NonStudentBillBuilder implements BillBuilder{
         if (rider == null) {
             return;
         }
-        
+
         double tierDiscountPercentage = 0.0;
         switch (rider.getTier()) {
             case BRONZE:
@@ -106,7 +103,7 @@ public class NonStudentBillBuilder implements BillBuilder{
                 tierDiscountPercentage = 0.0;
                 break;
         }
-        
+
         if (tierDiscountPercentage > 0) {
             double tierDiscount = bill.getTotalAmount() * tierDiscountPercentage;
             bill.setTierDiscountAmount(tierDiscount);
@@ -116,21 +113,22 @@ public class NonStudentBillBuilder implements BillBuilder{
 
     @Override
     public void applyFlexDollar() {
-        // Skip if this bill should not use flex dollars (e.g., same trip that earned them)
+        // Skip if this bill should not use flex dollars (e.g., same trip that earned
+        // them)
         if (bill.isSkipFlexDollar()) {
             return;
         }
-        
+
         User rider = bill.getTrip().getRider();
         if (rider == null || rider.getFlexDollar() <= 0) {
             return;
         }
-        
+
         // Use as much flex dollar as needed up to available amount and bill total
         double flexUsed = Math.min(rider.getFlexDollar(), bill.getTotalAmount());
         bill.setFlexDollarUsed(flexUsed);
         bill.setTotalAmount(bill.getTotalAmount() - flexUsed);
-        
+
         // Deduct from rider's flex dollar balance
         rider.setFlexDollar(rider.getFlexDollar() - flexUsed);
     }

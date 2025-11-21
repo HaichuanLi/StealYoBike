@@ -44,13 +44,13 @@ public class UC15_GetTripDetails {
         Long tripId = t.getId();
 
         // Rider & stations
-        String riderName     = t.getRider() != null ? t.getRider().getUsername() : null;
-        String startStation  = t.getStartStation() != null ? t.getStartStation().getName() : null;
-        String endStation    = t.getEndStation() != null ? t.getEndStation().getName()   : null;
+        String riderName = t.getRider() != null ? t.getRider().getUsername() : null;
+        String startStation = t.getStartStation() != null ? t.getStartStation().getName() : null;
+        String endStation = t.getEndStation() != null ? t.getEndStation().getName() : null;
 
         // Times
-        var startTime = t.getStartTime();   // LocalDateTime or null
-        var endTime   = t.getEndTime();     // LocalDateTime or null
+        var startTime = t.getStartTime(); // LocalDateTime or null
+        var endTime = t.getEndTime(); // LocalDateTime or null
 
         // Duration (long primitive returned in TripResponse; compute 0 if unknown)
         long durationMinutes = 0L;
@@ -61,7 +61,7 @@ public class UC15_GetTripDetails {
         // Bike type
         Bike bike = t.getBike();
         String bikeType = (bike != null && bike.getType() != null) ? bike.getType().name() : null;
-    String plan = t.getRider() != null && t.getRider().getPlan() != null ? t.getRider().getPlan().name() : null;
+        String plan = t.getRider() != null && t.getRider().getPlan() != null ? t.getRider().getPlan().name() : null;
 
         // Cost breakdown: prefer persisted Bill component fields if present
         double baseFee = 0.0;
@@ -96,7 +96,7 @@ public class UC15_GetTripDetails {
                 + " \u2192 "
                 + (endTime != null ? "Return: " + endTime.format(FMT) : "Return: —");
 
-    return new TripResponse(
+        return new TripResponse(
                 tripId,
                 riderName,
                 startStation,
@@ -105,16 +105,15 @@ public class UC15_GetTripDetails {
                 endTime,
                 durationMinutes,
                 bikeType,
-        plan,
+                plan,
                 baseFee,
-        perMinuteFee,
-        eBikeSurcharge,
-        discountAmount,
-        tierDiscountAmount,
-        tier,
-        flexDollarUsed,
-        totalCost,
-                timeline
-        );
+                perMinuteFee,
+                eBikeSurcharge,
+                discountAmount,
+                tierDiscountAmount,
+                tier,
+                flexDollarUsed,
+                totalCost,
+                timeline);
     }
 }

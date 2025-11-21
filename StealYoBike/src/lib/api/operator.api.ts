@@ -1,6 +1,7 @@
 import type { TripResponse } from '$lib/api/types';
 import type { AxiosResponse } from 'axios';
 import { api } from './index';
+import type { TripFilterParams } from './rider.api';
 import type {
 	ChangeStationResponse,
 	RebalanceRequest,
@@ -9,7 +10,6 @@ import type {
 	RestoreInitialStateResponse
 } from './types/operator.type';
 import type { PastTripResponse } from './types/rider.types';
-import type { TripFilterParams } from './rider.api';
 
 export const operatorApi = {
 	toggleStationStatus: async (stationId: number): Promise<AxiosResponse<ChangeStationResponse>> => {
@@ -63,15 +63,18 @@ export const operatorApi = {
 	},
 
 	// AC17: now accepts optional filters
-	getAllPastTrips: async (params?: TripFilterParams): Promise<AxiosResponse<PastTripResponse[]>> => {
+	getAllPastTrips: async (
+		params?: TripFilterParams
+	): Promise<AxiosResponse<PastTripResponse[]>> => {
 		return await api.get<PastTripResponse[]>('operator/trips/history', { params });
 	},
 
 	getTripDetails: async (tripId: number) => {
-		return await api.get<import('./types/rider.types').TripResponse>(`/operator/trips/${tripId}/details`);
+		return await api.get<import('./types/rider.types').TripResponse>(
+			`/operator/trips/${tripId}/details`
+		);
 	},
 	searchTripById: async (tripId: number): Promise<AxiosResponse<TripResponse>> => {
 		return await api.get<TripResponse>(`/operator/trips/search`, { params: { tripId } });
 	}
-
 };

@@ -33,13 +33,17 @@ public class UC14_ListAllUsersPastTrips {
 
         return trips.stream()
                 .filter(t -> {
-                    if (t.getStartTime() == null) return false;
-                    if (startBound != null && t.getStartTime().isBefore(startBound)) return false;
-                    if (endBound != null && t.getStartTime().isAfter(endBound)) return false;
+                    if (t.getStartTime() == null)
+                        return false;
+                    if (startBound != null && t.getStartTime().isBefore(startBound))
+                        return false;
+                    if (endBound != null && t.getStartTime().isAfter(endBound))
+                        return false;
                     return true;
                 })
                 .filter(t -> {
-                    if (typeNorm == null) return true;
+                    if (typeNorm == null)
+                        return true;
                     return t.getBike() != null
                             && t.getBike().getType() != null
                             && typeNorm.equalsIgnoreCase(t.getBike().getType().name());
@@ -68,8 +72,7 @@ public class UC14_ListAllUsersPastTrips {
                             paid,
                             billId,
                             trip.getRider() != null ? trip.getRider().getId() : null,
-                            trip.getRider() != null ? trip.getRider().getUsername() : null
-                    );
+                            trip.getRider() != null ? trip.getRider().getUsername() : null);
                 })
                 .collect(Collectors.toList());
     }

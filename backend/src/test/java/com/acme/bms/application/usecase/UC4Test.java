@@ -32,7 +32,7 @@ class UC4Test {
         TripRepository tripRepo = mock(TripRepository.class);
         StationRepository stationRepo = mock(StationRepository.class);
         DockRepository dockRepo = mock(DockRepository.class);
-        UC4_ReturnBikeUseCase sut = new UC4_ReturnBikeUseCase(tripRepo, stationRepo, dockRepo);
+        UC4_ReturnBikeUseCase sut = new UC4_ReturnBikeUseCase(tripRepo, stationRepo, dockRepo, null);
 
         DockingStation station = new DockingStation();
         station.setId(200L);

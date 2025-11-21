@@ -6,10 +6,13 @@ import com.acme.bms.domain.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
+
     boolean existsByUsername(String username);
 
-    Optional<User> findByUsername(String username);                // ← needed by UC3
+    Optional<User> findByUsername(String username); // ← needed by UC3
+
     Optional<User> findByEmail(String email);
+
     Optional<User> findByUsernameOrEmail(String username, String email); // ← used by login
 
     default Optional<User> findByUsernameOrEmail(String usernameOrEmail) {

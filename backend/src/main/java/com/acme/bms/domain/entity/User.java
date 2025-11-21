@@ -68,7 +68,8 @@ public class User {
     @Column(nullable = false)
     private double flexDollar = 0.0;
 
-    // Track which trip ID earned the most recent flex dollar (to prevent using it on that same trip)
+    // Track which trip ID earned the most recent flex dollar (to prevent using it
+    // on that same trip)
     @Column(nullable = true)
     private Long lastFlexDollarEarnedTripId;
 
