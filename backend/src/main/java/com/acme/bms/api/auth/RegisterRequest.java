@@ -13,6 +13,5 @@ public record RegisterRequest(
                 @NotBlank @Size(min = 3, max = 100) String username,
                 @NotBlank @Size(min = 8, max = 100) String password,
                 @Size(max = 255) String paymentToken,
-                Plan plan,
-                Tier tier) {
+                Plan plan) {
 }
