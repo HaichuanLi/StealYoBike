@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import com.acme.bms.application.events.StationsChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.acme.bms.domain.repo.UserRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,7 @@ public class UC4_ReturnBikeUseCase {
     private final TripRepository tripRepo;
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
+    private final UserRepository userRepo;
     private ApplicationEventPublisher events;
 
     @Autowired(required = false)
@@ -81,7 +83,23 @@ public class UC4_ReturnBikeUseCase {
         trip.setEndTime(LocalDateTime.now());
         trip.setStatus(TripStatus.COMPLETED);
 
-        // 7) Persist
+        // 7) Check station fill BEFORE updating it, and award flex dollar if it was under-utilized
+        if (trip.getRider() != null) {
+            int occupiedDocksBeforeReturn = (int) station.getDocks().stream()
+                    .filter(d -> d.getStatus() == DockStatus.OCCUPIED)
+                    .count();
+            int totalDocks = station.getDocks().size();
+            double fillPercentageBeforeReturn = totalDocks > 0 ? (double) occupiedDocksBeforeReturn / totalDocks : 0;
+            
+            // Grant flex dollar if station was under 25% filled before this return
+            if (fillPercentageBeforeReturn < 0.25) {
+                trip.getRider().setFlexDollar(trip.getRider().getFlexDollar() + 1.0);
+                trip.getRider().setLastFlexDollarEarnedTripId(trip.getId());
+                userRepo.save(trip.getRider());
+            }
+        }
+
+        // 8) Persist
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
 

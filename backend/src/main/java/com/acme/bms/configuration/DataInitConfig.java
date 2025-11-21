@@ -90,7 +90,7 @@ public class DataInitConfig {
                                 -73.614895,
                                 30,
                                 StationStatus.ACTIVE);
-                populateStation(jeanTalonStation, 22); // 22 bikes out of 30 docks
+                populateStation(jeanTalonStation, 3); // 22 bikes out of 30 docks
                 stations.add(jeanTalonStation);
 
                 // Save all stations

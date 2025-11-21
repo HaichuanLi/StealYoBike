@@ -54,6 +54,7 @@ export interface TripBillResponse {
 	discountAmount: number;
 	tierDiscountAmount: number;
 	tier: string;
+	flexDollarUsed: number;
 	endStationId: number | null;
 	endStationName: string | null;
 	paid: boolean;
@@ -118,6 +119,7 @@ export interface TripResponse {
 	discountAmount: number;
 	tierDiscountAmount: number;
 	tier: string;
+	flexDollarUsed: number;
 	totalCost: number;
 	timeline: string;
 }

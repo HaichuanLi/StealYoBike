@@ -7,5 +7,7 @@ public record UserInfoResponse(
         String fullName,
         String role,
         String paymentToken,
-        String plan
+        String plan,
+        String tier,
+        double flexDollar
 ) {}

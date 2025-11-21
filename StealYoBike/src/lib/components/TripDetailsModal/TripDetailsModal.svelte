@@ -39,6 +39,9 @@
                     <div>E-bike surcharge:</div> <div class="text-right">{money(details.eBikeSurcharge)}</div>
                     <div>Discount:</div> <div class="text-right">{money(details.discountAmount)}</div>
                     <div>Tier Discount:</div> <div class="text-right">{money(details.tierDiscountAmount)}</div>
+                    {#if details.flexDollarUsed > 0}
+                        <div>Flex Dollar Used:</div> <div class="text-right">{money(details.flexDollarUsed)}</div>
+                    {/if}
                     <div class="font-semibold">Total:</div> <div class="text-right font-semibold">{money(details.totalCost)}</div>
                 </div>
             </div>

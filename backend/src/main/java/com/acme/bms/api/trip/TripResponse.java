@@ -18,6 +18,7 @@ public record TripResponse(
         double discountAmount,
         double tierDiscountAmount,
         String tier,
+        double flexDollarUsed,
         double totalCost,
         String timeline
 ) {}

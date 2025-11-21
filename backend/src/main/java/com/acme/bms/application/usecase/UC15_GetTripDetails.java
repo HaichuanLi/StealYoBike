@@ -69,6 +69,7 @@ public class UC15_GetTripDetails {
         double eBikeSurcharge = 0.0;
         double discountAmount = 0.0;
         double tierDiscountAmount = 0.0;
+        double flexDollarUsed = 0.0;
         double totalCost = 0.0;
         String tier = "REGULAR";
 
@@ -81,6 +82,7 @@ public class UC15_GetTripDetails {
             eBikeSurcharge = b.getElectricCharge();
             discountAmount = b.getDiscountAmount();
             tierDiscountAmount = b.getTierDiscountAmount();
+            flexDollarUsed = b.getFlexDollarUsed();
             if (t.getRider() != null && t.getRider().getTier() != null) {
                 tier = t.getRider().getTier().toString();
             }
@@ -110,6 +112,7 @@ public class UC15_GetTripDetails {
         discountAmount,
         tierDiscountAmount,
         tier,
+        flexDollarUsed,
         totalCost,
                 timeline
         );

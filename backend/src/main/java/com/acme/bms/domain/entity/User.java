@@ -64,4 +64,12 @@ public class User {
     @Column(nullable = false, length = 20)
     private Tier tier = Tier.REGULAR;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private double flexDollar = 0.0;
+
+    // Track which trip ID earned the most recent flex dollar (to prevent using it on that same trip)
+    @Column(nullable = true)
+    private Long lastFlexDollarEarnedTripId;
+
 }

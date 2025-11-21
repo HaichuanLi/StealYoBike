@@ -10,5 +10,6 @@ public interface BillBuilder {
     void addElectricCharge();
     void applyDiscount();
     void applyTierDiscount();
+    void applyFlexDollar();
     Bill getBill();
 }
