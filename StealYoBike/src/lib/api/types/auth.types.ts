@@ -16,6 +16,7 @@ export interface RegisterRequest {
 	username: string;
 	password: string;
 	paymentToken: string;
+	plan?: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL';
 }
 
 export interface RegisterResponse {
@@ -32,4 +33,5 @@ export interface UserInfoResponse {
     fullName: string;
     role: string;
 	paymentToken: string;
+	plan?: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL';
 }

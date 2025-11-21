@@ -6,5 +6,6 @@ public record UserInfoResponse(
         String username,
         String fullName,
         String role,
-        String paymentToken
+        String paymentToken,
+        String plan
 ) {}

@@ -39,12 +39,15 @@ public class UC16_SearchRidebyTripID {
                 : 0.0;
 
         double totalCost = baseFee + (perMinuteFee * durationMinutes) + eBikeSurcharge;
+        double discountAmount = 0.0;
 
         // Timeline
         String timeline = String.format("%s: checkout → %s: return",
                 trip.getStartTime() != null ? trip.getStartTime() : "N/A",
                 trip.getEndTime() != null ? trip.getEndTime() : "N/A"
         );
+
+        String planStr = trip.getRider() != null && trip.getRider().getPlan() != null ? trip.getRider().getPlan().name() : "N/A";
 
         return new TripResponse(
                 trip.getId(),
@@ -55,9 +58,11 @@ public class UC16_SearchRidebyTripID {
                 trip.getEndTime(),
                 durationMinutes,
                 trip.getBike() != null ? trip.getBike().getType().name() : "N/A",
+                planStr,
                 baseFee,
                 perMinuteFee,
                 eBikeSurcharge,
+                discountAmount,
                 totalCost,
                 timeline
         );

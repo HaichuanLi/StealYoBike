@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.acme.bms.api.auth.RegisterRequest;
+import com.acme.bms.domain.entity.Plan;
 import com.acme.bms.api.auth.RegisterResponse;
 import com.acme.bms.application.events.UserRegisteredEvent;
 import com.acme.bms.application.exception.EmailAlreadyUsedException;
@@ -33,13 +34,14 @@ class UC1Test {
         UC1_RegisterUserUseCase sut = new UC1_RegisterUserUseCase(userRepo, passwordEncoder, eventPublisher);
 
         // Arrange
-        RegisterRequest req = new RegisterRequest(
-                "Jane Doe",
-                "456 Oak St",
-                "jane@example.com",
-                "janedoe",
-                "password123",
-                "token-xyz");
+    RegisterRequest req = new RegisterRequest(
+        "Jane Doe",
+        "456 Oak St",
+        "jane@example.com",
+        "janedoe",
+        "password123",
+        "token-xyz",
+        Plan.PAYPERRIDE);
 
         when(userRepo.existsByEmail("jane@example.com")).thenReturn(false);
         when(userRepo.existsByUsername("janedoe")).thenReturn(false);
@@ -94,8 +96,8 @@ class UC1Test {
 
         when(userRepo.existsByEmail("dup@example.com")).thenReturn(true);
 
-        RegisterRequest req = new RegisterRequest(
-                "Dup User", "Addr", "dup@example.com", "dup", "passw0rd!", null);
+    RegisterRequest req = new RegisterRequest(
+        "Dup User", "Addr", "dup@example.com", "dup", "passw0rd!", null, Plan.PAYPERRIDE);
 
         System.out.println("[Action] Executing use case expecting EmailAlreadyUsedException...");
         EmailAlreadyUsedException ex = assertThrows(EmailAlreadyUsedException.class, () -> sut.execute(req));
@@ -121,8 +123,8 @@ class UC1Test {
         when(userRepo.existsByEmail("new@example.com")).thenReturn(false);
         when(userRepo.existsByUsername("dupuser")).thenReturn(true);
 
-        RegisterRequest req = new RegisterRequest(
-                "Dup User", "Addr", "new@example.com", "dupuser", "passw0rd!", null);
+    RegisterRequest req = new RegisterRequest(
+        "Dup User", "Addr", "new@example.com", "dupuser", "passw0rd!", null, Plan.PAYPERRIDE);
 
         System.out.println("[Action] Executing use case expecting UsernameAlreadyUsedException...");
         UsernameAlreadyUsedException ex = assertThrows(UsernameAlreadyUsedException.class, () -> sut.execute(req));
