@@ -16,6 +16,8 @@ public record TripResponse(
         double perMinuteFee,
         double eBikeSurcharge,
         double discountAmount,
+        double tierDiscountAmount,
+        String tier,
         double totalCost,
         String timeline
 ) {}

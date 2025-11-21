@@ -15,6 +15,7 @@ public class UC16_SearchRidebyTripID {
 
     private final TripRepository tripRepository;
     private final PricingPlanRepository pricingPlanRepository;
+    private final BillRepository billRepository;
 
     public TripResponse execute(Long tripId) {
         Trip trip = tripRepository.findById(tripId)
@@ -40,6 +41,24 @@ public class UC16_SearchRidebyTripID {
 
         double totalCost = baseFee + (perMinuteFee * durationMinutes) + eBikeSurcharge;
         double discountAmount = 0.0;
+        double tierDiscountAmount = 0.0;
+        String tier = "REGULAR";
+        
+        // Check if a Bill exists for this trip and use its values
+        var billOpt = billRepository.findByTripId(tripId);
+        if (billOpt.isPresent()) {
+            var b = billOpt.get();
+            baseFee = b.getBaseFee();
+            perMinuteFee = b.getUsageCost();
+            eBikeSurcharge = b.getElectricCharge();
+            discountAmount = b.getDiscountAmount();
+            tierDiscountAmount = b.getTierDiscountAmount();
+            totalCost = b.getTotalAmount();
+        }
+        
+        if (trip.getRider() != null && trip.getRider().getTier() != null) {
+            tier = trip.getRider().getTier().toString();
+        }
 
         // Timeline
         String timeline = String.format("%s: checkout → %s: return",
@@ -63,6 +82,8 @@ public class UC16_SearchRidebyTripID {
                 perMinuteFee,
                 eBikeSurcharge,
                 discountAmount,
+                tierDiscountAmount,
+                tier,
                 totalCost,
                 timeline
         );

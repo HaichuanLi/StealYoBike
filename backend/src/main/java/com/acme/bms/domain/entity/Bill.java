@@ -26,6 +26,7 @@ public class Bill {
 	private double usageCost = 0;
 	private double electricCharge = 0;
 	private double discountAmount = 0;
+	private double tierDiscountAmount = 0;
 
 	private LocalDateTime createdAt;
 	private boolean paid = false;
