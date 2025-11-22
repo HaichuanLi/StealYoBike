@@ -2,6 +2,10 @@ package com.acme.bms.api.auth;
 
 import java.net.URI;
 
+import com.acme.bms.application.events.TierChangedEvent;
+import com.acme.bms.application.service.TierEvaluationService;
+import com.acme.bms.domain.entity.Tier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +39,8 @@ public class AuthController {
 
     private final UC1_RegisterUserUseCase registerUC;
     private final UC2_LoginUserUseCase loginUC;
+    private final TierEvaluationService tierEvaluationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -102,39 +108,50 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserInfoResponse> me(Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
-            log.warn("No authentication principal found for /me request");
             return ResponseEntity.status(401).build();
         }
 
-        String principalName = authentication.getName();
+        String principal = authentication.getName();
+        Optional<User> userOptional;
 
         try {
-            Long userId = Long.parseLong(principalName);
-            return ResponseEntity.of(
-                    userRepository.findById(userId)
-                            .map(dbUser -> new UserInfoResponse(
-                                    dbUser.getId(),
-                                    dbUser.getEmail(),
-                                    dbUser.getUsername(),
-                                    dbUser.getFullName(),
-                                    dbUser.getRole().name(),
-                                    dbUser.getPaymentToken(),
-                                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
-                                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
-                                    dbUser.getFlexDollar())));
+            Long userId = Long.parseLong(principal);
+            userOptional = userRepository.findById(userId);
         } catch (NumberFormatException ex) {
-            return ResponseEntity.of(
-                    userRepository.findByUsername(principalName)
-                            .map(dbUser -> new UserInfoResponse(
-                                    dbUser.getId(),
-                                    dbUser.getEmail(),
-                                    dbUser.getUsername(),
-                                    dbUser.getFullName(),
-                                    dbUser.getRole().name(),
-                                    dbUser.getPaymentToken(),
-                                    dbUser.getPlan() != null ? dbUser.getPlan().name() : null,
-                                    dbUser.getTier() != null ? dbUser.getTier().toString() : "REGULAR",
-                                    dbUser.getFlexDollar())));
+            userOptional = userRepository.findByUsername(principal);
         }
+
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(404).build();
+        }
+
+        User user = userOptional.get();
+
+        // Evaluate the tier
+        Tier evaluatedTier = tierEvaluationService.evaluate(user.getId());
+        if (evaluatedTier != user.getTier()) {
+            Tier previousTier = user.getTier();
+            user.setTier(evaluatedTier);
+            userRepository.save(user);
+
+            // Publish the event
+            eventPublisher.publishEvent(new TierChangedEvent(
+                    user.getId(),
+                    previousTier,
+                    evaluatedTier
+            ));
+        }
+        UserInfoResponse response = new UserInfoResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getFullName(),
+                user.getRole().name(),
+                user.getPaymentToken(),
+                user.getPlan() != null ? user.getPlan().name() : null,
+                user.getTier() != null ? user.getTier().name() : "REGULAR",
+                user.getFlexDollar()
+        );
+        return ResponseEntity.ok(response);
     }
 }
