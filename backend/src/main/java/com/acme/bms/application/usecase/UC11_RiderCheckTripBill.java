@@ -34,7 +34,8 @@ public class UC11_RiderCheckTripBill {
             throw new UserNotFoundException();
         }
 
-        Trip trip = tripRepo.findById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
+        Trip trip = tripRepo.findById(tripId)
+                .orElseThrow(() -> new TripNotFoundException(tripId));
 
         if (!trip.getRider().getId().equals(riderId)) {
             throw new UserNotFoundException();
@@ -44,7 +45,12 @@ public class UC11_RiderCheckTripBill {
             throw new TripNotActiveException(tripId);
         }
 
-        // choose builder based on if email ends with .edu
+        var existingBillOpt = billRepo.findByTripId(tripId);
+        if (existingBillOpt.isPresent()) {
+            Bill existing = existingBillOpt.get();
+            return TripBillResponse.from(existing, new TripInfoResponse(trip));
+        }
+
         BillBuilder builder;
         var rider = trip.getRider();
         if (rider.getEmail() != null && rider.getEmail().toLowerCase().endsWith(".edu")) {
@@ -53,17 +59,16 @@ public class UC11_RiderCheckTripBill {
             builder = new NonStudentBillBuilder();
         }
 
-        // Create bill first
         builder.createBill(trip);
         Bill bill = builder.getBill();
 
-        // Set skipFlexDollar BEFORE calling the rest of constructBill
-        if (trip.getRider() != null && trip.getId() != null &&
+        if (trip.getRider() != null &&
+                trip.getId() != null &&
                 trip.getId().equals(trip.getRider().getLastFlexDollarEarnedTripId())) {
             bill.setSkipFlexDollar(true);
         }
 
-        // Now complete the bill construction with skipFlexDollar already set
+        // Build full bill once (base + usage + e-bike + student + tier + flex)
         builder.calculateBaseCost();
         builder.addUsageCost();
         builder.addElectricCharge();

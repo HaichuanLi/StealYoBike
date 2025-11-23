@@ -1,14 +1,6 @@
 package com.acme.bms.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -70,7 +62,24 @@ public class User {
 
     // Track which trip ID earned the most recent flex dollar (to prevent using it
     // on that same trip)
-    @Column(nullable = true)
+    @Column
     private Long lastFlexDollarEarnedTripId;
 
+    // Front-end “view mode” (RIDER or OPERATOR) – can differ from base role.
+    @Column(length = 20)
+    private String activeRole;
+
+    @PrePersist
+    public void prePersist() {
+        if (activeRole == null || activeRole.isBlank()) {
+            activeRole = role != null ? role.name() : Role.RIDER.name();
+        }
+    }
+
+    @PostLoad
+    public void postLoad() {
+        if (activeRole == null || activeRole.isBlank()) {
+            activeRole = role != null ? role.name() : Role.RIDER.name();
+        }
+    }
 }

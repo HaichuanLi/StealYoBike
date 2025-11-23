@@ -1,13 +1,10 @@
 package com.acme.bms.domain.repo;
 
-import java.time.LocalDateTime;
-
+import com.acme.bms.domain.entity.Reservation;
+import com.acme.bms.domain.entity.Status.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
-import com.acme.bms.domain.entity.Reservation;
-import com.acme.bms.domain.entity.Status.ReservationStatus;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,11 +14,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     Reservation findByRiderIdAndStatus(Long riderId, ReservationStatus status);
 
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.rider.id = :userId AND r.status = 'CLAIMED' AND r.createdAt >= :since")
-    int countSuccessfulByUserSince(@Param("userId") Long userId,
-                                   @Param("since") LocalDateTime since);
+    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.rider.id = :userId AND r.status = 'FULFILLED' AND r.createdAt >= :since")
+    int countSuccessfulByUserSince(@Param("userId") Long userId, @Param("since") Instant since);
 
     @Query("SELECT COUNT(r) FROM Reservation r WHERE r.rider.id = :userId AND r.status = 'EXPIRED' AND r.createdAt >= :since")
-    int countMissedByUserSince(@Param("userId") Long userId,
-                               @Param("since") LocalDateTime since);
+    int countMissedByUserSince(@Param("userId") Long userId, @Param("since") Instant since);
 }

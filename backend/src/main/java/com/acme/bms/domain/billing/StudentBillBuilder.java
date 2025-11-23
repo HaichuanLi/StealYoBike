@@ -42,13 +42,13 @@ public class StudentBillBuilder implements BillBuilder {
             if (minutes <= 30) {
                 usage = 0;
             } else {
-                usage = minutes - 30 * baseFee;
+                usage = (minutes - 30) * usageFee;
             }
         } else if (plan == Plan.ANNUAL) {
             if (minutes <= 45) {
                 usage = 0;
             } else {
-                usage = minutes - 30 * baseFee;
+                usage = (minutes - 45) * usageFee;
             }
         }
 
@@ -92,20 +92,22 @@ public class StudentBillBuilder implements BillBuilder {
             return;
         }
 
+        // Only apply tier discount when acting as rider
+        String effectiveRole = rider.getActiveRole() != null
+                ? rider.getActiveRole()
+                : rider.getRole().name();
+
+        boolean isRiderContext = "RIDER".equalsIgnoreCase(effectiveRole);
+        if (!isRiderContext) {
+            return;
+        }
+
         double tierDiscountPercentage = 0.0;
         switch (rider.getTier()) {
-            case BRONZE:
-                tierDiscountPercentage = 0.05;
-                break;
-            case SILVER:
-                tierDiscountPercentage = 0.10;
-                break;
-            case GOLD:
-                tierDiscountPercentage = 0.15;
-                break;
-            default:
-                tierDiscountPercentage = 0.0;
-                break;
+            case BRONZE -> tierDiscountPercentage = 0.05;
+            case SILVER -> tierDiscountPercentage = 0.10;
+            case GOLD   -> tierDiscountPercentage = 0.15;
+            default     -> tierDiscountPercentage = 0.0;
         }
 
         if (tierDiscountPercentage > 0) {
@@ -117,8 +119,6 @@ public class StudentBillBuilder implements BillBuilder {
 
     @Override
     public void applyFlexDollar() {
-        // Skip if this bill should not use flex dollars (e.g., same trip that earned
-        // them)
         if (bill.isSkipFlexDollar()) {
             return;
         }
@@ -128,12 +128,10 @@ public class StudentBillBuilder implements BillBuilder {
             return;
         }
 
-        // Use as much flex dollar as needed up to available amount and bill total
         double flexUsed = Math.min(rider.getFlexDollar(), bill.getTotalAmount());
         bill.setFlexDollarUsed(flexUsed);
         bill.setTotalAmount(bill.getTotalAmount() - flexUsed);
 
-        // Deduct from rider's flex dollar balance
         rider.setFlexDollar(rider.getFlexDollar() - flexUsed);
     }
 }
