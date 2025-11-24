@@ -27,7 +27,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import com.acme.bms.application.events.StationsChangedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.acme.bms.domain.repo.UserRepository;
-
 @Service
 @RequiredArgsConstructor
 public class UC4_ReturnBikeUseCase {
@@ -45,7 +44,7 @@ public class UC4_ReturnBikeUseCase {
 
     @Transactional
     public ReturnBikeResponse execute(ReturnBikeRequest req) {
-        // 1) Trip must exist and be active
+
         Trip trip = tripRepo.findById(req.tripId())
                 .orElseThrow(() -> new TripNotFoundException(req.tripId()));
 
@@ -53,15 +52,21 @@ public class UC4_ReturnBikeUseCase {
             throw new TripNotActiveException(req.tripId());
         }
 
-        // 2) Target station must exist
         DockingStation station = stationRepo.findById(req.stationId())
                 .orElseThrow(() -> new StationNotFoundException(req.stationId()));
 
-        // 3) Find an empty dock
         Dock emptyDock = station.getDocks().stream()
                 .filter(d -> d.getStatus() == DockStatus.EMPTY)
                 .findFirst()
                 .orElseThrow(() -> new NoEmptyDockAvailableException(req.stationId()));
+
+        // --- FLEX DOLLAR OCCUPANCY CHECK BEFORE RETURN ---
+        int occupiedBefore = (int) station.getDocks().stream()
+                .filter(d -> d.getStatus() == DockStatus.OCCUPIED)
+                .count();
+
+        int total = station.getDocks().size();
+        double fillBefore = total > 0 ? (double) occupiedBefore / total : 0;
 
         // 4) Return via strategy
         Bike bike = trip.getBike();
@@ -70,7 +75,7 @@ public class UC4_ReturnBikeUseCase {
             throw new BikeReturnFailedException(bike.getId(), emptyDock.getId());
         }
 
-        // 5) Update dock/bike state if strategy didn’t already
+        // Ensure the dock/bike states are consistent
         if (emptyDock.getBike() == null)
             emptyDock.setBike(bike);
         if (emptyDock.getStatus() != DockStatus.OCCUPIED)
@@ -78,39 +83,26 @@ public class UC4_ReturnBikeUseCase {
         if (bike.getDock() != emptyDock)
             bike.setDock(emptyDock);
 
-        // 6) Close trip
+        // Close trip
         trip.setEndStation(station);
         trip.setEndTime(LocalDateTime.now());
         trip.setStatus(TripStatus.COMPLETED);
 
-        // 7) Check station fill BEFORE updating it, and award flex dollar if it was
-        // under-utilized
-        if (trip.getRider() != null) {
-            int occupiedDocksBeforeReturn = (int) station.getDocks().stream()
-                    .filter(d -> d.getStatus() == DockStatus.OCCUPIED)
-                    .count();
-            int totalDocks = station.getDocks().size();
-            double fillPercentageBeforeReturn = totalDocks > 0 ? (double) occupiedDocksBeforeReturn / totalDocks : 0;
-
-            // Grant flex dollar if station was under 25% filled before this return
-            if (fillPercentageBeforeReturn < 0.25) {
-                trip.getRider().setFlexDollar(trip.getRider().getFlexDollar() + 1.0);
-                trip.getRider().setLastFlexDollarEarnedTripId(trip.getId());
-                userRepo.save(trip.getRider());
-            }
+        // --- AWARD FLEX DOLLARS ---
+        if (trip.getRider() != null && fillBefore < 0.25) {
+            trip.getRider().setFlexDollar(trip.getRider().getFlexDollar() + 1.0);
+            trip.getRider().setLastFlexDollarEarnedTripId(trip.getId());
+            userRepo.save(trip.getRider());
         }
 
-        // 8) Persist
+        // Persist changes
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
 
-        // publish a stations-changed event so SSE listeners can be updated (if
-        // publisher present)
         if (events != null) {
             events.publishEvent(new StationsChangedEvent());
         }
 
-        // 8) Response (priceCents placeholder = 0)
         return new ReturnBikeResponse(
                 trip.getId(),
                 bike.getId(),
@@ -120,3 +112,4 @@ public class UC4_ReturnBikeUseCase {
                 trip.getStatus().name());
     }
 }
+

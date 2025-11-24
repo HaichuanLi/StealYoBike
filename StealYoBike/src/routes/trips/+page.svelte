@@ -60,7 +60,7 @@
 		try {
 			const u = await authApi.getCurrentUser();
 			user = u.data;
-			isOperator = user?.role === 'OPERATOR';
+			isOperator = user?.activeRole === 'OPERATOR';
 		} catch {
 			user = null;
 		}

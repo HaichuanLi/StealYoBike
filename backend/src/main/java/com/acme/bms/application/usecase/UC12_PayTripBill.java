@@ -25,20 +25,24 @@ public class UC12_PayTripBill {
 
     @Transactional
     public TripBillResponse execute(Long tripId, String paymentToken, Long riderId) {
-        if (riderId == null)
+        if (riderId == null) {
             throw new UserNotFoundException();
-
-        Trip trip = tripRepo.findById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
-        if (!trip.getRider().getId().equals(riderId))
-            throw new UserNotFoundException();
-
-        // avoid creating duplicate bills: check if a bill already exists for the trip
-        var maybeBill = billRepo.findByTripId(tripId);
-        if (maybeBill.isEmpty()) {
-            billCreator.execute(tripId, riderId);
         }
 
-        Bill bill = billRepo.findByTripId(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
+        Trip trip = tripRepo.findById(tripId)
+                .orElseThrow(() -> new TripNotFoundException(tripId));
+
+        if (!trip.getRider().getId().equals(riderId)) {
+            throw new UserNotFoundException();
+        }
+
+        // ✅ Reuse existing bill if present, otherwise build it via UC11
+        Bill bill = billRepo.findByTripId(tripId).orElseGet(() -> {
+            // UC11 will create + save the bill (with flex + discounts)
+            TripBillResponse resp = billCreator.execute(tripId, riderId);
+            return billRepo.findByTripId(tripId)
+                    .orElseThrow(() -> new TripNotFoundException(tripId));
+        });
 
         bill.setPaid(true);
         bill.setPaymentTokenUsed(paymentToken);
@@ -46,6 +50,7 @@ public class UC12_PayTripBill {
 
         bill = billRepo.save(bill);
 
-        return TripBillResponse.from(bill, new com.acme.bms.api.rider.TripInfoResponse(trip));
+        return TripBillResponse.from(bill,
+                new com.acme.bms.api.rider.TripInfoResponse(trip));
     }
 }

@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 class DefaultTierEvaluationServiceTest {
 
@@ -36,7 +37,7 @@ class DefaultTierEvaluationServiceTest {
                 .thenReturn(5);
 
         System.out.println("    - missedReservation = 0");
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class)))
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant()))
                 .thenReturn(0);
 
         System.out.println("    - hasUnreturned = false");
@@ -44,7 +45,7 @@ class DefaultTierEvaluationServiceTest {
                 .thenReturn(false);
 
         System.out.println("    - successfulReservation = 0");
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class)))
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant()))
                 .thenReturn(0);
 
         System.out.println("    - tripsPerMonth = 0");
@@ -73,7 +74,7 @@ class DefaultTierEvaluationServiceTest {
                 .thenReturn(11);
         System.out.println("    - tripsLastYear = 11 (OK)");
 
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class)))
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant()))
                 .thenReturn(0);
         System.out.println("    - missedReservation = 0 (OK)");
 
@@ -82,7 +83,7 @@ class DefaultTierEvaluationServiceTest {
         System.out.println("    - hasUnreturned = false (OK)");
 
         System.out.println("[Silver] but failing Silver conditions...");
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class)))
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant()))
                 .thenReturn(2);
         System.out.println("    - successfulReservation = 2 (<5)");
 
@@ -108,11 +109,11 @@ class DefaultTierEvaluationServiceTest {
 
         System.out.println("[Before] Setting bronze-valid data:");
         when(tripRepo.countByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(20);
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(0);
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(0);
         when(tripRepo.hasUnreturnedBike(userId)).thenReturn(false);
 
         System.out.println("[Silver] meeting Silver conditions:");
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(6);
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(6);
         System.out.println("    - successfulReservation = 6 (>=5)");
         when(tripRepo.countTripsPerMonth(eq(userId), any(), any())).thenReturn(5);
         System.out.println("    - tripsPerMonth = 5 (>=5)");
@@ -135,11 +136,11 @@ class DefaultTierEvaluationServiceTest {
 
         System.out.println("[Before] Bronze conditions OK");
         when(tripRepo.countByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(15);
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(0);
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(0);
         when(tripRepo.hasUnreturnedBike(userId)).thenReturn(false);
 
         System.out.println("[Silver] OK");
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(7);
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(7);
         when(tripRepo.countTripsPerMonth(eq(userId), any(), any())).thenReturn(6);
 
         System.out.println("[Gold] OK");
@@ -160,11 +161,11 @@ class DefaultTierEvaluationServiceTest {
 
         // Bronze OK
         when(tripRepo.countByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(20);
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(0);
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(0);
         when(tripRepo.hasUnreturnedBike(userId)).thenReturn(false);
 
         // Silver OK
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(6);
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(6);
         when(tripRepo.countTripsPerMonth(eq(userId), any(), any())).thenReturn(5);
 
         // Gold FAIL
@@ -190,11 +191,11 @@ class DefaultTierEvaluationServiceTest {
 
         // Bronze OK
         when(tripRepo.countByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(20);
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(0);
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(0);
         when(tripRepo.hasUnreturnedBike(userId)).thenReturn(false);
 
         // Silver FAIL
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(3); // <5
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(3); // <5
         when(tripRepo.countTripsPerMonth(eq(userId), any(), any())).thenReturn(2); // <5
 
         // Gold irrelevant
@@ -224,11 +225,11 @@ class DefaultTierEvaluationServiceTest {
         when(tripRepo.countByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(8);
 
         // Other bronze checks irrelevant
-        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(0);
+        when(reservationRepo.countMissedByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(0);
         when(tripRepo.hasUnreturnedBike(userId)).thenReturn(false);
 
         // Silver irrelevant
-        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class))).thenReturn(10);
+        when(reservationRepo.countSuccessfulByUserSince(eq(userId), any(LocalDateTime.class).atZone(ZoneId.systemDefault()).toInstant())).thenReturn(10);
         when(tripRepo.countTripsPerMonth(eq(userId), any(), any())).thenReturn(10);
         when(tripRepo.countTripsPerWeek(eq(userId), any(), any())).thenReturn(10);
 
