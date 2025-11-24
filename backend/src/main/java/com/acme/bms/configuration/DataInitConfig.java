@@ -55,9 +55,9 @@ public class DataInitConfig {
                                 "845 Sherbrooke St W, Montreal, Quebec H3A 0G4",
                                 45.504474,
                                 -73.574215,
-                                15,
+                                19,
                                 StationStatus.ACTIVE);
-                populateStation(mcgillStation, 8); // 8 bikes out of 15 docks
+                populateStation(mcgillStation, 2); // 2 bikes out of 19 docks
                 stations.add(mcgillStation);
 
                 // Station 3: Old Port Station

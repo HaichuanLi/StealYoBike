@@ -1,6 +1,7 @@
 package com.acme.bms.domain.entity;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import com.acme.bms.domain.entity.Status.DockStatus;
 import com.acme.bms.domain.entity.Status.StationStatus;
@@ -12,6 +13,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -47,6 +50,25 @@ public class DockingStation {
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dock> docks;
 
+    @ManyToMany
+    @JoinTable(
+        name = "station_observers",
+        joinColumns = @jakarta.persistence.JoinColumn(name = "station_id"),
+        inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "observer_id")
+    )
+    @Builder.Default
+    private List<User> observers = new ArrayList<>();
+
+    public void addObserver(User observer) {
+        if( !observers.contains(observer) ) {
+            observers.add(observer);
+        }
+    }
+
+    public void removeObserver(User observer) {
+        observers.remove(observer);
+    }
+
     public Bike getFirstAvailableBike(BikeType type) {
         for (Dock dock : docks) {
             if (dock.getBike() != null && dock.getBike().getType().equals(type) &&
@@ -66,6 +88,27 @@ public class DockingStation {
             }
         }
         return count;
+    }
+
+    public int getAllAvailableBikes() {
+        int count = 0;
+        for (Dock dock : docks) {
+            if (dock.getBike() != null && dock.getBike().getState().toString().equals("Available")) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public double getAvailabilityPercentage() {
+        if (capacity == 0) {
+            return 0.0;
+        }
+        return (double) getAllAvailableBikes() / capacity * 100;
+    }
+
+    public boolean isLowAvailability(double thresholdPercentage) {
+        return getAvailabilityPercentage() < thresholdPercentage;
     }
 
     public Dock findEmptyDock() {

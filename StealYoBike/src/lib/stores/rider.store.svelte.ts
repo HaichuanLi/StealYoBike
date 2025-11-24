@@ -5,7 +5,8 @@ import type { UserInfoResponse } from '$lib/api/types/auth.types';
 import type {
 	ReserveBikeResponse,
 	TripBillResponse,
-	TripInfoResponse
+	TripInfoResponse,
+	StationSubscriptionResponse
 } from '$lib/api/types/rider.types';
 import { showToast } from '$lib/stores/toast';
 
@@ -31,6 +32,9 @@ class RiderStore {
 	billModalShow = $state(false);
 	billModalData = $state<TripBillResponse | null>(null);
 
+	subscriptions = $state<StationSubscriptionResponse[]>([]);
+	subscriptionLoading = $state(false);
+
 	get hasPaymentMethod(): boolean {
 		return (
 			this.user !== null && this.user.paymentToken !== null && this.user.paymentToken.trim() !== ''
@@ -45,20 +49,29 @@ class RiderStore {
 		return this.reservation !== null || this.currentTrip !== null || this.returning;
 	}
 
+	get isCurrentStationSubscribed(): boolean {
+        if (!this.selectedStation) return false;
+        return this.subscriptions.some(
+            (sub) => sub.stationId === this.selectedStation!.stationId
+        );
+    }
+
 	async initialize() {
 		this.loading = true;
 		try {
 			const response = await authApi.getCurrentUser();
 			this.user = response.data;
 
-			const [reservationResult, tripResult] = await Promise.allSettled([
+			const [reservationResult, tripResult, subscriptionResult] = await Promise.allSettled([
 				riderApi.getCurrentReservation(),
-				riderApi.getCurrentTrip()
+				riderApi.getCurrentTrip(),
+				riderApi.getMySubscriptions()
 			]);
 
 			this.reservation =
 				reservationResult.status === 'fulfilled' ? reservationResult.value.data : null;
 			this.currentTrip = tripResult.status === 'fulfilled' ? tripResult.value.data : null;
+			this.subscriptions = subscriptionResult.status === 'fulfilled' ? subscriptionResult.value.data : [];
 		} catch (error) {
 			console.error('Failed to load user:', error);
 			this.user = null;
@@ -66,6 +79,54 @@ class RiderStore {
 			this.loading = false;
 		}
 	}
+
+	async toggleStationSubscription() {
+        if (!this.selectedStation) {
+            showToast('No station selected', 'error');
+            return;
+        }
+
+        this.subscriptionLoading = true;
+        const stationId = this.selectedStation.stationId;
+
+        try {
+            if (this.isCurrentStationSubscribed) {
+                // Unsubscribe
+                await riderApi.unsubscribeFromStation(stationId);
+                this.subscriptions = this.subscriptions.filter((sub) => sub.stationId !== stationId);
+                showToast('Unsubscribed from station notifications', 'info');
+            } else {
+                // Subscribe
+                const response = await riderApi.subscribeToStation(stationId);
+                
+                // Add to subscriptions list (create StationSubscriptionResponse from response)
+                const newSub: StationSubscriptionResponse = {
+                    stationId: response.data.stationId,
+                    stationName: response.data.stationName,
+                    address: this.selectedStation.streetAddress,
+                    availableBikes: 0, // Will be updated on next load
+                    capacity: 0,
+                    availabilityPercentage: 0
+                };
+                this.subscriptions = [...this.subscriptions, newSub];
+                showToast('Subscribed to station notifications', 'success');
+            }
+        } catch (error) {
+            console.error('Failed to toggle subscription:', error);
+            showToast('Failed to update subscription', 'error');
+        } finally {
+            this.subscriptionLoading = false;
+        }
+    }
+
+	async refreshSubscriptions() {
+        try {
+            const response = await riderApi.getMySubscriptions();
+            this.subscriptions = response.data;
+        } catch (error) {
+            console.error('Failed to refresh subscriptions:', error);
+        }
+    }
 
 	async reserveBike() {
 		if (!this.hasPaymentMethod) {
@@ -94,6 +155,10 @@ class RiderStore {
 			this.reservation = response.data;
 
 			showToast('Bike reserved successfully', 'success');
+
+			if(response.data.notification) {
+				showToast(response.data.notification, 'warning')
+			}
 		} catch (error) {
 			console.error('Failed to reserve bike:', error);
 			showToast('Failed to reserve bike', 'error');
@@ -175,6 +240,12 @@ class RiderStore {
 
 					this.showBillModal(billResp.data);
 					showToast('Bike returned successfully', 'success');
+					
+					if (response.data.notification) {
+						showToast(response.data.notification, 'warning');
+					}
+
+					this.refreshSubscriptions();
 				} catch (err) {
 					console.error('Failed to fetch trip bill:', err);
 					this.currentTrip = null;

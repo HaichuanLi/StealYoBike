@@ -21,6 +21,7 @@ import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.TripRepository;
+import com.acme.bms.application.service.StationObserverService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,6 +36,7 @@ public class UC4_ReturnBikeUseCase {
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
     private final UserRepository userRepo;
+    private final StationObserverService observerService;
     private ApplicationEventPublisher events;
 
     @Autowired(required = false)
@@ -43,7 +45,7 @@ public class UC4_ReturnBikeUseCase {
     }
 
     @Transactional
-    public ReturnBikeResponse execute(ReturnBikeRequest req) {
+    public ReturnBikeResponse execute(ReturnBikeRequest req, Long riderId) {
 
         Trip trip = tripRepo.findById(req.tripId())
                 .orElseThrow(() -> new TripNotFoundException(req.tripId()));
@@ -99,6 +101,8 @@ public class UC4_ReturnBikeUseCase {
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
 
+       String notification = observerService.checkAndNotify(station, riderId);
+
         if (events != null) {
             events.publishEvent(new StationsChangedEvent());
         }
@@ -109,7 +113,8 @@ public class UC4_ReturnBikeUseCase {
                 station.getId(),
                 trip.getEndTime(),
                 0,
-                trip.getStatus().name());
+                trip.getStatus().name(),
+                notification);
     }
 }
 

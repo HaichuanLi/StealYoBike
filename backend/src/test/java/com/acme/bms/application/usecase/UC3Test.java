@@ -30,6 +30,7 @@ import com.acme.bms.domain.repo.ReservationRepository;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.repo.TripRepository;
+import com.acme.bms.application.service.StationObserverService;
 
 class UC3Test {
 
@@ -44,10 +45,13 @@ class UC3Test {
                 ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
                 StationRepository stationRepo = mock(StationRepository.class);
                 UserRepository userRepo = mock(UserRepository.class);
+                StationObserverService stationObserver = mock(StationObserverService.class);
 
                 UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, tripRepo, publisher,
-                                stationRepo,
-                                userRepo);
+                        stationRepo,
+                        userRepo,
+                        stationObserver
+                );
 
                 ReserveBikeRequest req = new ReserveBikeRequest(100L, BikeType.ELECTRIC);
 
@@ -113,10 +117,12 @@ class UC3Test {
                 ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
                 StationRepository stationRepo = mock(StationRepository.class);
                 UserRepository userRepo = mock(UserRepository.class);
+                StationObserverService stationObserver = mock(StationObserverService.class);
 
                 UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, tripRepo, publisher,
                                 stationRepo,
-                                userRepo);
+                                userRepo,
+                                stationObserver);
 
                 ReserveBikeRequest req = new ReserveBikeRequest(200L, BikeType.REGULAR); // ✅ changed from MECHANICAL
 
@@ -157,10 +163,12 @@ class UC3Test {
                 ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
                 StationRepository stationRepo = mock(StationRepository.class);
                 UserRepository userRepo = mock(UserRepository.class);
+                StationObserverService stationObserver = mock(StationObserverService.class);
 
                 UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, tripRepo, publisher,
                                 stationRepo,
-                                userRepo);
+                                userRepo,
+                                stationObserver);
 
                 ReserveBikeRequest req = new ReserveBikeRequest(200L, BikeType.REGULAR);
 
@@ -197,10 +205,13 @@ class UC3Test {
                 ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
                 StationRepository stationRepo = mock(StationRepository.class);
                 UserRepository userRepo = mock(UserRepository.class);
+                StationObserverService stationObserver = mock(StationObserverService.class);
 
                 UC3_ReserveCheckoutUseCase sut = new UC3_ReserveCheckoutUseCase(reservationRepo, tripRepo, publisher,
                                 stationRepo,
-                                userRepo);
+                                userRepo,
+                                stationObserver
+                        );
 
                 ReserveBikeRequest req = new ReserveBikeRequest(200L, BikeType.ELECTRIC);
 

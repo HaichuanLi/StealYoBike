@@ -12,7 +12,9 @@ import type {
 	ReturnBikeResponse,
 	TripBillResponse,
 	TripInfoResponse,
-	TripResponse
+	TripResponse,
+	SubscriptionResponse,
+	StationSubscriptionResponse
 } from './types/rider.types';
 
 export type TripFilterParams = {
@@ -60,5 +62,20 @@ export const riderApi = {
 	},
 	searchTripById: async (tripId: number): Promise<AxiosResponse<TripResponse>> => {
 		return await api.get<TripResponse>(`/rider/trips/search`, { params: { tripId } });
-	}
+	},
+	subscribeToStation: async (stationId: number): Promise<AxiosResponse<SubscriptionResponse>> => {
+        return await api.post<SubscriptionResponse>(`/rider/stations/${stationId}/subscribe`);
+    },
+    
+    unsubscribeFromStation: async (stationId: number): Promise<AxiosResponse<SubscriptionResponse>> => {
+        return await api.delete<SubscriptionResponse>(`/rider/stations/${stationId}/unsubscribe`);
+    },
+    
+    getMySubscriptions: async (): Promise<AxiosResponse<StationSubscriptionResponse[]>> => {
+        return await api.get<StationSubscriptionResponse[]>('/rider/subscriptions');
+    },
+    
+    isSubscribed: async (stationId: number): Promise<AxiosResponse<boolean>> => {
+        return await api.get<boolean>(`/rider/stations/${stationId}/is-subscribed`);
+    }
 };

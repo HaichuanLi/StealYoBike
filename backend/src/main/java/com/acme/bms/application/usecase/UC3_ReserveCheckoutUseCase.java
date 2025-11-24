@@ -20,6 +20,7 @@ import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.entity.User;
 import com.acme.bms.api.rider.ReservationInfoResponse;
 import com.acme.bms.api.rider.ReservationCancelResponse;
+import com.acme.bms.application.service.StationObserverService;
 
 import com.acme.bms.application.exception.StationNotFoundException;
 import com.acme.bms.application.exception.NoAvailableBikesException;
@@ -42,6 +43,7 @@ public class UC3_ReserveCheckoutUseCase {
     private final ApplicationEventPublisher eventPublisher;
     private final StationRepository stationRepository;
     private final UserRepository userRepository;
+    private final StationObserverService observerService;
 
     @Transactional
     public ReserveBikeResponse execute(ReserveBikeRequest request, Long riderId) {
@@ -79,12 +81,15 @@ public class UC3_ReserveCheckoutUseCase {
 
         eventPublisher.publishEvent(new BikeReservedEvent(reservation.getId(), rider.getId(), bike.getId()));
 
+        String notification = observerService.checkAndNotify(station, riderId);
+
         return new ReserveBikeResponse(
                 reservation.getId(),
                 bike.getId(),
                 station.getId(),
                 reservation.getPin(),
-                reservation.getExpiresAt());
+                reservation.getExpiresAt(),
+                notification);
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +98,7 @@ public class UC3_ReserveCheckoutUseCase {
                 com.acme.bms.domain.entity.Status.ReservationStatus.ACTIVE);
         if (reservation == null) {
             throw new ReservationNotFoundException();
-        }
+        }        
         return new ReservationInfoResponse(reservation);
     }
 

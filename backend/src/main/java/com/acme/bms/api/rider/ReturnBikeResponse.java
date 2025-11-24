@@ -8,5 +8,7 @@ public record ReturnBikeResponse(
                 Long endStationId,
                 LocalDateTime endTime,
                 int priceCents,
-                String status) {
+                String status,
+                String notification
+        ) {
 }
