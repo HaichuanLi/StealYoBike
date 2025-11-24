@@ -1,15 +1,23 @@
 package com.acme.bms.api.rider;
 
 import com.acme.bms.application.usecase.*;
+import com.acme.bms.domain.entity.DockingStation;
+import com.acme.bms.domain.entity.User;
+import com.acme.bms.domain.repo.DockingStationRepository;
+import com.acme.bms.domain.repo.UserRepository;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rider")
@@ -22,6 +30,8 @@ public class RiderController {
     private final UC13_ListPastTrips listPastTripsUC;
     private final com.acme.bms.application.usecase.UC12_PayTripBill uc12;
     private final UC15_GetTripDetails uc15;
+    private final UserRepository userRepository;
+    private final DockingStationRepository stationRepository;
 
     // UC3: Reserve a bike
     @PostMapping("/reserve")
@@ -128,5 +138,108 @@ public class RiderController {
             return (Long) principal;
         }
         return Long.valueOf(principal.toString());
+    }
+
+    @PostMapping("/stations/{stationId}/subscribe")
+    @Transactional
+    public ResponseEntity<SubscriptionResponse> subscribeToStation(
+            @AuthenticationPrincipal String principal,
+            @PathVariable Long stationId) {
+        
+        Long riderId = Long.parseLong(principal);
+        
+        User rider = userRepository.findById(riderId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        DockingStation station = stationRepository.findByIdWithObservers(stationId)
+            .orElseThrow(() -> new RuntimeException("Station not found"));
+        
+        // Check if already subscribed
+        if (station.getObservers().contains(rider)) {
+            throw new RuntimeException("Already subscribed to this station");
+        }
+        
+        station.addObserver(rider);
+        stationRepository.save(station);
+        
+        return ResponseEntity.ok(new SubscriptionResponse(
+            station.getId(),
+            station.getName(),
+            true,
+            "Subscribed successfully"
+        ));
+    }
+
+    @DeleteMapping("/stations/{stationId}/unsubscribe")
+    @Transactional
+    public ResponseEntity<SubscriptionResponse> unsubscribeFromStation(
+            @AuthenticationPrincipal String principal,
+            @PathVariable Long stationId) {
+        
+        Long riderId = Long.parseLong(principal);
+        
+        User rider = userRepository.findById(riderId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        DockingStation station = stationRepository.findByIdWithObservers(stationId)
+            .orElseThrow(() -> new RuntimeException("Station not found"));
+        
+        station.removeObserver(rider);
+        stationRepository.save(station);
+        
+        return ResponseEntity.ok(new SubscriptionResponse(
+            station.getId(),
+            station.getName(),
+            false,
+            "Unsubscribed successfully"
+        ));
+    }
+
+    @GetMapping("/subscriptions")
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<StationSubscriptionResponse>> getMySubscriptions(
+            @AuthenticationPrincipal String principal) {
+        
+        Long riderId = Long.parseLong(principal);
+        
+        User rider = userRepository.findById(riderId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Find all stations where this user is an observer
+        List<DockingStation> subscribedStations = stationRepository.findAllWithObservers().stream()
+            .filter(station -> station.getObservers().contains(rider))
+            .collect(Collectors.toList());
+        
+        List<StationSubscriptionResponse> subscriptions = subscribedStations.stream()
+            .map(station -> new StationSubscriptionResponse(
+                station.getId(),
+                station.getName(),
+                station.getStreetAddress(),
+                station.getAllAvailableBikes(),
+                station.getCapacity(),
+                station.getAvailabilityPercentage()
+            ))
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(subscriptions);
+    }
+
+    @GetMapping("/stations/{stationId}/is-subscribed")
+    @Transactional(readOnly = true)
+    public ResponseEntity<Boolean> isSubscribed(
+            @AuthenticationPrincipal String principal,
+            @PathVariable Long stationId) {
+        
+        Long riderId = Long.parseLong(principal);
+        
+        User rider = userRepository.findById(riderId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        DockingStation station = stationRepository.findByIdWithObservers(stationId)
+            .orElseThrow(() -> new RuntimeException("Station not found"));
+        
+        boolean isSubscribed = station.getObservers().contains(rider);
+        
+        return ResponseEntity.ok(isSubscribed);
     }
 }

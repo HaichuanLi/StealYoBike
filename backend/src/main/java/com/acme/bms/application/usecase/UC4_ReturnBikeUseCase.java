@@ -21,6 +21,7 @@ import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.TripRepository;
+import com.acme.bms.application.service.StationObserverService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,6 +36,7 @@ public class UC4_ReturnBikeUseCase {
     private final StationRepository stationRepo;
     private final DockRepository dockRepo;
     private final UserRepository userRepo;
+    private final StationObserverService observerService;
     private ApplicationEventPublisher events;
 
     @Autowired(required = false)
@@ -98,6 +100,7 @@ public class UC4_ReturnBikeUseCase {
         // Persist changes
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
+        observerService.checkAndNotify(station);
 
         if (events != null) {
             events.publishEvent(new StationsChangedEvent());

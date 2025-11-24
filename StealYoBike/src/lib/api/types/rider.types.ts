@@ -123,3 +123,19 @@ export interface TripResponse {
 	totalCost: number;
 	timeline: string;
 }
+
+export interface SubscriptionResponse {
+	stationId: number;
+	stationName: string;
+	subscribed: boolean;
+	message: string;
+}
+
+export interface StationSubscriptionResponse {
+	stationId: number;
+	stationName: string;
+	address: string;
+	availableBikes: number;
+	capacity: number;
+	availabilityPercentage: number;
+}

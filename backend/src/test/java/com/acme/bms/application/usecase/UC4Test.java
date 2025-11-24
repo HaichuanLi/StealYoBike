@@ -21,6 +21,8 @@ import com.acme.bms.domain.entity.Trip;
 import com.acme.bms.domain.repo.DockRepository;
 import com.acme.bms.domain.repo.StationRepository;
 import com.acme.bms.domain.repo.TripRepository;
+import com.acme.bms.application.service.StationObserverService;
+import com.acme.bms.domain.repo.UserRepository;
 
 class UC4Test {
 
@@ -32,7 +34,10 @@ class UC4Test {
         TripRepository tripRepo = mock(TripRepository.class);
         StationRepository stationRepo = mock(StationRepository.class);
         DockRepository dockRepo = mock(DockRepository.class);
-        UC4_ReturnBikeUseCase sut = new UC4_ReturnBikeUseCase(tripRepo, stationRepo, dockRepo, null);
+        UserRepository userRepo = mock(com.acme.bms.domain.repo.UserRepository.class);
+        StationObserverService observerService = mock(StationObserverService.class);
+
+        UC4_ReturnBikeUseCase sut = new UC4_ReturnBikeUseCase(tripRepo, stationRepo, dockRepo, userRepo, observerService);
 
         DockingStation station = new DockingStation();
         station.setId(200L);
@@ -84,5 +89,6 @@ class UC4Test {
 
         verify(dockRepo).save(emptyDock);
         verify(tripRepo).save(trip);
+        verify(observerService, times(1)).checkAndNotify(station);
     }
 }

@@ -20,6 +20,26 @@
 				{riderStore.selectedStation.name}, ID: {riderStore.selectedStation.stationId}
 			</h2>
 			<p class="text-sm">{riderStore.selectedStation.streetAddress}</p>
+
+			<div class="mt-2 flex items-center justify-center gap-2">
+                <Button
+                    onclick={() => riderStore.toggleStationSubscription()}
+                    text={riderStore.subscriptionLoading 
+                        ? 'Loading...' 
+                        : riderStore.isCurrentStationSubscribed 
+                            ? '🔔 Subscribed' 
+                            : '🔕 Subscribe to Alerts'}
+                    variant={riderStore.isCurrentStationSubscribed ? 'teal' : 'gray'}
+                    disable={riderStore.subscriptionLoading}
+                />
+            </div>
+            
+            {#if riderStore.isCurrentStationSubscribed}
+                <p class="mt-1 text-xs text-gray-700">
+                    You'll be notified when availability drops below 10%
+                </p>
+            {/if}
+			
 		</div>
 		{#if riderStore.selectedStation.status === 'OUT_OF_SERVICE'}
 			<div class="h-full content-center text-center">
