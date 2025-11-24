@@ -24,6 +24,7 @@ export interface ReserveBikeResponse {
 	stationId: number;
 	expiresAt: string;
 	pin: string;
+	notification?: string;
 }
 
 export interface ReturnBikeRequest {
@@ -38,6 +39,7 @@ export interface ReturnBikeResponse {
 	endTime: string;
 	totalCost: number;
 	status: string;
+	notification?: string;
 }
 
 export interface TripBillResponse {

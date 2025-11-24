@@ -155,6 +155,10 @@ class RiderStore {
 			this.reservation = response.data;
 
 			showToast('Bike reserved successfully', 'success');
+
+			if(response.data.notification) {
+				showToast(response.data.notification, 'warning')
+			}
 		} catch (error) {
 			console.error('Failed to reserve bike:', error);
 			showToast('Failed to reserve bike', 'error');
@@ -236,6 +240,10 @@ class RiderStore {
 
 					this.showBillModal(billResp.data);
 					showToast('Bike returned successfully', 'success');
+					
+					if (response.data.notification) {
+						showToast(response.data.notification, 'warning');
+					}
 
 					this.refreshSubscriptions();
 				} catch (err) {

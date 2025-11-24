@@ -45,7 +45,7 @@ public class UC4_ReturnBikeUseCase {
     }
 
     @Transactional
-    public ReturnBikeResponse execute(ReturnBikeRequest req) {
+    public ReturnBikeResponse execute(ReturnBikeRequest req, Long riderId) {
 
         Trip trip = tripRepo.findById(req.tripId())
                 .orElseThrow(() -> new TripNotFoundException(req.tripId()));
@@ -100,7 +100,8 @@ public class UC4_ReturnBikeUseCase {
         // Persist changes
         dockRepo.save(emptyDock);
         tripRepo.save(trip);
-        observerService.checkAndNotify(station);
+
+       String notification = observerService.checkAndNotify(station, riderId);
 
         if (events != null) {
             events.publishEvent(new StationsChangedEvent());
@@ -112,7 +113,8 @@ public class UC4_ReturnBikeUseCase {
                 station.getId(),
                 trip.getEndTime(),
                 0,
-                trip.getStatus().name());
+                trip.getStatus().name(),
+                notification);
     }
 }
 

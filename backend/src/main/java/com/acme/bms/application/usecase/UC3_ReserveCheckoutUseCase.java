@@ -81,14 +81,15 @@ public class UC3_ReserveCheckoutUseCase {
 
         eventPublisher.publishEvent(new BikeReservedEvent(reservation.getId(), rider.getId(), bike.getId()));
 
-        observerService.checkAndNotify(station);
+        String notification = observerService.checkAndNotify(station, riderId);
 
         return new ReserveBikeResponse(
                 reservation.getId(),
                 bike.getId(),
                 station.getId(),
                 reservation.getPin(),
-                reservation.getExpiresAt());
+                reservation.getExpiresAt(),
+                notification);
     }
 
     @Transactional(readOnly = true)

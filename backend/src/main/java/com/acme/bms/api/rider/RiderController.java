@@ -46,8 +46,10 @@ public class RiderController {
 
     // UC4: Return a bike
     @PostMapping("/return")
-    public ResponseEntity<ReturnBikeResponse> returnBike(@Valid @RequestBody ReturnBikeRequest request) {
-        return ResponseEntity.ok(returnUC.execute(request));
+    public ResponseEntity<ReturnBikeResponse> returnBike(@Valid @RequestBody ReturnBikeRequest request,
+        @AuthenticationPrincipal String principal) {
+        Long riderId = Long.parseLong(principal);
+        return ResponseEntity.ok(returnUC.execute(request, riderId));
     }
 
     @GetMapping("/trips/{tripId}/bill")

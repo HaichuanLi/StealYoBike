@@ -7,5 +7,7 @@ public record ReserveBikeResponse(
                 Long bikeId,
                 Long stationId,
                 String pin,
-                Instant expiresAt) {
+                Instant expiresAt,
+                String notification
+    ) {
 }

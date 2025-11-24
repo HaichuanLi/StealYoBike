@@ -70,7 +70,7 @@ class UC4Test {
 
         // --- ACTION ---
         System.out.println("\n[Action] Returning bike...");
-        ReturnBikeResponse resp = sut.execute(new ReturnBikeRequest(1000L, 200L));
+        ReturnBikeResponse resp = sut.execute(new ReturnBikeRequest(1000L, 200L), 200L);
 
         // --- AFTER STATE ---
         System.out.println("\n[After]");
@@ -89,6 +89,6 @@ class UC4Test {
 
         verify(dockRepo).save(emptyDock);
         verify(tripRepo).save(trip);
-        verify(observerService, times(1)).checkAndNotify(station);
+        verify(observerService, times(1)).checkAndNotify(station, 200L);
     }
 }

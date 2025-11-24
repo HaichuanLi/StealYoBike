@@ -17,17 +17,20 @@ public class StationObserverService {
     private static final double LOW_AVAILABILITY_THRESHOLD = 10.0;
     
     @Transactional
-    public void checkAndNotify(DockingStation station) {
+    public String checkAndNotify(DockingStation station, Long currentUserId) {
         if (station.isLowAvailability(LOW_AVAILABILITY_THRESHOLD)) {
             log.info("Low availability detected at {}: {}%", 
                      station.getName(), 
                      station.getAvailabilityPercentage());
             
-            notifyObservers(station);
+            return notifyObservers(station, currentUserId);
         }
+        return null;
     }
     
-    private void notifyObservers(DockingStation station) {
+    private String notifyObservers(DockingStation station, Long currentUserId) {
+        String notificationMessage = null;
+        
         for (User observer : station.getObservers()) {
             String message = String.format(
                 "Low bike availability at %s: %.1f%% (%d/%d bikes available)",
@@ -38,6 +41,12 @@ public class StationObserverService {
             );
             
             log.info("Notifying user {}: {}", observer.getUsername(), message);
+            
+            if (observer.getId().equals(currentUserId)) {
+                notificationMessage = message;
+            }
         }
+        
+        return notificationMessage;
     }
 }

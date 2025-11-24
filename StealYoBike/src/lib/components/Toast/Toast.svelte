@@ -13,6 +13,7 @@
 			class:info={$toast.type === 'info'}
 			class:success={$toast.type === 'success'}
 			class:error={$toast.type === 'error'}
+			class:warning={$toast.type === 'warning'}
 		>
 			{$toast.message}
 		</div>
@@ -23,10 +24,14 @@
 	.info {
 		background: rgba(14, 165, 233, 0.95);
 	}
+	.warning {
+		background: rgba(234, 179, 8, 0.95);
+	}
 	.success {
 		background: rgba(16, 185, 129, 0.95);
 	}
 	.error {
 		background: rgba(239, 68, 68, 0.95);
 	}
+
 </style>
