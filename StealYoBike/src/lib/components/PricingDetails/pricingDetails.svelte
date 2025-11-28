@@ -2,6 +2,7 @@
 	import { pricingApi, type PricingResponse } from '$lib/api/pricing.api';
 	import { riderApi } from '$lib/api/rider.api';
 	import type { UpdatePlanRequest } from '$lib/api/types';
+	import type { UserInfoResponse } from '$lib/api/types/auth.types';
 	import { showToast } from '$lib/stores/toast';
 	import { onMount } from 'svelte';
 	import Toast from '../Toast/Toast.svelte';
@@ -166,9 +167,18 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
-					onclick={() => {
-						riderApi.updatePlan({ plan: 'PAYPERRIDE' } as UpdatePlanRequest);
-						showToast('Successfully switched to Pay Per Ride plan!', 'success');
+					onclick={async () => {
+						try {
+							const resp = await riderApi.updatePlan({ plan: 'PAYPERRIDE' } as UpdatePlanRequest);
+							if (resp.status === 200) {
+								showToast('Successfully switched to Pay Per Ride plan!', 'success');
+							} else {
+								showToast('Failed to switch plan. Please try again.', 'error');
+							}
+						} catch (err) {
+							console.error('Error updating plan:', err);
+							showToast('Failed to connect to server. Please try again.', 'error');
+						}
 					}}
 				>
 					Get Started
@@ -207,9 +217,18 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
-					onclick={() => {
-						riderApi.updatePlan({ plan: 'MONTHLY' } as UpdatePlanRequest);
-						showToast('Successfully switched to Monthly Pass plan!', 'success');
+					onclick={async () => {
+						try {
+							const resp = await riderApi.updatePlan({ plan: 'MONTHLY' } as UpdatePlanRequest);
+							if (resp.status === 200) {
+								showToast('Successfully switched to Monthly Pass plan!', 'success');
+							} else {
+								showToast('Failed to switch plan. Please try again.', 'error');
+							}
+						} catch (err) {
+							console.error('Error updating plan:', err);
+							showToast('Failed to connect to server. Please try again.', 'error');
+						}
 					}}
 				>
 					Choose Plan
@@ -240,9 +259,18 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
-					onclick={() => {
-						riderApi.updatePlan({ plan: 'ANNUAL' } as UpdatePlanRequest);
-						showToast('Successfully switched to Annual Pass plan!', 'success');
+					onclick={async () => {
+						try {
+							const resp = await riderApi.updatePlan({ plan: 'ANNUAL' } as UpdatePlanRequest);
+							if (resp.status === 200) {
+								showToast('Successfully switched to Annual Pass plan!', 'success');
+							} else {
+								showToast('Failed to switch plan. Please try again.', 'error');
+							}
+						} catch (err) {
+							console.error('Error updating plan:', err);
+							showToast('Failed to connect to server. Please try again.', 'error');
+						}
 					}}
 				>
 					Best Value
