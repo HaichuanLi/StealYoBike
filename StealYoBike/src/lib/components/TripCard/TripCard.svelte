@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { StationSummary } from '$lib/api/types';
 	import type { TripInfoResponse } from '$lib/api/types/rider.types';
-	import Button from '$lib/components/Button/Button.svelte';
 
 	interface Props {
 		trip: TripInfoResponse | null;

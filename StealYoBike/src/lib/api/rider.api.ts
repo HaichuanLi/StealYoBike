@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios';
 import { api } from './index';
+import type { UserInfoResponse } from './types/auth.types';
 import type {
 	CheckoutRequest,
 	CheckoutResponse,
@@ -10,11 +11,12 @@ import type {
 	ReserveBikeResponse,
 	ReturnBikeRequest,
 	ReturnBikeResponse,
+	StationSubscriptionResponse,
+	SubscriptionResponse,
 	TripBillResponse,
 	TripInfoResponse,
 	TripResponse,
-	SubscriptionResponse,
-	StationSubscriptionResponse
+	UpdatePlanRequest
 } from './types/rider.types';
 
 export type TripFilterParams = {
@@ -64,18 +66,24 @@ export const riderApi = {
 		return await api.get<TripResponse>(`/rider/trips/search`, { params: { tripId } });
 	},
 	subscribeToStation: async (stationId: number): Promise<AxiosResponse<SubscriptionResponse>> => {
-        return await api.post<SubscriptionResponse>(`/rider/stations/${stationId}/subscribe`);
-    },
-    
-    unsubscribeFromStation: async (stationId: number): Promise<AxiosResponse<SubscriptionResponse>> => {
-        return await api.delete<SubscriptionResponse>(`/rider/stations/${stationId}/unsubscribe`);
-    },
-    
-    getMySubscriptions: async (): Promise<AxiosResponse<StationSubscriptionResponse[]>> => {
-        return await api.get<StationSubscriptionResponse[]>('/rider/subscriptions');
-    },
-    
-    isSubscribed: async (stationId: number): Promise<AxiosResponse<boolean>> => {
-        return await api.get<boolean>(`/rider/stations/${stationId}/is-subscribed`);
-    }
+		return await api.post<SubscriptionResponse>(`/rider/stations/${stationId}/subscribe`);
+	},
+
+	unsubscribeFromStation: async (
+		stationId: number
+	): Promise<AxiosResponse<SubscriptionResponse>> => {
+		return await api.delete<SubscriptionResponse>(`/rider/stations/${stationId}/unsubscribe`);
+	},
+
+	getMySubscriptions: async (): Promise<AxiosResponse<StationSubscriptionResponse[]>> => {
+		return await api.get<StationSubscriptionResponse[]>('/rider/subscriptions');
+	},
+
+	isSubscribed: async (stationId: number): Promise<AxiosResponse<boolean>> => {
+		return await api.get<boolean>(`/rider/stations/${stationId}/is-subscribed`);
+	},
+
+	updatePlan: async (request: UpdatePlanRequest): Promise<AxiosResponse<UserInfoResponse>> => {
+		return await api.put<UserInfoResponse>('/rider/me/plan', request);
+	}
 };

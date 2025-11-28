@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { pricingApi, type PricingResponse } from '$lib/api/pricing.api';
+	import { riderApi } from '$lib/api/rider.api';
+	import type { UpdatePlanRequest } from '$lib/api/types';
+	import { showToast } from '$lib/stores/toast';
 	import { onMount } from 'svelte';
+	import Toast from '../Toast/Toast.svelte';
 
 	let pricing = $state<PricingResponse | null>(null);
 	let loading = $state(true);
@@ -162,6 +166,10 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+					onclick={() => {
+						riderApi.updatePlan({ plan: 'PAYPERRIDE' } as UpdatePlanRequest);
+						showToast('Successfully switched to Pay Per Ride plan!', 'success');
+					}}
 				>
 					Get Started
 				</button>
@@ -199,6 +207,10 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+					onclick={() => {
+						riderApi.updatePlan({ plan: 'MONTHLY' } as UpdatePlanRequest);
+						showToast('Successfully switched to Monthly Pass plan!', 'success');
+					}}
 				>
 					Choose Plan
 				</button>
@@ -228,6 +240,10 @@
 				</ul>
 				<button
 					class="w-full rounded-lg bg-emerald-600 py-3 font-semibold text-white transition-colors hover:bg-emerald-700"
+					onclick={() => {
+						riderApi.updatePlan({ plan: 'ANNUAL' } as UpdatePlanRequest);
+						showToast('Successfully switched to Annual Pass plan!', 'success');
+					}}
 				>
 					Best Value
 				</button>
@@ -282,3 +298,5 @@
 		</div>
 	</div>
 {/if}
+
+<Toast />

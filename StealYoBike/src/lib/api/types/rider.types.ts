@@ -141,3 +141,7 @@ export interface StationSubscriptionResponse {
 	capacity: number;
 	availabilityPercentage: number;
 }
+
+export interface UpdatePlanRequest {
+	plan: 'PAYPERRIDE' | 'MONTHLY' | 'ANNUAL';
+}
