@@ -73,11 +73,23 @@
 		if (nextTier === 'BRONZE') {
 			return Math.min((tripsLastYear / 10) * 100, 100);
 		} else if (nextTier === 'SILVER') {
-			return Math.min((tripsLast3Months / 5) * 100, 100);
+			return Math.min((tripsLast3Months / 15) * 100, 100);
 		} else if (nextTier === 'GOLD') {
-			return Math.min((tripsLast12Weeks / 5) * 100, 100);
+			return Math.min((tripsLast12Weeks / 60) * 100, 100);
 		}
 		return 0;
+	});
+
+	// Check if requirement is met but tier hasn't upgraded yet
+	let requirementMet = $derived.by(() => {
+		if (nextTier === 'BRONZE') {
+			return tripsLastYear >= 10;
+		} else if (nextTier === 'SILVER') {
+			return tripsLast3Months >= 15;
+		} else if (nextTier === 'GOLD') {
+			return tripsLast12Weeks >= 60;
+		}
+		return false;
 	});
 
 	// ---------- Dual-role active role switch ----------
@@ -180,7 +192,9 @@
 					>
 						<h4 class="mb-1 text-xl font-bold text-amber-700">BRONZE</h4>
 						<p class="text-sm text-gray-700">5% discount</p>
-						<p class="text-sm text-gray-700">10+ yearly trips</p>
+						<p class="text-sm text-gray-700">&gt;10 trips/year</p>
+						<p class="text-sm text-gray-700">No missed reservations</p>
+						<p class="text-sm text-gray-700">No unreturned bikes</p>
 					</div>
 
 					<!-- Silver -->
@@ -191,7 +205,8 @@
 					>
 						<h4 class="mb-1 text-xl font-bold text-gray-700">SILVER</h4>
 						<p class="text-sm text-gray-700">10% discount</p>
-						<p class="text-sm text-gray-700">Monthly consistency</p>
+						<p class="text-sm text-gray-700">Bronze + 5 trips/month</p>
+						<p class="text-sm text-gray-700">5+ successful reservations</p>
 					</div>
 
 					<!-- Gold -->
@@ -202,7 +217,8 @@
 					>
 						<h4 class="mb-1 text-xl font-bold text-yellow-600">GOLD</h4>
 						<p class="text-sm text-gray-700">15% discount</p>
-						<p class="text-sm text-gray-700">Weekly consistency</p>
+						<p class="text-sm text-gray-700">Silver + 5 trips/week</p>
+						<p class="text-sm text-gray-700">(60 trips in 12 weeks)</p>
 					</div>
 				</div>
 			</section>
@@ -214,22 +230,32 @@
 						Progress Toward {nextTier} Tier
 					</h3>
 
-					<div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 shadow-inner">
-						<div
-							class={`h-full transition-all duration-700 ${
-								nextTier === 'BRONZE'
-									? 'bg-amber-600'
-									: nextTier === 'SILVER'
-										? 'bg-gray-400'
-										: 'bg-yellow-400'
-							}`}
-							style={`width: ${progress}%`}
-						></div>
-					</div>
+					{#if requirementMet}
+						<div class="rounded-lg border-2 border-emerald-200 bg-emerald-50 p-6 text-center">
+							<p class="mb-2 text-lg font-bold text-emerald-700">✓ Requirement Met!</p>
+							<p class="text-sm text-emerald-600">
+								You've completed the required trips for {nextTier} tier. Your tier will be updated automatically
+								on your next trip.
+							</p>
+						</div>
+					{:else}
+						<div class="h-4 w-full overflow-hidden rounded-full bg-gray-200 shadow-inner">
+							<div
+								class={`h-full transition-all duration-700 ${
+									nextTier === 'BRONZE'
+										? 'bg-amber-600'
+										: nextTier === 'SILVER'
+											? 'bg-gray-400'
+											: 'bg-yellow-400'
+								}`}
+								style={`width: ${progress}%`}
+							></div>
+						</div>
 
-					<p class="mt-2 text-center text-sm font-medium text-gray-600">
-						{Math.floor(progress)}% complete
-					</p>
+						<p class="mt-2 text-center text-sm font-medium text-gray-600">
+							{Math.floor(progress)}% complete
+						</p>
+					{/if}
 				</section>
 			{/if}
 		</div>
