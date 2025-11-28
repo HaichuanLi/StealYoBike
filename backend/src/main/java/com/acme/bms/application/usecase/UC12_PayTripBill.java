@@ -36,10 +36,9 @@ public class UC12_PayTripBill {
             throw new UserNotFoundException();
         }
 
-        // ✅ Reuse existing bill if present, otherwise build it via UC11
         Bill bill = billRepo.findByTripId(tripId).orElseGet(() -> {
             // UC11 will create + save the bill (with flex + discounts)
-            TripBillResponse resp = billCreator.execute(tripId, riderId);
+            billCreator.execute(tripId, riderId);
             return billRepo.findByTripId(tripId)
                     .orElseThrow(() -> new TripNotFoundException(tripId));
         });

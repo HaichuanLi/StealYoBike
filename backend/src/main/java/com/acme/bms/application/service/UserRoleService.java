@@ -1,7 +1,5 @@
 package com.acme.bms.application.service;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Service;
 
 import com.acme.bms.domain.entity.Role;
@@ -9,7 +7,6 @@ import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.repo.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
@@ -37,4 +34,3 @@ public class UserRoleService {
         return userRepository.save(user);
     }
 }
-

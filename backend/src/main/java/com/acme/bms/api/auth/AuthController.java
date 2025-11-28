@@ -19,7 +19,6 @@ import com.acme.bms.domain.entity.Tier;
 import com.acme.bms.domain.entity.User;
 import com.acme.bms.domain.repo.UserRepository;
 import com.acme.bms.domain.repo.TripRepository;
-import com.acme.bms.application.service.UserRoleService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,6 @@ public class AuthController {
     private final UC2_LoginUserUseCase loginUC;
     private final TierEvaluationService tierEvaluationService;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserRoleService userRoleService;
     private final TripRepository tripRepository;
 
     @PostMapping("/register")
@@ -101,8 +99,7 @@ public class AuthController {
             eventPublisher.publishEvent(new TierChangedEvent(
                     user.getId(),
                     previousTier,
-                    evaluatedTier
-            ));
+                    evaluatedTier));
         }
 
         return ResponseEntity.ok(toUserInfo(user));
@@ -111,12 +108,13 @@ public class AuthController {
     @PutMapping("/active-role")
     public ResponseEntity<UserInfoResponse> updateActiveRole(
             Authentication auth,
-            @RequestBody ActiveRoleRequest request
-    ) {
-        if (auth == null) return ResponseEntity.status(401).build();
+            @RequestBody ActiveRoleRequest request) {
+        if (auth == null)
+            return ResponseEntity.status(401).build();
 
         Optional<User> userOpt = resolveUser(auth.getName());
-        if (userOpt.isEmpty()) return ResponseEntity.status(404).build();
+        if (userOpt.isEmpty())
+            return ResponseEntity.status(404).build();
 
         User user = userOpt.get();
 
@@ -136,7 +134,6 @@ public class AuthController {
         return ResponseEntity.ok(toUserInfo(user));
     }
 
-
     private Optional<User> resolveUser(String principal) {
         try {
             Long userId = Long.parseLong(principal);
@@ -145,6 +142,7 @@ public class AuthController {
             return userRepository.findByUsernameOrEmail(principal, principal);
         }
     }
+
     private UserInfoResponse toUserInfo(User user) {
 
         boolean dualRole = (user.getRole() == Role.OPERATOR || user.getRole() == Role.ADMIN);
@@ -155,20 +153,17 @@ public class AuthController {
 
         int tripsLastYear = tripRepository.countByUserSince(
                 user.getId(),
-                LocalDateTime.now().minusYears(1)
-        );
+                LocalDateTime.now().minusYears(1));
 
         int tripsLast3Months = tripRepository.countTripsPerMonth(
                 user.getId(),
                 LocalDateTime.now().minusMonths(3),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         int tripsLast12Weeks = tripRepository.countTripsPerWeek(
                 user.getId(),
                 LocalDateTime.now().minusWeeks(12),
-                LocalDateTime.now()
-        );
+                LocalDateTime.now());
 
         return new UserInfoResponse(
                 user.getId(),
@@ -184,7 +179,6 @@ public class AuthController {
                 user.getFlexDollar(),
                 tripsLastYear,
                 tripsLast3Months,
-                tripsLast12Weeks
-        );
+                tripsLast12Weeks);
     }
 }
