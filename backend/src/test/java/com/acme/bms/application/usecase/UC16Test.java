@@ -21,7 +21,8 @@ class UC16Test {
 
         TripRepository mockTripRepo = mock(TripRepository.class);
         PricingPlanRepository mockPricingRepo = mock(PricingPlanRepository.class);
-        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, null);
+        com.acme.bms.domain.repo.BillRepository mockBillRepo = mock(com.acme.bms.domain.repo.BillRepository.class);
+        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, mockBillRepo);
 
         // Rider & Bike
         User rider = User.builder().id(10L).username("Alice").build();
@@ -53,6 +54,7 @@ class UC16Test {
                 .surcharge(1.00)
                 .build();
         when(mockPricingRepo.findByType(PricingPlanType.EBIKE)).thenReturn(Optional.of(eBikePlan));
+        when(mockBillRepo.findByTripId(99L)).thenReturn(Optional.empty());
 
         // ===== BEFORE EXECUTION (Trip entity) =====
         System.out.println("===== BEFORE execution (Trip entity from DB) =====");
@@ -104,7 +106,8 @@ class UC16Test {
 
         TripRepository mockTripRepo = mock(TripRepository.class);
         PricingPlanRepository mockPricingRepo = mock(PricingPlanRepository.class);
-        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, null);
+        com.acme.bms.domain.repo.BillRepository mockBillRepo = mock(com.acme.bms.domain.repo.BillRepository.class);
+        UC16_SearchRidebyTripID useCase = new UC16_SearchRidebyTripID(mockTripRepo, mockPricingRepo, mockBillRepo);
 
         when(mockTripRepo.findById(123L)).thenReturn(Optional.empty());
 

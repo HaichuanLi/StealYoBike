@@ -3,6 +3,8 @@ package com.acme.bms.api.auth;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -32,6 +34,15 @@ public class AuthControllerTest {
         @Mock
         UC2_LoginUserUseCase loginUC;
 
+        @Mock
+        com.acme.bms.application.service.TierEvaluationService tierEvaluationService;
+
+        @Mock
+        org.springframework.context.ApplicationEventPublisher eventPublisher;
+
+        @Mock
+        com.acme.bms.domain.repo.TripRepository tripRepository;
+
         @InjectMocks
         AuthController controller;
 
@@ -49,7 +60,13 @@ public class AuthControllerTest {
                                 .role(Role.RIDER)
                                 .build();
 
-                when(userRepository.findByUsername(username)).thenReturn(Optional.of(dbUser));
+                when(userRepository.findByUsernameOrEmail(username, username)).thenReturn(Optional.of(dbUser));
+                when(tierEvaluationService.evaluate(1L)).thenReturn(
+                                Role.RIDER.equals(dbUser.getRole()) ? com.acme.bms.domain.entity.Tier.REGULAR
+                                                : com.acme.bms.domain.entity.Tier.REGULAR);
+                when(tripRepository.countByUserSince(eq(1L), any())).thenReturn(0);
+                when(tripRepository.countTripsPerMonth(eq(1L), any(), any())).thenReturn(0);
+                when(tripRepository.countTripsPerWeek(eq(1L), any(), any())).thenReturn(0);
 
                 org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
                                 username, "pw", Collections.emptyList());
@@ -72,7 +89,7 @@ public class AuthControllerTest {
         @Test
         void me_returns_404_when_not_found() {
                 String username = "missing";
-                when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+                when(userRepository.findByUsernameOrEmail(username, username)).thenReturn(Optional.empty());
 
                 org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
                                 username, "pw", Collections.emptyList());
